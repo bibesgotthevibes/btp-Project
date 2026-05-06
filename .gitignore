@@ -1,0 +1,51 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables — NEVER commit secrets
+.env
+
+# Flask / SQLAlchemy
+instance/
+*.db
+*.sqlite3
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.cache/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# VS Code
+.vscode/
+
+# Large data files
+*.zip
+data/
+PMC-Patients-V2.json
+mtsamples.csv/
+anotated_dataset_v2.xlsx
+lay_english_pipeline_output.xlsx
+predictions-t5-base.tsv
+results_1/
+results_2/
+slides_pipeline.tex
