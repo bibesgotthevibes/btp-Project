@@ -32,6 +32,12 @@ try:
 except ImportError:
     genai = None
 
+try:
+    import torch
+    from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+except ImportError:
+    torch = None
+
 from db import db
 from auth import auth_bp
 
@@ -72,14 +78,10 @@ with app.app_context():
 # accessible=True  → works with standard API key
 # accessible=False → exists but usually requires premium key logic
 MODELS = [
-    {"id": "llama3.1-8b",                    "name": "Llama 3.1 8B (Cerebras)",         "accessible": True, "api_provider": "cerebras"},
-    {"id": "gemini-2.5-flash",               "name": "Gemini 2.5 Flash (Google/Fast)", "accessible": True, "api_provider": "gemini"},
-    {"id": "gemini-2.5-pro",                 "name": "Gemini 2.5 Pro (Google/Better)","accessible": True, "api_provider": "gemini"},
-    {"id": "llama-4-scout-17b-16e-instruct", "name": "Llama 4 Scout 17B (Cerebras)",    "accessible": False, "api_provider": "cerebras"},
-    {"id": "llama3.3-70b",                   "name": "Llama 3.3 70B (Cerebras)",        "accessible": False, "api_provider": "cerebras"},
-    {"id": "llama3.1-70b",                   "name": "Llama 3.1 70B (Cerebras)",        "accessible": False, "api_provider": "cerebras"},
-    {"id": "deepseek-r1-distill-llama-70b",  "name": "DeepSeek R1 Distill Llama 70B",   "accessible": False, "api_provider": "cerebras"},
-    {"id": "qwen-3-32b",                     "name": "Qwen 3 32B (Cerebras)",           "accessible": False, "api_provider": "cerebras"},
+    # ── Allowed models only ───────────────────────────────────────────────────
+    {"id": "scifive-local", "name": "SciFive (Local T5)", "accessible": True, "api_provider": "local"},
+    {"id": "biobart-local", "name": "BioBART (Local)", "accessible": True, "api_provider": "local"},
+    {"id": "llama3.1-8b", "name": "Llama 3.1 8B", "accessible": True, "api_provider": "cerebras"},
 ]
 
 SYSTEM_PROMPT = (
@@ -103,6 +105,77 @@ SYSTEM_PROMPT = (
     "6. Use empathetic, reassuring language.\n"
     "7. Write in second or third person as appropriate to match the original summary."
 )
+
+# ── SciFive Local Model Cache ─────────────────────────────────────────────────
+SCIFIVE_MODEL = None
+SCIFIVE_TOKENIZER = None
+BIOBART_MODEL = None
+BIOBART_TOKENIZER = None
+
+def load_scifive():
+    """Load SciFive model and tokenizer once, cache in memory."""
+    global SCIFIVE_MODEL, SCIFIVE_TOKENIZER
+    if SCIFIVE_MODEL is not None:
+        return SCIFIVE_MODEL, SCIFIVE_TOKENIZER
+    
+    if torch is None:
+        raise Exception("torch and transformers are not installed")
+    
+    model_path = os.path.join(os.path.dirname(__file__), "..", "SciFive", "model")
+    if not os.path.isdir(model_path):
+        raise FileNotFoundError(f"SciFive model not found at {model_path}")
+    
+    try:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
+        SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
+        print(f"[SciFive] Model loaded from {model_path} on {device}")
+        return SCIFIVE_MODEL, SCIFIVE_TOKENIZER
+    except Exception as e:
+        raise Exception(f"Failed to load SciFive model from {model_path}: {str(e)}")
+
+
+def _resolve_biobart_model_path():
+    """Find a usable BioBART model directory from extracted files."""
+    base_path = os.path.join(os.path.dirname(__file__), "..", "BioBART", "model")
+    candidates = [base_path]
+
+    # Prefer newest checkpoint if top-level model files are unavailable.
+    for checkpoint in ["checkpoint-5625", "checkpoint-4500"]:
+        candidates.append(os.path.join(base_path, checkpoint))
+
+    for path in candidates:
+        if os.path.isdir(path):
+            has_model = os.path.isfile(os.path.join(path, "model.safetensors"))
+            has_tokenizer = os.path.isfile(os.path.join(path, "tokenizer.json"))
+            if has_model and has_tokenizer:
+                return path
+
+    raise FileNotFoundError(
+        f"No usable BioBART model found under {base_path}. "
+        "Expected model.safetensors and tokenizer.json in model/ or checkpoint folder."
+    )
+
+
+def load_biobart():
+    """Load BioBART model and tokenizer once, cache in memory."""
+    global BIOBART_MODEL, BIOBART_TOKENIZER
+    if BIOBART_MODEL is not None:
+        return BIOBART_MODEL, BIOBART_TOKENIZER
+
+    if torch is None:
+        raise Exception("torch and transformers are not installed")
+
+    model_path = _resolve_biobart_model_path()
+
+    try:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
+        BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
+        print(f"[BioBART] Model loaded from {model_path} on {device}")
+        return BIOBART_MODEL, BIOBART_TOKENIZER
+    except Exception as e:
+        raise Exception(f"Failed to load BioBART model from {model_path}: {str(e)}")
 
 # ── Medical Pipeline Preprocessing ────────────────────────────────────────────
 INDIAN_LAY_DICT = {
@@ -271,7 +344,18 @@ def simplify():
     if model_info and "api_provider" in model_info and api_provider == "auto":
         api_provider = model_info["api_provider"]
 
-    # ── Try Cerebras first ────────────────────────────────────────────────
+    # ── Try Local Models first ────────────────────────────────────────────────
+    if api_provider == "local" or (api_provider == "auto" and model_id in ["scifive-local", "biobart-local"]):
+        try:
+            if model_id == "biobart-local":
+                return _call_biobart(text, strategy, selection_method)
+            return _call_scifive(text, strategy, selection_method)
+        except Exception as e:
+            if api_provider == "local":
+                return jsonify({"error": f"Local model error: {str(e)}"}), 500
+            # If "auto", fall through to Cerebras
+
+    # ── Try Cerebras ──────────────────────────────────────────────────────────
     if api_provider == "cerebras" or api_provider == "auto":
         if Cerebras is not None:
             cerebras_key = os.getenv("CEREBRAS_API_KEY", "").strip()
@@ -297,6 +381,53 @@ def simplify():
 
     # ── No valid API configured ───────────────────────────────────────────
     return jsonify({"error": "No valid API configured. Set CEREBRAS_API_KEY or GEMINI_API_KEY in .env"}), 500
+
+
+def _call_scifive(text, strategy="zero-shot", selection_method="random"):
+    """Call local SciFive model (fine-tuned T5)."""
+    model, tokenizer = load_scifive()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    
+    # Add T5 task prefix as per SciFive convention
+    input_text = f"simplify: {text}"
+    
+    # Tokenize and generate
+    inputs = tokenizer(input_text, max_length=512, truncation=True, return_tensors="pt").to(device)
+    outputs = model.generate(
+        **inputs,
+        max_length=512,
+        num_beams=4,
+        early_stopping=True,
+        temperature=0.3,
+    )
+    
+    simplified = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
+    display_name = model_info["name"] if model_info else "SciFive"
+    
+    return jsonify({"result": simplified, "model": display_name, "tokens": None})
+
+
+def _call_biobart(text, strategy="zero-shot", selection_method="random"):
+    """Call local BioBART model."""
+    model, tokenizer = load_biobart()
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    inputs = tokenizer(text, max_length=512, truncation=True, return_tensors="pt").to(device)
+    outputs = model.generate(
+        **inputs,
+        max_length=512,
+        num_beams=4,
+        early_stopping=True,
+    )
+
+    simplified = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
+    display_name = model_info["name"] if model_info else "BioBART"
+
+    return jsonify({"result": simplified, "model": display_name, "tokens": None})
 
 
 def _call_cerebras(text, model_id, api_key, strategy="zero-shot", selection_method="random"):
@@ -327,7 +458,8 @@ def _call_cerebras(text, model_id, api_key, strategy="zero-shot", selection_meth
     )
     simplified = response.choices[0].message.content
     tokens_used = getattr(response.usage, "total_tokens", None)
-    return jsonify({"result": simplified, "model": "llama3.1-8b (Cerebras)", "tokens": tokens_used})
+    display_name = model_info["name"] if model_info else model_id
+    return jsonify({"result": simplified, "model": display_name, "tokens": tokens_used})
 
 
 def _call_gemini(text, model_id, api_key, strategy="zero-shot", selection_method="random"):

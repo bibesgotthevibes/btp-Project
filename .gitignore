@@ -50,3 +50,8 @@ predictions-t5-base.tsv
 results_1/
 results_2/
 slides_pipeline.tex
+
+# Local-only model assets and non-project workspace content
+BioBART/
+SciFive/
+YADA/
