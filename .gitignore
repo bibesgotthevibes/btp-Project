@@ -41,6 +41,7 @@ frontend/.cache/
 # Large data files
 *.zip
 data/
+data/data.tsv
 PMC-Patients-V2.json
 mtsamples.csv/
 anotated_dataset_v2.xlsx

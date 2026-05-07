@@ -8,6 +8,9 @@ Run:
 """
 
 import os
+import re
+import csv
+import random
 from datetime import timedelta
 
 from flask import Flask, request, jsonify
@@ -23,6 +26,11 @@ try:
     from cerebras.cloud.sdk import Cerebras
 except ImportError:
     Cerebras = None
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
 
 from db import db
 from auth import auth_bp
@@ -60,16 +68,18 @@ app.register_blueprint(auth_bp)
 with app.app_context():
     db.create_all()
 
-# ── Cerebras model catalogue ──────────────────────────────────────────────────
-# accessible=True  → works with a standard Cerebras API key
-# accessible=False → exists on Cerebras but requires a higher-tier key
-CEREBRAS_MODELS = [
-    {"id": "llama3.1-8b",                    "name": "Llama 3.1 8B",                    "accessible": True},
-    {"id": "llama-4-scout-17b-16e-instruct",  "name": "Llama 4 Scout 17B",               "accessible": False},
-    {"id": "llama3.3-70b",                    "name": "Llama 3.3 70B",                   "accessible": False},
-    {"id": "llama3.1-70b",                    "name": "Llama 3.1 70B",                   "accessible": False},
-    {"id": "deepseek-r1-distill-llama-70b",   "name": "DeepSeek R1 Distill Llama 70B",   "accessible": False},
-    {"id": "qwen-3-32b",                      "name": "Qwen 3 32B",                      "accessible": False},
+# ── AI model catalogue ────────────────────────────────────────────────────────
+# accessible=True  → works with standard API key
+# accessible=False → exists but usually requires premium key logic
+MODELS = [
+    {"id": "llama3.1-8b",                    "name": "Llama 3.1 8B (Cerebras)",         "accessible": True, "api_provider": "cerebras"},
+    {"id": "gemini-2.5-flash",               "name": "Gemini 2.5 Flash (Google/Fast)", "accessible": True, "api_provider": "gemini"},
+    {"id": "gemini-2.5-pro",                 "name": "Gemini 2.5 Pro (Google/Better)","accessible": True, "api_provider": "gemini"},
+    {"id": "llama-4-scout-17b-16e-instruct", "name": "Llama 4 Scout 17B (Cerebras)",    "accessible": False, "api_provider": "cerebras"},
+    {"id": "llama3.3-70b",                   "name": "Llama 3.3 70B (Cerebras)",        "accessible": False, "api_provider": "cerebras"},
+    {"id": "llama3.1-70b",                   "name": "Llama 3.1 70B (Cerebras)",        "accessible": False, "api_provider": "cerebras"},
+    {"id": "deepseek-r1-distill-llama-70b",  "name": "DeepSeek R1 Distill Llama 70B",   "accessible": False, "api_provider": "cerebras"},
+    {"id": "qwen-3-32b",                     "name": "Qwen 3 32B (Cerebras)",           "accessible": False, "api_provider": "cerebras"},
 ]
 
 SYSTEM_PROMPT = (
@@ -94,64 +104,252 @@ SYSTEM_PROMPT = (
     "7. Write in second or third person as appropriate to match the original summary."
 )
 
+# ── Medical Pipeline Preprocessing ────────────────────────────────────────────
+INDIAN_LAY_DICT = {
+    # Conditions
+    "hypertension":                  "high BP",
+    "diabetes mellitus":             "sugar disease (diabetes)",
+    "myocardial infarction":         "heart attack",
+    "acute renal failure":           "sudden kidney failure",
+    "chronic renal failure":         "long-term kidney problem",
+    "septicemia":                    "blood infection (sepsis)",
+    "sepsis":                        "serious blood infection",
+    "pneumonia":                     "lung infection",
+    "tuberculosis":                  "TB (tuberculosis)",
+    "pneumothorax":                  "air trapped in chest",
+    "endocarditis":                  "infection of heart valves",
+    "spondylodiscitis":              "spine bone infection",
+    "hypotension":                   "low BP",
+    "pyrexia":                       "fever",
+    "dyspnea":                       "difficulty in breathing",
+    "edema":                         "swelling",
+    "abscess":                       "pus-filled swelling",
+    "crohn's disease":               "long-term bowel disease (Crohn's)",
+    "renal failure":                 "kidney failure",
+    "cerebrovascular accident":      "brain stroke",
+    "anemia":                        "low blood (anemia)",
+    "tachycardia":                   "fast heartbeat",
+    "bradycardia":                   "slow heartbeat",
+    "atrial fibrillation":           "irregular heartbeat",
+    # Procedures & Treatments
+    "hemodialysis":                  "kidney dialysis",
+    "tracheostomy":                  "breathing tube in neck",
+    "thoracotomy":                   "chest surgery",
+    "pneumonectomy":                 "removal of a lung",
+    "ileocolectomy":                 "removal of part of bowel",
+    "anastomosis":                   "surgical joining of bowel ends",
+    "debridement":                   "surgical wound cleaning",
+    "arteriovenous fistula":         "dialysis access point on arm",
+    "intramuscular":                 "given as a muscle injection",
+    "intravenous":                   "given through a vein (drip)",
+    "percutaneous":                  "through the skin",
+    "antibiotic therapy":            "antibiotic treatment",
+    "antibiotic":                    "infection-fighting medicine",
+    # Lab & Medical Terms
+    "blood culture":                 "blood test to find infection",
+    "procalcitonin":                 "blood marker for infection",
+    "hemoglobin":                    "blood count (Hb)",
+    "creatinine":                    "kidney function marker",
+    "bilirubin":                     "liver function marker",
+    "saturation":                    "oxygen level in blood",
+    "afebrile":                      "no fever",
+    "eupneic":                       "breathing normally",
+    "acyanotic":                     "no bluish discoloration",
+    "anicteric":                     "no yellowing of skin/eyes",
+    "vesicular breath sounds":       "normal breathing sounds",
+    # Hospital / Admin Terms
+    "discharge":                     "sent home from hospital",
+    "outpatient clinic":             "OPD (Out Patient Department)",
+    "follow-up":                     "return visit to doctor",
+    "ward":                          "general hospital room",
+    "intensive care unit":           "ICU (serious care room)",
+    "sus":                           "government health scheme",
+    "orally":                        "by mouth",
+    "administer":                    "give",
+}
+
+def preprocess_medical_text(text):
+    if not isinstance(text, str):
+        return ""
+    # Lowercase and collapse whitespace
+    text_clean = re.sub(r"\s+", " ", text.lower()).strip()
+    
+    # Replace dictionary terms longest-first
+    for key in sorted(INDIAN_LAY_DICT.keys(), key=len, reverse=True):
+        text_clean = text_clean.replace(key, INDIAN_LAY_DICT[key])
+        
+    return text_clean
+
+# ── Load Examples for Few-Shot Prompting ──────────────────────────────────────
+ALL_EXAMPLES = []
+try:
+    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "data.tsv")
+    with open(data_path, "r", encoding="utf-8") as f:
+        reader = csv.reader(f, delimiter="\t")
+        headers = next(reader)
+        # Find column indices
+        orig_idx = headers.index("original")
+        simp_idx = headers.index("english simplified")
+        for row in reader:
+            if len(row) > max(orig_idx, simp_idx):
+                original = row[orig_idx].strip()
+                simplified = row[simp_idx].strip()
+                if original and simplified:
+                    ALL_EXAMPLES.append((original, simplified))
+except Exception as e:
+    print(f"Warning: Could not load data.tsv for few-shot examples... {e}")
+
+def get_best_examples(text, num_examples, selection_method):
+    if not ALL_EXAMPLES:
+        return []
+    if num_examples >= len(ALL_EXAMPLES):
+        return ALL_EXAMPLES
+        
+    if selection_method == "random":
+        return random.sample(ALL_EXAMPLES, num_examples)
+        
+    elif selection_method == "similarity":
+        # Pure Python Jaccard similarity based on words
+        text_words = set(text.lower().split())
+        
+        def calc_sim(ex):
+            orig_words = set(ex[0].lower().split())
+            if not text_words or not orig_words: return 0
+            return len(text_words.intersection(orig_words)) / len(text_words.union(orig_words))
+            
+        scored_examples = [(ex, calc_sim(ex)) for ex in ALL_EXAMPLES]
+        scored_examples.sort(key=lambda x: x[1], reverse=True)
+        return [ex for ex, score in scored_examples[:num_examples]]
+        
+    # Default fallback (first N)
+    return ALL_EXAMPLES[:num_examples]
+
+def build_prompt_string(strategy, text, selection_method="random"):
+    """
+    Build a unified prompt string incorporating few-shot examples if requested.
+    """
+    prompt = SYSTEM_PROMPT + "\n\n"
+    if strategy in ["one-shot", "few-shot"] and ALL_EXAMPLES:
+        num_examples = 1 if strategy == "one-shot" else min(3, len(ALL_EXAMPLES))
+        examples = get_best_examples(text, num_examples, selection_method)
+        
+        prompt += "Here are some examples of what I expect:\n\n"
+        for i, (original, simplified) in enumerate(examples):
+            prompt += f"--- Example {i+1} ---\nOriginal Medical Text:\n{original}\n\nSimplified:\n{simplified}\n\n"
+            
+    prompt += f"--- Your Task ---\nPlease simplify the following discharge summary into Indian Lay English:\n\nOriginal Medical Text:\n{text}\n\nSimplified:\n"
+    return prompt
+
 # ── Routes ────────────────────────────────────────────────────────────────────
 
 @app.route("/api/models")
 def get_models():
-    return jsonify({"models": CEREBRAS_MODELS})
+    return jsonify({"models": MODELS})
 
 
 @app.route("/api/simplify", methods=["POST"])
 def simplify():
-    if Cerebras is None:
-        return jsonify({"error": "cerebras-cloud-sdk is not installed on the server."}), 500
-
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Invalid JSON body."}), 400
 
-    api_key = os.getenv("CEREBRAS_API_KEY", "").strip()
-    if not api_key:
-        return jsonify({"error": "Cerebras API key is not configured on the server."}), 500
-
-    text = str(data.get("text", "")).strip()
-    if not text:
+    raw_text = str(data.get("text", "")).strip()
+    if not raw_text:
         return jsonify({"error": "Discharge summary text cannot be empty."}), 400
+        
+    # Apply Pipeline Preprocessing to standardize input constraint
+    text = preprocess_medical_text(raw_text)
+
+    api_provider = str(data.get("api_provider", "auto")).strip().lower()
+    strategy = str(data.get("strategy", "zero-shot")).strip().lower() # zero-shot, one-shot, few-shot
+    selection_method = str(data.get("selection_method", "random")).strip().lower() # random, similarity
 
     model_id = str(data.get("model", "llama3.1-8b")).strip()
+    model_info = next((m for m in MODELS if m["id"] == model_id), None)
+    
+    # If frontend sent a specific model, we can try to guess its provider
+    if model_info and "api_provider" in model_info and api_provider == "auto":
+        api_provider = model_info["api_provider"]
+
+    # ── Try Cerebras first ────────────────────────────────────────────────
+    if api_provider == "cerebras" or api_provider == "auto":
+        if Cerebras is not None:
+            cerebras_key = os.getenv("CEREBRAS_API_KEY", "").strip()
+            if cerebras_key:
+                try:
+                    return _call_cerebras(text, model_id, cerebras_key, strategy, selection_method)
+                except Exception as e:
+                    if api_provider == "cerebras":
+                        return jsonify({"error": f"Cerebras error: {str(e)}"}), 500
+                    # If "auto", fall through to Gemini
+
+    # ── Fall back to Gemini ───────────────────────────────────────────────
+    if api_provider == "gemini" or api_provider == "auto":
+        if genai is not None:
+            gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+            if gemini_key:
+                try:
+                    # Provide Gemini model explicitly, default to flash if not found
+                    gemini_model = model_id if "gemini" in model_id else "gemini-2.5-flash"
+                    return _call_gemini(text, gemini_model, gemini_key, strategy, selection_method)
+                except Exception as e:
+                    return jsonify({"error": f"Gemini error: {str(e)}"}), 500
+
+    # ── No valid API configured ───────────────────────────────────────────
+    return jsonify({"error": "No valid API configured. Set CEREBRAS_API_KEY or GEMINI_API_KEY in .env"}), 500
+
+
+def _call_cerebras(text, model_id, api_key, strategy="zero-shot", selection_method="random"):
+    """Call Cerebras API."""
+    if Cerebras is None:
+        raise Exception("cerebras-cloud-sdk is not installed")
 
     # Reject if model is not accessible
-    model_info = next((m for m in CEREBRAS_MODELS if m["id"] == model_id), None)
+    model_info = next((m for m in MODELS if m["id"] == model_id), None)
     if model_info and not model_info["accessible"]:
-        return jsonify({
-            "error": (
-                f"'{model_info['name']}' is not accessible with your current API key. "
-                "Please select Llama 3.1 8B."
-            )
-        }), 403
-
-    try:
-        client = Cerebras(api_key=api_key)
-        response = client.chat.completions.create(
-            model=model_id,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {
-                    "role": "user",
-                    "content": (
-                        "Please simplify the following discharge summary into "
-                        "Indian Lay English:\n\n" + text
-                    ),
-                },
-            ],
-            max_tokens=2048,
-            temperature=0.3,
+        raise Exception(
+            f"'{model_info['name']}' is not accessible with your current API key. "
+            "Please select Llama 3.1 8B."
         )
-        simplified = response.choices[0].message.content
-        tokens_used = getattr(response.usage, "total_tokens", None)
-        return jsonify({"result": simplified, "model": model_id, "tokens": tokens_used})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+
+    client = Cerebras(api_key=api_key)
+    
+    # Use identical prompt generation for both Cerebras and Gemini
+    prompt_content = build_prompt_string(strategy, text, selection_method)
+    
+    response = client.chat.completions.create(
+        model=model_id,
+        messages=[
+            {"role": "user", "content": prompt_content},
+        ],
+        max_tokens=2048,
+        temperature=0.3,
+    )
+    simplified = response.choices[0].message.content
+    tokens_used = getattr(response.usage, "total_tokens", None)
+    return jsonify({"result": simplified, "model": "llama3.1-8b (Cerebras)", "tokens": tokens_used})
+
+
+def _call_gemini(text, model_id, api_key, strategy="zero-shot", selection_method="random"):
+    """Call Google Gemini API."""
+    if genai is None:
+        raise Exception("google-generativeai is not installed")
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(model_id)
+    
+    prompt_content = build_prompt_string(strategy, text, selection_method)
+    
+    response = model.generate_content(
+        prompt_content,
+        generation_config=genai.types.GenerationConfig(
+            max_output_tokens=2048,
+            temperature=0.3,
+        ),
+    )
+    
+    simplified = response.text
+    return jsonify({"result": simplified, "model": f"{model_id} (Google)", "tokens": None})
 
 
 if __name__ == "__main__":
