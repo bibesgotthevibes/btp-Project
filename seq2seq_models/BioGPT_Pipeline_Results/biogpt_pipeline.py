@@ -18,7 +18,8 @@ KEY DIFFERENCE vs PEGASUS/BART pipelines:
 # ═══════════════════════════════════════════════════════════════
 import subprocess, sys, os
 
-os.environ["HF_TOKEN"] = "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"
+# add your hugging face token here
+os.environ["HF_TOKEN"] = ""
 
 # Single-GPU: prevents DataParallel gradient-reduction OOM on Kaggle T4×2
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"

@@ -15,7 +15,9 @@ Platform: Kaggle Notebook (GPU T4 x2 or P100)
 #     a warning in spacy 3.x (not an error). We install with --no-deps
 #     to skip the version resolver entirely.
 import subprocess, sys, os
-os.environ["HF_TOKEN"] = "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"
+
+# add your hugging face token here
+os.environ["HF_TOKEN"] = ""
 
 def _pip(*args):
     """Run pip silently."""

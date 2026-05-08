@@ -19,7 +19,8 @@ KEY FACTS ABOUT FLAN-T5-base:
 # ═══════════════════════════════════════════════════════════════
 import subprocess, sys, os
 
-os.environ["HF_TOKEN"] = "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"
+# add your hugging face token here
+os.environ["HF_TOKEN"] = ""
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 

@@ -22,7 +22,8 @@ KEY FACTS ABOUT SciFive:
 # ═══════════════════════════════════════════════════════════════
 import subprocess, sys, os
 
-os.environ["HF_TOKEN"] = "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"
+# add your hugging face token here
+os.environ["HF_TOKEN"] = ""
 
 # Single-GPU: prevents DataParallel overhead on Kaggle T4×2
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
