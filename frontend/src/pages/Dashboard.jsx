@@ -90,7 +90,7 @@ export default function Dashboard({ user, setUser }) {
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Paste a clinical discharge summary and get a patient-friendly explanation in
-            Indian Lay English, powered by Cerebras LLMs.
+            Indian Lay English, powered by Local and Cloud AI models.
           </p>
         </div>
 
@@ -211,7 +211,7 @@ export default function Dashboard({ user, setUser }) {
                 <Loader size="lg" />
                 <div className="text-center">
                   <p className="text-sm font-medium text-gray-600">
-                    Simplifying with Cerebras AI…
+                    Simplifying using the selected AI model…
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
                     This usually takes a few seconds

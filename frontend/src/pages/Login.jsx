@@ -14,7 +14,7 @@ const Illustration = () => (
       patients and their families.
     </p>
     <div className="mt-8 grid grid-cols-2 gap-3 text-xs">
-      {['Cerebras AI', 'JWT Auth', 'PDF Export', 'Indian Lay English'].map((f) => (
+      {['Cloud & Local AI', 'JWT Auth', 'PDF Export', 'Indian Lay English'].map((f) => (
         <div
           key={f}
           className="bg-white/15 rounded-xl px-3 py-2 font-medium text-white"

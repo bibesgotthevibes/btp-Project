@@ -29,7 +29,10 @@ def generate_scifive_chunked(text, model, tokenizer, device):
         inp = chunk_with_prefix.unsqueeze(0).to(device)
         attn = torch.ones_like(inp)
         n_tokens = inp.shape[-1]
-        dyn_min  = max(20, int(n_tokens * 0.55))
+        chunk_body_len = chunk_body.shape[0]
+        
+        # Prevent forcing long sequences on very short trailing chunks (avoids babbling)
+        dyn_min = max(5, int(n_tokens * 0.55)) if chunk_body_len > 25 else 0
 
         with torch.no_grad():
             out_ids = model.generate(
@@ -39,7 +42,7 @@ def generate_scifive_chunked(text, model, tokenizer, device):
                 min_length=dyn_min,
                 num_beams=4,
                 length_penalty=1.5,
-                early_stopping=False,
+                early_stopping=True,
                 no_repeat_ngram_size=4,
             )
             
@@ -80,7 +83,10 @@ def generate_biobart_chunked(text, model, tokenizer, device):
         inp = chunk_with_eos.unsqueeze(0).to(device)
         attn = torch.ones_like(inp)
         n_tokens = inp.shape[-1]
-        dyn_min  = max(20, int(n_tokens * 0.55))
+        chunk_body_len = chunk_body.shape[0]
+        
+        # Prevent forcing long sequences on very short trailing chunks
+        dyn_min = max(5, int(n_tokens * 0.55)) if chunk_body_len > 25 else 0
 
         with torch.no_grad():
             out_ids = model.generate(
@@ -90,7 +96,7 @@ def generate_biobart_chunked(text, model, tokenizer, device):
                 min_length=dyn_min,
                 num_beams=4,
                 length_penalty=1.5,
-                early_stopping=False,
+                early_stopping=True,
                 no_repeat_ngram_size=4,
             )
             
@@ -131,9 +137,10 @@ def generate_biogpt_chunked(text, model, tokenizer, device):
         inp = chunk_with_prompt.unsqueeze(0).to(device)
         attn = torch.ones_like(inp)
         prompt_len = inp.shape[-1]
+        chunk_body_len = chunk_body.shape[0]
         
-        # dyn_min_new logic for causal LM min_new_tokens scaling
-        dyn_min_new = max(20, int((prompt_len - 15) * 0.55))
+        # dyn_min_new logic for causal LM: skip for short trailing chunks
+        dyn_min_new = max(5, int((prompt_len - 15) * 0.55)) if chunk_body_len > 25 else 0
 
         with torch.no_grad():
             out_ids = model.generate(
@@ -143,7 +150,7 @@ def generate_biogpt_chunked(text, model, tokenizer, device):
                 min_new_tokens=dyn_min_new,
                 num_beams=4,
                 length_penalty=1.5,
-                early_stopping=False,
+                early_stopping=True,
                 no_repeat_ngram_size=4,
             )
             

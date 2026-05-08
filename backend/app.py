@@ -94,28 +94,44 @@ MODELS = [
     {"id": "llama3.1-8b",           "name": "Llama 3.1 8B",                 "accessible": True, "api_provider": "cerebras"},
     # ── Google Gemini ─────────────────────────────────────────────────────────
     {"id": "gemini-2.5-flash",      "name": "Gemini 2.5 Flash",             "accessible": True, "api_provider": "gemini"},
-    {"id": "gemini-2.5-pro",        "name": "Gemini 2.5 Pro",               "accessible": True, "api_provider": "gemini"},
     # ── Groq ──────────────────────────────────────────────────────────────────
     {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B (Groq)",      "accessible": True, "api_provider": "groq"},
     {"id": "llama-3.1-8b-instant",  "name": "Llama 3.1 8B Instant (Groq)", "accessible": True, "api_provider": "groq"},
-    {"id": "mixtral-8x7b-32768",    "name": "Mixtral 8x7B (Groq)",         "accessible": True, "api_provider": "groq"},
 ]
 
 SYSTEM_PROMPT = (
     "You are a medical language simplification assistant. Convert the following "
-    "clinical discharge summary into simple, plain Indian Lay English for patients "
-    "and their families.\n\n"
+    "clinical discharge summary into simple, plain Indian English for the patient's "
+    "family members.\n\n"
     "Rules:\n"
     "1. Keep every medical term but immediately explain it in plain words in "
-    "parentheses, e.g. 'hypertension (high BP)'.\n"
-    "2. Use simple language a 6th-grader can understand. Avoid jargon.\n"
-    "3. Preserve ALL factual information — never add or remove clinical facts.\n"
-    "4. Write as continuous plain prose paragraphs — no bullet points, no section "
+    "parentheses on first use only, e.g. 'hypertension (high BP)'.\n"
+    "2. Use simple language a 6th-grader can understand. Avoid jargon. Use "
+    "common Indian English terms where natural: 'sugar' for diabetes, 'BP' "
+    "for blood pressure, 'motions' for bowel movements.\n"
+    "3. Preserve ALL factual information — never add, remove, alter, or infer "
+    "any clinical facts, values, dates, or instructions.\n"
+    "4. Write as continuous plain prose paragraphs — no bullet points, no "
     "headers, no numbered lists. Output only the simplified text, nothing else.\n"
-    "5. For any measurement (e.g. blood pressure, blood sugar), add brief context "
-    "about what is normal vs. abnormal.\n"
-    "6. Use empathetic, reassuring language.\n"
-    "7. Write in second or third person as appropriate to match the original summary."
+    "5. For any measurement (e.g. BP, blood sugar, heart rate), briefly state "
+    "what the normal range is and whether the patient's value was within it.\n"
+    "6. Use a calm, respectful tone. Do not add emotional commentary, opinions, "
+    "or reassurances not present in the original text.\n"
+    "7. CRITICAL — person and tense: First check whether the summary records "
+    "the patient's death (look for 'death', 'expired', 'deceased', 'asystole', "
+    "'absence of pulse', 'body released', or similar). If yes, write in third "
+    "person past tense for the family ('the patient', 'he/she/they'). If no, "
+    "address the patient directly in second person ('you', 'your').\n"
+    "8. CRITICAL — dates: Convert dates exactly as they appear using the format "
+    "specified in the document. If no format is specified, treat as MM/DD. "
+    "Never guess or infer a date not explicitly stated.\n"
+    "9. For each medication, state its name and purpose in plain language, "
+    "e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n"
+    "10. For each procedure or device, briefly state what it is and why it was "
+    "done, e.g. 'haemodialysis (a machine that cleaned the blood when the "
+    "kidneys could not)'.\n"
+    "11. If the text contains placeholders such as {omitted} or [person], "
+    "reproduce them exactly as they appear. Do not guess or replace them.\n"
 )
 
 # ── SciFive Local Model Cache ─────────────────────────────────────────────────
@@ -399,6 +415,11 @@ def build_prompt_string(strategy, text, selection_method="random"):
         for i, (orig, simp) in enumerate(FIXED_EXAMPLES):
             prompt += f"--- Example {i+1} ---\nOriginal Medical Text:\n{orig}\n\nSimplified:\n{simp}\n\n"
     prompt += f"--- Your Task ---\nPlease simplify the following discharge summary into Indian Lay English:\n\nOriginal Medical Text:\n{text}\n\nSimplified:\n"
+    
+    # Print to terminal so you can verify the strategies are actually changing the prompt size
+    print(f"\n[DEBUG] build_prompt_string called with strategy: {strategy}")
+    print(f"[DEBUG] Generated prompt length: {len(prompt)} characters\n")
+    
     return prompt
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -567,7 +588,7 @@ def _call_gemini(text, model_id, api_key, strategy="zero-shot", selection_method
         model=model_id,
         contents=prompt_content,
         config=genai_types.GenerateContentConfig(
-            max_output_tokens=2048,
+            max_output_tokens=8192,
             temperature=0.3,
         ),
     )

@@ -15,7 +15,7 @@ const Illustration = () => (
     </p>
     <div className="mt-8 space-y-2 text-sm text-left">
       {[
-        '✓ Powered by Cerebras LLMs',
+        '✓ Powered by Cloud & Local LLMs',
         '✓ Indian Lay English output',
         '✓ Downloadable PDF reports',
         '✓ Secure JWT authentication',
