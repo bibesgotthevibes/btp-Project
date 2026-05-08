@@ -53,5 +53,6 @@ slides_pipeline.tex
 
 # Local-only model assets and non-project workspace content
 BioBART/
+BioGPT/
 SciFive/
 YADA/

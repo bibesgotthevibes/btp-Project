@@ -34,12 +34,13 @@ except ImportError:
 
 try:
     import torch
-    from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+    from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForCausalLM
 except ImportError:
     torch = None
 
 from db import db
 from auth import auth_bp
+from chunking_logic import generate_scifive_chunked, generate_biobart_chunked, generate_biogpt_chunked
 
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
@@ -81,6 +82,7 @@ MODELS = [
     # ── Allowed models only ───────────────────────────────────────────────────
     {"id": "scifive-local", "name": "SciFive (Local T5)", "accessible": True, "api_provider": "local"},
     {"id": "biobart-local", "name": "BioBART (Local)", "accessible": True, "api_provider": "local"},
+    {"id": "biogpt-local", "name": "BioGPT (Local)", "accessible": True, "api_provider": "local"},
     {"id": "llama3.1-8b", "name": "Llama 3.1 8B", "accessible": True, "api_provider": "cerebras"},
 ]
 
@@ -111,6 +113,8 @@ SCIFIVE_MODEL = None
 SCIFIVE_TOKENIZER = None
 BIOBART_MODEL = None
 BIOBART_TOKENIZER = None
+BIOGPT_MODEL = None
+BIOGPT_TOKENIZER = None
 
 def load_scifive():
     """Load SciFive model and tokenizer once, cache in memory."""
@@ -119,20 +123,28 @@ def load_scifive():
         return SCIFIVE_MODEL, SCIFIVE_TOKENIZER
     
     if torch is None:
-        raise Exception("torch and transformers are not installed")
+        print("[SciFive] torch and transformers are not installed")
+        return None, None
     
     model_path = os.path.join(os.path.dirname(__file__), "..", "SciFive", "model")
-    if not os.path.isdir(model_path):
-        raise FileNotFoundError(f"SciFive model not found at {model_path}")
+    hf_fallback = "razent/SciFive-base-Pubmed_Pmc"
     
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
-        SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
-        print(f"[SciFive] Model loaded from {model_path} on {device}")
+        if os.path.isdir(model_path):
+            SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
+            SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
+            print(f"[SciFive] Model loaded from local path {model_path} on {device}")
+        else:
+            print(f"[SciFive] Local path not found. Downloading from HF: {hf_fallback}")
+            SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
+            SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback).to(device)
+            print(f"[SciFive] Model downloaded from HF {hf_fallback} on {device}")
+            
         return SCIFIVE_MODEL, SCIFIVE_TOKENIZER
     except Exception as e:
-        raise Exception(f"Failed to load SciFive model from {model_path}: {str(e)}")
+        print(f"[SciFive] Failed to load model: {str(e)}")
+        return None, None
 
 
 def _resolve_biobart_model_path():
@@ -151,11 +163,7 @@ def _resolve_biobart_model_path():
             if has_model and has_tokenizer:
                 return path
 
-    raise FileNotFoundError(
-        f"No usable BioBART model found under {base_path}. "
-        "Expected model.safetensors and tokenizer.json in model/ or checkpoint folder."
-    )
-
+    return None
 
 def load_biobart():
     """Load BioBART model and tokenizer once, cache in memory."""
@@ -164,18 +172,75 @@ def load_biobart():
         return BIOBART_MODEL, BIOBART_TOKENIZER
 
     if torch is None:
-        raise Exception("torch and transformers are not installed")
+        print("[BioBART] torch and transformers are not installed")
+        return None, None
 
     model_path = _resolve_biobart_model_path()
+    hf_fallback = "GanjinZero/biobart-v2-base"
 
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
-        BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
-        print(f"[BioBART] Model loaded from {model_path} on {device}")
+        if model_path:
+            BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
+            BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(model_path).to(device)
+            print(f"[BioBART] Model loaded from local path {model_path} on {device}")
+        else:
+            print(f"[BioBART] Local path not found. Downloading from HF: {hf_fallback}")
+            BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
+            BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback).to(device)
+            print(f"[BioBART] Model downloaded from HF {hf_fallback} on {device}")
+            
         return BIOBART_MODEL, BIOBART_TOKENIZER
     except Exception as e:
-        raise Exception(f"Failed to load BioBART model from {model_path}: {str(e)}")
+        print(f"[BioBART] Failed to load model: {str(e)}")
+        return None, None
+
+def _resolve_biogpt_model_path():
+    """Find a usable BioGPT model directory from extracted files."""
+    base_path = os.path.join(os.path.dirname(__file__), "..", "BioGPT", "model")
+    candidates = [base_path]
+
+    for checkpoint in ["checkpoint-11250", "checkpoint-4500"]:
+        candidates.append(os.path.join(base_path, checkpoint))
+
+    for path in candidates:
+        if os.path.isdir(path):
+            has_model = os.path.isfile(os.path.join(path, "model.safetensors"))
+            has_tokenizer = os.path.isfile(os.path.join(path, "tokenizer_config.json")) or os.path.isfile(os.path.join(path, "vocab.json"))
+            if has_model and has_tokenizer:
+                return path
+
+    return None
+
+def load_biogpt():
+    """Load BioGPT model and tokenizer once, cache in memory."""
+    global BIOGPT_MODEL, BIOGPT_TOKENIZER
+    if BIOGPT_MODEL is not None:
+        return BIOGPT_MODEL, BIOGPT_TOKENIZER
+
+    if torch is None:
+        print("[BioGPT] torch and transformers are not installed")
+        return None, None
+
+    model_path = _resolve_biogpt_model_path()
+    hf_fallback = "microsoft/biogpt"
+
+    try:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if model_path:
+            BIOGPT_TOKENIZER = AutoTokenizer.from_pretrained(model_path)
+            BIOGPT_MODEL = AutoModelForCausalLM.from_pretrained(model_path).to(device)
+            print(f"[BioGPT] Model loaded from local path {model_path} on {device}")
+        else:
+            print(f"[BioGPT] Local path not found. Downloading from HF: {hf_fallback}")
+            BIOGPT_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
+            BIOGPT_MODEL = AutoModelForCausalLM.from_pretrained(hf_fallback).to(device)
+            print(f"[BioGPT] Model downloaded from HF {hf_fallback} on {device}")
+            
+        return BIOGPT_MODEL, BIOGPT_TOKENIZER
+    except Exception as e:
+        print(f"[BioGPT] Failed to load model: {str(e)}")
+        return None, None
 
 # ── Medical Pipeline Preprocessing ────────────────────────────────────────────
 INDIAN_LAY_DICT = {
@@ -345,10 +410,12 @@ def simplify():
         api_provider = model_info["api_provider"]
 
     # ── Try Local Models first ────────────────────────────────────────────────
-    if api_provider == "local" or (api_provider == "auto" and model_id in ["scifive-local", "biobart-local"]):
+    if api_provider == "local" or (api_provider == "auto" and model_id in ["scifive-local", "biobart-local", "biogpt-local"]):
         try:
             if model_id == "biobart-local":
                 return _call_biobart(text, strategy, selection_method)
+            elif model_id == "biogpt-local":
+                return _call_biogpt(text, strategy, selection_method)
             return _call_scifive(text, strategy, selection_method)
         except Exception as e:
             if api_provider == "local":
@@ -386,22 +453,12 @@ def simplify():
 def _call_scifive(text, strategy="zero-shot", selection_method="random"):
     """Call local SciFive model (fine-tuned T5)."""
     model, tokenizer = load_scifive()
+    if model is None or tokenizer is None:
+        return jsonify({"error": "SciFive model is currently unavailable."}), 503
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
-    # Add T5 task prefix as per SciFive convention
-    input_text = f"simplify: {text}"
-    
-    # Tokenize and generate
-    inputs = tokenizer(input_text, max_length=512, truncation=True, return_tensors="pt").to(device)
-    outputs = model.generate(
-        **inputs,
-        max_length=512,
-        num_beams=4,
-        early_stopping=True,
-        temperature=0.3,
-    )
-    
-    simplified = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    simplified = generate_scifive_chunked(text, model, tokenizer, device)
     
     model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
     display_name = model_info["name"] if model_info else "SciFive"
@@ -412,20 +469,31 @@ def _call_scifive(text, strategy="zero-shot", selection_method="random"):
 def _call_biobart(text, strategy="zero-shot", selection_method="random"):
     """Call local BioBART model."""
     model, tokenizer = load_biobart()
+    if model is None or tokenizer is None:
+        return jsonify({"error": "BioBART model is currently unavailable."}), 503
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    inputs = tokenizer(text, max_length=512, truncation=True, return_tensors="pt").to(device)
-    outputs = model.generate(
-        **inputs,
-        max_length=512,
-        num_beams=4,
-        early_stopping=True,
-    )
-
-    simplified = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    simplified = generate_biobart_chunked(text, model, tokenizer, device)
 
     model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
     display_name = model_info["name"] if model_info else "BioBART"
+
+    return jsonify({"result": simplified, "model": display_name, "tokens": None})
+
+
+def _call_biogpt(text, strategy="zero-shot", selection_method="random"):
+    """Call local BioGPT model."""
+    model, tokenizer = load_biogpt()
+    if model is None or tokenizer is None:
+        return jsonify({"error": "BioGPT model is currently unavailable."}), 503
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    simplified = generate_biogpt_chunked(text, model, tokenizer, device)
+
+    model_info = next((m for m in MODELS if m["id"] == "biogpt-local"), None)
+    display_name = model_info["name"] if model_info else "BioGPT"
 
     return jsonify({"result": simplified, "model": display_name, "tokens": None})
 
