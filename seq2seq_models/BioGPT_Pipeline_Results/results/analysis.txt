@@ -1,0 +1,32 @@
+
+=================================================================
+                    PIPELINE SUMMARY REPORT
+=================================================================
+  Model used                       : microsoft/biogpt
+  Total summaries processed        : 200
+  Fine-tuning samples used         : 10000
+
+  [READABILITY & COMPRESSION SCORES]
+  Avg Flesch (original)            : 20.24
+  Avg Flesch (simplified)          : 61.77
+  Avg Flesch improvement           : 41.53
+  Summaries with Flesch improvement: 200 / 200
+
+  Avg word count (original)        : 598.7
+  Avg word count (simplified)      : 567.9
+  Avg compression ratio            : 0.946
+
+  [TOP MEDICAL ENTITIES]
+    person                                    —  1202
+    organization                              —  416
+    admission                                 —  369
+    negative                                  —  348
+    follow-up                                 —  296
+    discharge                                 —  269
+    days                                      —  252
+    antibiotic therapy                        —  223
+    ward                                      —  216
+    hospitalization                           —  214
+=================================================================
+  Pipeline finished successfully.
+=================================================================

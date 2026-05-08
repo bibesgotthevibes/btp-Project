@@ -44,11 +44,11 @@ data/
 data/data.tsv
 PMC-Patients-V2.json
 mtsamples.csv/
-anotated_dataset_v2.xlsx
-lay_english_pipeline_output.xlsx
+# anotated_dataset_v2.xlsx
+# lay_english_pipeline_output.xlsx
 predictions-t5-base.tsv
-results_1/
-results_2/
+# results_1/
+# results_2/
 slides_pipeline.tex
 
 # Local-only model assets and non-project workspace content
@@ -56,3 +56,9 @@ BioBART/
 BioGPT/
 SciFive/
 YADA/
+
+# Latex generated files
+*.aux
+*.log
+*.out
+*.toc

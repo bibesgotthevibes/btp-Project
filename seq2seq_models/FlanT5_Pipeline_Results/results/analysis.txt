@@ -1,0 +1,32 @@
+
+=================================================================
+                    PIPELINE SUMMARY REPORT
+=================================================================
+  Model used                       : google/flan-t5-base
+  Total summaries processed        : 200
+  Fine-tuning samples used         : 10000
+
+  [READABILITY & COMPRESSION SCORES]
+  Avg Flesch (original)            : 20.24
+  Avg Flesch (simplified)          : 12.69
+  Avg Flesch improvement           : -7.55
+  Summaries with Flesch improvement: 59 / 200
+
+  Avg word count (original)        : 598.7
+  Avg word count (simplified)      : 781.7
+  Avg compression ratio            : 1.327
+
+  [TOP MEDICAL ENTITIES]
+    person                                    —  1202
+    organization                              —  416
+    admission                                 —  369
+    negative                                  —  348
+    follow-up                                 —  296
+    discharge                                 —  269
+    days                                      —  252
+    antibiotic therapy                        —  223
+    ward                                      —  216
+    hospitalization                           —  214
+=================================================================
+  Pipeline finished successfully.
+=================================================================

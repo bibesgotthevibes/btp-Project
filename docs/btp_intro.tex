@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in, top=0.5in}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\title{BTP-1 Report}
+\author{Arnav Deshmukh \quad Bibek Singh Dhody \quad Raghav Grover \quad Sanyam Agrawal}
+\date{May 8, 2026}
+
+\begin{document}
+
+\maketitle
+
+\vspace{2em}
+
+\noindent {\LARGE \textbf{Introduction}}
+
+\vspace{1.5em}
+
+\noindent This report serves as the comprehensive documentation for our BTP-1. As part of BTP-1 we implemented 3 separate tasks as given below:-
+
+\begin{enumerate}[label=\textbf{Task \arabic*:}, leftmargin=2cm]
+    \item \textbf{Knowledge Graph Paper Implementations:} For this task each member implemented a separate research paper related to Knowledge Graphs. The papers are:-
+    \begin{itemize}
+        \item Automated Knowledge Graph Construction Pipeline Using Large Language Models (\href{https://arxiv.org/pdf/2403.08345}{link})
+        \item Integrating Knowledge Graphs and Vector Retrieval for Enhanced Information Extraction from Financial Documents (\href{https://dl.acm.org/doi/pdf/10.1145/3677052.3698671}{link})
+        \item Scaling Up Knowledge Graph Creation to Large and Heterogeneous Data Sources (\href{https://www.sciencedirect.com/science/article/abs/pii/S1570826822000397}{link})
+        \item Knowledge Graph Creation from Free Text using Neo4j and Stanza (\href{https://dl.acm.org/doi/10.1145/3716554.3716624}{link})
+    \end{itemize}
+    \item \textbf{REXEL based Knowledge Graph Extraction Pipeline:} We developed an extraction pipeline leveraging the REXEL framework. This system was designed to transform unstructured textual data into structured knowledge representations, facilitating automated graph construction. Repository Link: \url{https://github.com/bibesgotthevibes/btp}
+    \item \textbf{Lay Language Conversion:} The final task focused on application of seq2seq and LLMs for the task of Lay Language Conversion for technical medical discharge summaries. We fine-tuned several seq2seq models including IndicBART, BioBART, BioGPT, SciFive and FlanT5. We also tried using LLMs like Llama, Gemini, Mistral for the same with zero shot and few shot prompting techniques. Repository Link: \url{https://github.com/bibesgotthevibes/btp-Project}
+\end{enumerate}
+
+\vspace{1.5em}
+\noindent \textbf{Report Organization} \\
+This document aggregates the individual reports for each of the aforementioned tasks. For the sake of importance, the content is organized in the following order:
+
+\begin{itemize}
+    \item {Lay Language Conversion}
+    \item {REXEL based Knowledge Graph Extraction Pipeline}
+    \item {Knowledge Graph Paper Implementations}
+\end{itemize}
+
+\vspace{1.5em}
+\noindent \textbf{Contributions} \\
+\begin{itemize}
+    \item Arnav Deshmukh: Task 1 (Automated Knowledge Graph Construction Pipeline Using Large Language Models), Task 2 (Implemented Neo4j graph materialization), Task 3 (Finding papers, datasets and fine tuning IndicBART model for lay language conversion task)
+    \item Bibek Singh Dhody: Task 1(Integrating Knowledge Graphs and Vector Retrieval for Enhanced Information Extraction from Financial Documents), Task 2 (Implemented phonetic correction, Developed the GraphJudge verification layer, and integrated the pipeline components prior to REXEL.), Task 3 (Building Demo Website for the Lay Language Conversion task)
+    \item Raghav Grover: Task 1 (Scaling Up Knowledge Graph Creation to Large and Heterogeneous Data Sources), Task 2 (Implemented upstream processing and denoising), Task 3 (Fine-tuned the seq2seq models: BioBART, BioGPT, SciFive and Flan-T5 for lay language conversion task and analyzed their failure modes)
+    \item Sanyam Agrawal: Task 1(Knowledge Graph Creation from Free Text using Neo4j and Stanza), Task 2 (Implemented the REXEL join-text extraction model, performed model training and checking pointing), Task 3 (Building Demo Website for the Lay Language Conversion task, LLM based method)
+\end{itemize}
+
+\end{document}
