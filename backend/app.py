@@ -28,9 +28,16 @@ except ImportError:
     Cerebras = None
 
 try:
-    import google.generativeai as genai
+    from google import genai as genai_client
+    from google.genai import types as genai_types
 except ImportError:
-    genai = None
+    genai_client = None
+    genai_types = None
+
+try:
+    from groq import Groq
+except ImportError:
+    Groq = None
 
 try:
     import torch
@@ -79,29 +86,32 @@ with app.app_context():
 # accessible=True  → works with standard API key
 # accessible=False → exists but usually requires premium key logic
 MODELS = [
-    # ── Allowed models only ───────────────────────────────────────────────────
-    {"id": "scifive-local", "name": "SciFive (Local T5)", "accessible": True, "api_provider": "local"},
-    {"id": "biobart-local", "name": "BioBART (Local)", "accessible": True, "api_provider": "local"},
-    {"id": "biogpt-local", "name": "BioGPT (Local)", "accessible": True, "api_provider": "local"},
-    {"id": "llama3.1-8b", "name": "Llama 3.1 8B", "accessible": True, "api_provider": "cerebras"},
+    # ── Local models ──────────────────────────────────────────────────────────
+    {"id": "scifive-local",         "name": "SciFive (Local T5)",          "accessible": True, "api_provider": "local"},
+    {"id": "biobart-local",         "name": "BioBART (Local)",              "accessible": True, "api_provider": "local"},
+    {"id": "biogpt-local",          "name": "BioGPT (Local)",               "accessible": True, "api_provider": "local"},
+    # ── Cerebras ──────────────────────────────────────────────────────────────
+    {"id": "llama3.1-8b",           "name": "Llama 3.1 8B",                 "accessible": True, "api_provider": "cerebras"},
+    # ── Google Gemini ─────────────────────────────────────────────────────────
+    {"id": "gemini-2.5-flash",      "name": "Gemini 2.5 Flash",             "accessible": True, "api_provider": "gemini"},
+    {"id": "gemini-2.5-pro",        "name": "Gemini 2.5 Pro",               "accessible": True, "api_provider": "gemini"},
+    # ── Groq ──────────────────────────────────────────────────────────────────
+    {"id": "llama-3.3-70b-versatile", "name": "Llama 3.3 70B (Groq)",      "accessible": True, "api_provider": "groq"},
+    {"id": "llama-3.1-8b-instant",  "name": "Llama 3.1 8B Instant (Groq)", "accessible": True, "api_provider": "groq"},
+    {"id": "mixtral-8x7b-32768",    "name": "Mixtral 8x7B (Groq)",         "accessible": True, "api_provider": "groq"},
 ]
 
 SYSTEM_PROMPT = (
-    "You are a medical language simplification assistant that converts complex "
-    "clinical discharge summaries into simple, easy-to-understand Indian Lay English "
-    "for patients and their families.\n\n"
+    "You are a medical language simplification assistant. Convert the following "
+    "clinical discharge summary into simple, plain Indian Lay English for patients "
+    "and their families.\n\n"
     "Rules:\n"
     "1. Keep every medical term but immediately explain it in plain words in "
-    "parentheses, e.g. 'hypertension (high blood pressure)'.\n"
+    "parentheses, e.g. 'hypertension (high BP)'.\n"
     "2. Use simple language a 6th-grader can understand. Avoid jargon.\n"
     "3. Preserve ALL factual information — never add or remove clinical facts.\n"
-    "4. Structure your output with clearly labelled sections:\n"
-    "   • Patient Summary\n"
-    "   • Diagnosis\n"
-    "   • Treatment Given\n"
-    "   • Medications\n"
-    "   • Follow-up Instructions\n"
-    "   • Warning Signs to Watch For\n"
+    "4. Write as continuous plain prose paragraphs — no bullet points, no section "
+    "headers, no numbered lists. Output only the simplified text, nothing else.\n"
     "5. For any measurement (e.g. blood pressure, blood sugar), add brief context "
     "about what is normal vs. abnormal.\n"
     "6. Use empathetic, reassuring language.\n"
@@ -236,7 +246,12 @@ def load_biogpt():
             BIOGPT_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
             BIOGPT_MODEL = AutoModelForCausalLM.from_pretrained(hf_fallback).to(device)
             print(f"[BioGPT] Model downloaded from HF {hf_fallback} on {device}")
-            
+
+        # BioGPT tokenizer has no default pad token — required for generation
+        if BIOGPT_TOKENIZER.pad_token is None:
+            BIOGPT_TOKENIZER.pad_token = BIOGPT_TOKENIZER.eos_token
+            BIOGPT_MODEL.config.pad_token_id = BIOGPT_TOKENIZER.eos_token_id
+
         return BIOGPT_MODEL, BIOGPT_TOKENIZER
     except Exception as e:
         print(f"[BioGPT] Failed to load model: {str(e)}")
@@ -318,63 +333,71 @@ def preprocess_medical_text(text):
         
     return text_clean
 
-# ── Load Examples for Few-Shot Prompting ──────────────────────────────────────
-ALL_EXAMPLES = []
-try:
-    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "data.tsv")
-    with open(data_path, "r", encoding="utf-8") as f:
-        reader = csv.reader(f, delimiter="\t")
-        headers = next(reader)
-        # Find column indices
-        orig_idx = headers.index("original")
-        simp_idx = headers.index("english simplified")
-        for row in reader:
-            if len(row) > max(orig_idx, simp_idx):
-                original = row[orig_idx].strip()
-                simplified = row[simp_idx].strip()
-                if original and simplified:
-                    ALL_EXAMPLES.append((original, simplified))
-except Exception as e:
-    print(f"Warning: Could not load data.tsv for few-shot examples... {e}")
+# ── Fixed Few-Shot Examples ───────────────────────────────────────────────────
+# 4 curated discharge summary → Indian Lay English pairs used for one-shot / few-shot prompting.
+# ONE-SHOT uses Example 4 (ACS/NSTEMI) — most clinically complex, best demonstrates depth expected.
+FIXED_EXAMPLES = [
+    (
+        # Example 1 — Acute Gastroenteritis with Dehydration
+        """Patient Name: Michael Smith | Age/Sex: 32/M | Admission: 02/03/2026 | Discharge: 05/03/2026
+C/O: Loose stools, vomiting, and abdominal cramps for 3 days.
+History: Multiple episodes of watery diarrhea with nausea, repeated vomiting, generalised weakness, and abdominal cramps. No blood in stools. No recent travel.
+Past History: Hypothyroidism (2 years).
+Examination: Temp 99.8°F | Pulse 112 bpm | BP 100/70 mmHg | RR 20/min | SpO₂ 98%.
+Investigations: CBC — mild leukocytosis. Serum Electrolytes — hyponatremia. Stool — no blood/parasites. RFT — mildly elevated creatinine due to dehydration.""",
+        """Michael Smith, a 32-year-old man, was admitted on 2nd March 2026 and sent home on 5th March 2026. He came in with 3 days of loose watery stools (loose motions), vomiting, stomach cramps, and weakness. He also has a thyroid problem (hypothyroidism — a condition where the thyroid gland does not make enough hormones, making the body feel slow and tired) for 2 years. On arrival, he had a mild fever (99.8°F; normal is 98.6°F), fast heartbeat (112 beats per minute; normal is 60–100), and low blood pressure (100/70 mmHg; normal is around 120/80). His blood oxygen level was normal at 98%. Blood tests showed a mild rise in infection-fighting white cells (leukocytosis) and low sodium (an important salt in the blood called hyponatremia), which can happen when too much fluid is lost from the body. Stool test showed no blood or infection-causing parasites. His kidney test showed mildly raised creatinine (a marker for kidney function) because of dehydration (lack of enough water in the body). He was treated with fluids and medicines and recovered well before being sent home."""
+    ),
+    (
+        # Example 2 — Acute Exacerbation of Bronchial Asthma
+        """Patient Name: Sarah Williams | Age/Sex: 28/F | Admission: 18/02/2026 | Discharge: 21/02/2026
+C/O: Wheezing, chest tightness, and breathlessness for 2 days.
+History: Worsening shortness of breath, wheezing, and dry cough after dust exposure. Home inhaler not relieving symptoms. No fever or chest pain.
+Past History: Bronchial Asthma since childhood. Allergic Rhinitis.
+Examination: Temp 98.6°F | Pulse 108 bpm | BP 130/84 mmHg | RR 28/min | SpO₂ 90%.
+Investigations: CBC — mild eosinophilia. Chest X-ray — hyperinflation. PEFR — reduced. ABG — mild hypoxemia.""",
+        """Sarah Williams, a 28-year-old woman, was admitted on 18th February 2026 and sent home on 21st February 2026. She has had asthma (a long-term condition where the breathing tubes become narrow and make breathing very difficult) since childhood and also has allergic rhinitis (nose allergy). She was brought in with 2 days of wheezing (a whistling sound while breathing), chest tightness, and difficulty in breathing after being exposed to dust. Her home inhaler was not helping enough. On admission, her breathing rate was fast (28 breaths per minute; normal is 12–20) and her blood oxygen level was low at 90% (normal should be above 95%), which means her body was not getting enough oxygen. Blood tests showed a mild rise in allergy cells (eosinophilia — a sign the body is reacting to something). A chest X-ray showed the lungs were over-inflated (hyperinflation — the lungs hold more air than normal during an asthma attack). A breathing speed test (Peak Expiratory Flow Rate) was reduced, confirming the airways were blocked. A blood gas test also confirmed mild low oxygen levels (hypoxemia). She was treated with breathing medicines and nebulisation (medicine given through a breathing mask) and recovered well before discharge."""
+    ),
+    (
+        # Example 3 — Urinary Tract Infection with Pyelonephritis
+        """Patient Name: Emily Johnson | Age/Sex: 40/F | Admission: 12/01/2026 | Discharge: 16/01/2026
+C/O: Fever, burning micturition, and flank pain for 4 days.
+History: High-grade fever with chills, painful and frequent urination, right-sided flank pain. No kidney stones or hematuria.
+Past History: Recurrent UTIs. Iron Deficiency Anemia.
+Examination: Temp 101.5°F | Pulse 102 bpm | BP 118/76 mmHg | RR 18/min | SpO₂ 99%.
+Investigations: Urine Routine — pus cells and bacteria. Urine Culture — E. coli. CBC — elevated WBC. Ultrasound Abdomen — mild right renal pelvic inflammation.""",
+        """Emily Johnson, a 40-year-old woman, was admitted on 12th January 2026 and sent home on 16th January 2026. She has a history of recurrent UTIs (urinary tract infections — infections in the tube that carries urine out of the body) and iron deficiency anemia (low blood due to lack of iron). She came in with 4 days of high fever with chills, pain and burning while passing urine (micturition), passing urine much more often than usual, and pain on the right side of her back near the kidney area (flank pain). On admission she had a high temperature of 101.5°F (normal is 98.6°F), fast heartbeat (102 per minute), and normal blood pressure. Urine test showed pus cells and bacteria, confirming an active infection. Urine culture (a test where urine is kept in a lab to see which germs grow) showed E. coli bacteria (a common germ that causes urinary infections). Blood test showed a high white blood cell count, which is a sign the body was fighting a serious infection. An ultrasound scan (a painless scan using sound waves) showed mild swelling and inflammation in the tube leading out of the right kidney (renal pelvis). She was treated with antibiotics (infection-fighting medicines) through a drip and improved well."""
+    ),
+    (
+        # Example 4 — Acute Coronary Syndrome / NSTEMI  [used as the ONE-SHOT example]
+        """Patient Name: Robert Brown | Age/Sex: 58/M | Admission: 25/03/2026 | Discharge: 30/03/2026
+C/O: Chest pain and sweating for 6 hours.
+History: Sudden onset retrosternal chest pain radiating to the left arm, sweating, mild breathlessness. No syncope or trauma.
+Past History: Type 2 Diabetes Mellitus (8 years). Hypertension (10 years). Dyslipidemia.
+Examination: Temp 98.4°F | Pulse 96 bpm | BP 160/100 mmHg | RR 22/min | SpO₂ 95%.
+Investigations: ECG — ST depression in anterior leads. Troponin-I — elevated. 2D Echo — mild left ventricular dysfunction. Lipid Profile — elevated LDL cholesterol.""",
+        """Robert Brown, a 58-year-old man, was admitted on 25th March 2026 and sent home on 30th March 2026. He has a history of type 2 diabetes mellitus (sugar disease — a condition where the body cannot properly use or control sugar in the blood) for 8 years, high BP (hypertension) for 10 years, and dyslipidemia (high fat levels in the blood). He came in after 6 hours of sudden chest pain behind the breastbone, which was spreading to his left arm, along with sweating and mild difficulty in breathing. On admission, his blood pressure was high at 160/100 mmHg (normal is 120/80), heartbeat was 96 per minute, and blood oxygen level was 95% (slightly low; should be above 95%). An ECG (a heart tracing test that records electrical signals of the heart) showed ST depression in the front heart leads — a sign of reduced blood supply to the heart muscle. Troponin-I (a protein that leaks into the blood when the heart muscle is damaged) was elevated, confirming a mild heart attack called NSTEMI (Non-ST Elevation Myocardial Infarction — a type of heart attack where one of the heart's blood vessels is partially blocked). A 2D Echo (an ultrasound scan of the heart) showed mild weakness in the left pumping chamber of the heart (left ventricular dysfunction). Blood tests showed high LDL cholesterol (bad cholesterol; normal should be below 100 mg/dL in high-risk patients like him). He was carefully monitored and treated with heart medicines before being sent home."""
+    ),
+]
 
-def get_best_examples(text, num_examples, selection_method):
-    if not ALL_EXAMPLES:
-        return []
-    if num_examples >= len(ALL_EXAMPLES):
-        return ALL_EXAMPLES
-        
-    if selection_method == "random":
-        return random.sample(ALL_EXAMPLES, num_examples)
-        
-    elif selection_method == "similarity":
-        # Pure Python Jaccard similarity based on words
-        text_words = set(text.lower().split())
-        
-        def calc_sim(ex):
-            orig_words = set(ex[0].lower().split())
-            if not text_words or not orig_words: return 0
-            return len(text_words.intersection(orig_words)) / len(text_words.union(orig_words))
-            
-        scored_examples = [(ex, calc_sim(ex)) for ex in ALL_EXAMPLES]
-        scored_examples.sort(key=lambda x: x[1], reverse=True)
-        return [ex for ex, score in scored_examples[:num_examples]]
-        
-    # Default fallback (first N)
-    return ALL_EXAMPLES[:num_examples]
+# One-shot uses Example 4 (ACS/NSTEMI) — most complex clinical scenario
+ONE_SHOT_EXAMPLE = FIXED_EXAMPLES[3]
+
 
 def build_prompt_string(strategy, text, selection_method="random"):
     """
-    Build a unified prompt string incorporating few-shot examples if requested.
+    Build a unified prompt string.
+    strategy: zero-shot | one-shot | few-shot
+    Uses fixed curated examples (selection_method param kept for API compatibility but ignored).
     """
     prompt = SYSTEM_PROMPT + "\n\n"
-    if strategy in ["one-shot", "few-shot"] and ALL_EXAMPLES:
-        num_examples = 1 if strategy == "one-shot" else min(3, len(ALL_EXAMPLES))
-        examples = get_best_examples(text, num_examples, selection_method)
-        
+    if strategy == "one-shot":
+        orig, simp = ONE_SHOT_EXAMPLE
+        prompt += "Here is an example of what I expect:\n\n"
+        prompt += f"--- Example ---\nOriginal Medical Text:\n{orig}\n\nSimplified:\n{simp}\n\n"
+    elif strategy == "few-shot":
         prompt += "Here are some examples of what I expect:\n\n"
-        for i, (original, simplified) in enumerate(examples):
-            prompt += f"--- Example {i+1} ---\nOriginal Medical Text:\n{original}\n\nSimplified:\n{simplified}\n\n"
-            
+        for i, (orig, simp) in enumerate(FIXED_EXAMPLES):
+            prompt += f"--- Example {i+1} ---\nOriginal Medical Text:\n{orig}\n\nSimplified:\n{simp}\n\n"
     prompt += f"--- Your Task ---\nPlease simplify the following discharge summary into Indian Lay English:\n\nOriginal Medical Text:\n{text}\n\nSimplified:\n"
     return prompt
 
@@ -434,67 +457,69 @@ def simplify():
                         return jsonify({"error": f"Cerebras error: {str(e)}"}), 500
                     # If "auto", fall through to Gemini
 
-    # ── Fall back to Gemini ───────────────────────────────────────────────
+    # ── Try Gemini ───────────────────────────────────────────────────────────
     if api_provider == "gemini" or api_provider == "auto":
-        if genai is not None:
+        if genai_client is not None:
             gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
             if gemini_key:
                 try:
-                    # Provide Gemini model explicitly, default to flash if not found
                     gemini_model = model_id if "gemini" in model_id else "gemini-2.5-flash"
                     return _call_gemini(text, gemini_model, gemini_key, strategy, selection_method)
                 except Exception as e:
-                    return jsonify({"error": f"Gemini error: {str(e)}"}), 500
+                    if api_provider == "gemini":
+                        return jsonify({"error": f"Gemini error: {str(e)}"}), 500
+
+    # ── Try Groq ─────────────────────────────────────────────────────────────
+    if api_provider == "groq" or api_provider == "auto":
+        if Groq is not None:
+            groq_key = os.getenv("GROQ_API_KEY", "").strip()
+            if groq_key:
+                try:
+                    return _call_groq(text, model_id, groq_key, strategy, selection_method)
+                except Exception as e:
+                    if api_provider == "groq":
+                        return jsonify({"error": f"Groq error: {str(e)}"}), 500
 
     # ── No valid API configured ───────────────────────────────────────────
-    return jsonify({"error": "No valid API configured. Set CEREBRAS_API_KEY or GEMINI_API_KEY in .env"}), 500
+    return jsonify({"error": "No valid API configured. Set CEREBRAS_API_KEY, GEMINI_API_KEY, or GROQ_API_KEY in .env"}), 500
 
 
 def _call_scifive(text, strategy="zero-shot", selection_method="random"):
-    """Call local SciFive model (fine-tuned T5)."""
+    """Call local SciFive model (chunked)."""
     model, tokenizer = load_scifive()
     if model is None or tokenizer is None:
         return jsonify({"error": "SciFive model is currently unavailable."}), 503
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    
     simplified = generate_scifive_chunked(text, model, tokenizer, device)
-    
     model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
     display_name = model_info["name"] if model_info else "SciFive"
-    
     return jsonify({"result": simplified, "model": display_name, "tokens": None})
 
 
 def _call_biobart(text, strategy="zero-shot", selection_method="random"):
-    """Call local BioBART model."""
+    """Call local BioBART model (chunked)."""
     model, tokenizer = load_biobart()
     if model is None or tokenizer is None:
         return jsonify({"error": "BioBART model is currently unavailable."}), 503
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
     simplified = generate_biobart_chunked(text, model, tokenizer, device)
-
     model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
     display_name = model_info["name"] if model_info else "BioBART"
-
     return jsonify({"result": simplified, "model": display_name, "tokens": None})
 
 
 def _call_biogpt(text, strategy="zero-shot", selection_method="random"):
-    """Call local BioGPT model."""
+    """Call local BioGPT model (chunked)."""
     model, tokenizer = load_biogpt()
     if model is None or tokenizer is None:
         return jsonify({"error": "BioGPT model is currently unavailable."}), 503
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
     simplified = generate_biogpt_chunked(text, model, tokenizer, device)
-
     model_info = next((m for m in MODELS if m["id"] == "biogpt-local"), None)
     display_name = model_info["name"] if model_info else "BioGPT"
-
     return jsonify({"result": simplified, "model": display_name, "tokens": None})
 
 
@@ -531,25 +556,56 @@ def _call_cerebras(text, model_id, api_key, strategy="zero-shot", selection_meth
 
 
 def _call_gemini(text, model_id, api_key, strategy="zero-shot", selection_method="random"):
-    """Call Google Gemini API."""
-    if genai is None:
-        raise Exception("google-generativeai is not installed")
+    """Call Google Gemini API using google-genai SDK."""
+    if genai_client is None:
+        raise Exception("google-genai is not installed")
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(model_id)
-    
+    client = genai_client.Client(api_key=api_key)
     prompt_content = build_prompt_string(strategy, text, selection_method)
-    
-    response = model.generate_content(
-        prompt_content,
-        generation_config=genai.types.GenerationConfig(
+
+    response = client.models.generate_content(
+        model=model_id,
+        contents=prompt_content,
+        config=genai_types.GenerateContentConfig(
             max_output_tokens=2048,
             temperature=0.3,
         ),
     )
-    
+
     simplified = response.text
-    return jsonify({"result": simplified, "model": f"{model_id} (Google)", "tokens": None})
+    model_info = next((m for m in MODELS if m["id"] == model_id), None)
+    display_name = model_info["name"] if model_info else model_id
+    try:
+        tokens_used = response.usage_metadata.total_token_count
+    except Exception:
+        tokens_used = None
+    return jsonify({"result": simplified, "model": display_name, "tokens": tokens_used})
+
+
+def _call_groq(text, model_id, api_key, strategy="zero-shot", selection_method="random"):
+    """Call Groq API."""
+    if Groq is None:
+        raise Exception("groq package is not installed")
+
+    model_info = next((m for m in MODELS if m["id"] == model_id), None)
+    # Default to a known fast Groq model if the selected model isn't a Groq one
+    groq_model = model_id if model_info and model_info.get("api_provider") == "groq" else "llama-3.3-70b-versatile"
+
+    client = Groq(api_key=api_key)
+    prompt_content = build_prompt_string(strategy, text, selection_method)
+
+    response = client.chat.completions.create(
+        model=groq_model,
+        messages=[
+            {"role": "user", "content": prompt_content},
+        ],
+        max_tokens=2048,
+        temperature=0.3,
+    )
+    simplified = response.choices[0].message.content
+    tokens_used = getattr(response.usage, "total_tokens", None)
+    display_name = model_info["name"] if model_info else groq_model
+    return jsonify({"result": simplified, "model": display_name, "tokens": tokens_used})
 
 
 if __name__ == "__main__":

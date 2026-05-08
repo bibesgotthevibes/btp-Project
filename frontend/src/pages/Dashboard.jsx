@@ -9,7 +9,6 @@ export default function Dashboard({ user, setUser }) {
   const [models, setModels] = useState([])
   const [selectedModel, setSelectedModel] = useState('')
   const [strategy, setStrategy] = useState('zero-shot')
-  const [selectionMethod, setSelectionMethod] = useState('random')
   const [text, setText] = useState('')
   const [result, setResult] = useState(null)
   const [resultModel, setResultModel] = useState('')
@@ -58,7 +57,6 @@ export default function Dashboard({ user, setUser }) {
         text, 
         model: selectedModel,
         strategy: strategy,
-        selection_method: selectionMethod
       })
       setResult(res.data.result)
       setResultModel(res.data.model)
@@ -77,6 +75,8 @@ export default function Dashboard({ user, setUser }) {
     setResultTokens(null)
     setError('')
   }
+
+  const isLocalModel = models.find((m) => m.id === selectedModel)?.api_provider === 'local'
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] flex flex-col">
@@ -134,7 +134,8 @@ export default function Dashboard({ user, setUser }) {
               </p>
             </div>
 
-            {/* Prompting Strategy */}
+            {/* Prompting Strategy — only shown for cloud/LLM models */}
+            {!isLocalModel && (
             <div className="flex gap-4">
               <div className="flex-1">
                 <label className="text-sm font-semibold text-gray-600 block mb-1.5">
@@ -150,37 +151,15 @@ export default function Dashboard({ user, setUser }) {
                   >
                     <option value="zero-shot">Zero-shot (Instructions only)</option>
                     <option value="one-shot">One-shot (1 Example)</option>
-                    <option value="few-shot">Few-shot (3 Examples)</option>
+                    <option value="few-shot">Few-shot (4 Examples)</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     ▾
                   </span>
                 </div>
               </div>
-
-              {strategy !== 'zero-shot' && (
-                <div className="flex-1">
-                  <label className="text-sm font-semibold text-gray-600 block mb-1.5">
-                    Example Selection
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectionMethod}
-                      onChange={(e) => setSelectionMethod(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800
-                        outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100
-                        bg-white appearance-none cursor-pointer pr-10"
-                    >
-                      <option value="random">Random Sampling</option>
-                      <option value="similarity">Jaccard Similarity</option>
-                    </select>
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                      ▾
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
+            )}
 
             {/* Textarea */}
             <div className="flex flex-col gap-1.5 flex-1">
