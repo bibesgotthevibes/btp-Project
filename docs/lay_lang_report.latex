@@ -8,12 +8,10 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{microtype}
-\usepackage{newunicodechar}
 \usepackage{longtable}
 \usepackage{enumitem}
 \usepackage{mdframed}
 
-\newunicodechar{▁}{\rule[0ex]{0.5em}{0.5ex}}
 
 \title{Medical Discharge Summary Simplification for Patients}
 \author{BTP Project Report}
@@ -127,6 +125,66 @@ The pipeline consists of several stages:
 \end{itemize}
 
 
+\subsection{Cloud-based Large Language Models (LLMs)}
+To overcome the factual hallucination and reasoning limitations observed in the fine-tuned biomedical models, we integrated state-of-the-art cloud-based LLMs using leading inference APIs: Groq (hosting Llama models), Cerebras, and Google GenAI (hosting Gemini 2.5 Flash).
+
+\textbf{Llama 3 Sequence Models (via Groq and Cerebras):} We utilized Llama 3.1 8B and Llama 3.3 70B via the Groq and Cerebras inference engines. These models provide ultra-fast inference and strong instruction-following capabilities. Their immense context windows easily accommodated entire medical summaries without the need for sliding-window chunking.
+
+\textbf{Gemini 2.5 Flash:} Google's Gemini 2.5 Flash was utilized due to its massive context window and strong zero-shot reasoning capabilities. Gemini proved highly effective at generating concise, factual lay-language translations without truncating lengthy clinical descriptions.
+
+\section{Prompting Strategies}
+To optimize the outputs of the cloud LLMs, we engineered a robust system prompt and employed varying in-context learning strategies.
+
+\subsection{System Prompt Design}
+We iteratively developed a highly constrained 12-rule system prompt to enforce accuracy, tone, and conciseness, while minimizing hallucinations. 
+
+\begin{mdframed}[backgroundcolor=gray!10, linewidth=0.5pt]
+\small
+\textbf{System Prompt:}\\
+You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\\
+
+Rules:\\
+1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\\
+2. Use simple language a 6th-grader can understand. Avoid jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\\
+3. Preserve ALL factual information --- never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\\
+4. Write as continuous plain prose paragraphs --- no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\\
+5. For any measurement (e.g. BP, blood sugar, heart rate), briefly state what the normal range is and whether the patient's value was within it.\\
+6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\\
+7. CRITICAL --- person and tense: First check whether the summary records the patient's death. If yes, write in third person past tense for the family. If no, address the patient directly in second person.\\
+8. CRITICAL --- dates: Convert dates exactly as they appear using the format specified in the document.\\
+9. For each medication, state its name and purpose in plain language.\\
+10. For each procedure or device, briefly state what it is and why it was done.\\
+11. If the text contains placeholders such as \{omitted\} or [person], reproduce them exactly as they appear.\\
+12. Be highly concise. Deliver a direct, brief summary without getting bogged down in excessive medical minutiae.
+\end{mdframed}
+
+\subsection{In-Context Learning Approaches}
+To further align the model with our expectations, three different prompting methods were implemented:
+\begin{itemize}
+    \item \textbf{Zero-Shot:} The model relies purely on the system prompt and instructions without any prior examples. Driven by our strict 12-rule system prompt, zero-shot performance proved exceptionally reliable on powerful models like Gemini 2.5 Flash and Llama 3.3 70B, effectively maintaining factual constraints automatically.
+    \item \textbf{One-Shot:} A single high-quality example of a technical discharge summary and its ideal lay-language translation is appended to the prompt. This helps anchor the model's structural expected output (e.g., continuous prose without bullet points).
+    \item \textbf{Few-Shot:} Multiple curated examples are included to demonstrate varied clinical scenarios (e.g., routine recovery vs. critical deterioration). This method provided the highest consistency in formatting and tone across diverse and edge-case medical cases, teaching the model implicitly how to handle structural variations in the input data.
+\end{itemize}
+
+\section{Web Application and User Interface}
+To make the medical simplification models accessible to end-users (such as hospital staff, patients, and their families), we developed a full-stack web application. The application provides an intuitive interface for inputting clinical texts and retrieving simplified explanations without restricting the user to a terminal or code environment.
+
+\subsection{System Architecture}
+The system follows a modern client-server architecture:
+\begin{itemize}
+    \item \textbf{Backend:} A RESTful API server built using Python and Flask. It acts as a central router, handling secure authentication, text preprocessing, sliding-window chunking logic for local models, and dynamic API request routing to various inference engines (Local PyTorch, Groq, Cerebras, and Google GenAI).
+    \item \textbf{Frontend:} A single-page application (SPA) built using React, Vite, and Tailwind CSS. The interface is highly responsive, lightweight, and designed to abstract away the underlying technical complexities.
+\end{itemize}
+
+\subsection{Key Features}
+The web application incorporates several features to enhance usability, security, and flexibility:
+\begin{itemize}
+    \item \textbf{Model \& Strategy Selection:} Users can dynamically choose their preferred AI execution engine (e.g., Gemini 2.5 Flash, Llama 3.3 via Groq, or customized local models) and prompting strategy (Zero-shot, One-shot, or Few-shot) through an intuitive dashboard dropdown.
+    \item \textbf{Secure Authentication:} The platform includes a secure login and registration system governed by JSON Web Tokens (JWT). This ensures that sessions are authenticated and access to the simplification tool is securely managed.
+    \item \textbf{Downloadable PDF Reports:} Once a medical summary is simplified, users can instantly export the resulting plain Indian English explanation as a formatted PDF document, making it easy to print, share, or store for personal reference.
+    \item \textbf{Real-time Processing Feedback:} To accommodate the processing time required for LLM inference (particularly hardware-intensive local chunking), the interface features interactive loading states to provide continuous visual feedback while the models generate responses.
+\end{itemize}
+
 \section{Quantitative Evaluation: Readability and Compression}
 
 To objectively measure the performance of the four fine-tuned models, we conducted a quantitative analysis on a test set of 200 medical discharge summaries. The evaluation focused on two key dimensions: \textbf{Readability}, measured using the Flesch Reading Ease score, and \textbf{Compression}, measured by the change in word count and the compression ratio.
@@ -166,7 +224,7 @@ Original Text (Baseline) & 20.24 & --- & 598.7 & 1.000 \\
 
 \subsection{Input Discharge Summary}
 
-To qualitatively evaluate and compare the four fine-tuned models, we present their outputs on a representative discharge summary involving a complex, multi-morbidity case with a fatal outcome. This example is particularly informative because it tests the model's ability to handle: multiple simultaneous diagnoses, escalating clinical deterioration, critical interventions (resuscitation, cardioversion, dialysis), and a death declaration — all of which require precise, sensitive, and factually accurate lay language conversion.
+To qualitatively evaluate and compare all models, we present their outputs on a representative discharge summary involving a complex, multi-morbidity case with a fatal outcome. This example is particularly informative because it tests the model's ability to handle: multiple simultaneous diagnoses, escalating clinical deterioration, critical interventions (resuscitation, cardioversion, dialysis), and a death declaration — all of which require precise, sensitive, and factually accurate lay language conversion.
 
 \begin{mdframed}[backgroundcolor=gray!10, linewidth=0.5pt]
 \small
@@ -284,37 +342,274 @@ This patient was admitted to the hospital on 12/06 and was sent home from the ho
     \item \textbf{Repetitive and redundant phrasing:} The output contains repeated, circular sentences such as ``The family requested contact with the family'' and ``The body was released'' appearing twice. These suggest decoding instability in the final generation stages.
 \end{itemize}
 
-\textbf{Overall Assessment:} SciFive produces the most fluent prose among the four models, but introduces critical factual errors including a hallucinated cause of death, misinterpretation of ECG findings, contradictory statements about patient outcome, and fabrication of non-existent conditions. Despite its relative readability, its factual unreliability makes it unsafe for clinical lay language conversion in its current fine-tuned state.
+\textbf{Overall Assessment:} SciFive produces the most fluent prose among the four fine-tuned models, but introduces critical factual errors including a hallucinated cause of death, misinterpretation of ECG findings, contradictory statements about patient outcome, and fabrication of non-existent conditions. Despite its relative readability, its factual unreliability makes it unsafe for clinical lay language conversion in its current fine-tuned state.
 
-\subsection{Comparative Summary}
+%-----------------------------------------------------------
+% CLOUD LLM RESULTS BEGIN HERE
+%-----------------------------------------------------------
+
+\subsection{Llama 3.1 8B — Zero-Shot Output and Error Analysis}
+
+\begin{mdframed}[backgroundcolor=yellow!5, linewidth=0.5pt]
+\small
+\textbf{Llama 3.1 8B Zero-Shot Output:}\\
+The patient was admitted to the hospital on 12/06 and was discharged on 12/21 after a 14-day and 11-hour stay. The patient was in a general hospital room and was covered under the government health scheme.
+
+The patient had a problem with their heart, known as heart failure, which was treated with a medicine called Dobutamine on 12/07 and 12/08. The patient also had a pus-filled swelling in the left thigh, which was caused by an infection called osteomyelitis. This infection was also in the pubis bone and was known as Fournier's syndrome. To treat this, the patient underwent a procedure called drainage on 12/03, followed by a drain placement on 12/15. The patient was given an antibiotic called Ceftriaxone, which was guided by a culture of the pus. The patient's infection was caused by a type of bacteria called Escherichia coli. The patient also had an incision in the ICU (a serious care room) on 12/17, where a lot of pus was found.
+
+The patient also had a severe infection called septic shock, which was caused by a urinary tract infection. To treat this, the patient was given medicines called Polymyxin, Amikacin, and Vancomycin. The patient also had a problem with their kidneys, known as chronic kidney disease, which required a procedure called acute dialysis through a fistula on 12/16.
+
+On 12/16, the patient had a serious heart and breathing problem called cardiorespiratory arrest. The patient's heart stopped beating, but after 1 minute, the doctor was able to revive them. However, the patient's heart was not beating properly, and they had a slow heartbeat. The patient's heartbeat also widened, and their shock worsened. The patient had high levels of potassium in their blood, even after the kidney dialysis. To treat this, the patient was given two ampoules of calcium gluconate and 100 ml of bicarbonate. The patient's breathing rate was also increased on the ventilator to reduce the potassium levels. However, the patient's condition worsened, and they progressed to a state called asystolic cardiorespiratory arrest. Unfortunately, the patient did not survive, and the doctor declared them dead due to the absence of a pulse, fixed pupils, and absence of heart sounds and brainstem reflexes. The body was released, and the doctor awaits the death certificate to be completed.
+\end{mdframed}
+
+\textbf{Errors and Limitations:}
+\begin{itemize}
+    \item \textbf{Incorrect date for cardiorespiratory arrest:} The model states the cardiorespiratory arrest occurred ``on 12/16,'' which was actually the date of the septic shock onset and fistula dialysis. The arrest is not assigned a specific date in the original text and occurs as part of the later clinical deterioration. This is a date cross-contamination error.
+    \item \textbf{Incomplete description of septic shock origin:} The model describes septic shock as ``caused by a urinary tract infection.'' The original states a ``cutaneous urinary focus'' — meaning the infection originated from both skin and urinary sources. Simplifying to ``urinary tract infection'' alone loses the cutaneous (skin) component, which is clinically relevant given the concurrent Fournier's gangrene.
+    \item \textbf{Cardiorespiratory arrest timeline inaccuracy:} The model states ``the patient's heart stopped beating, but after 1 minute, the doctor was able to revive them.'' This conflates two separate events: the initial PEA arrest (with 1 minute of CPR resulting in return of circulation) and the subsequent fatal asystolic arrest. The compression of these events gives the false impression that there was only one arrest, not two.
+    \item \textbf{``Heartbeat widened'' is not lay language:} The phrase ``the patient's heartbeat also widened'' is an imprecise rendering of ``QRS widening.'' QRS widening is an electrocardiographic finding reflecting conduction delay in the heart, not a description of the heartbeat itself. A lay reader is likely to misunderstand this phrasing. A clearer explanation (e.g., ``an abnormal pattern was seen on the heart monitor'') would have been more appropriate.
+    \item \textbf{Ventilator intervention purpose not fully explained:} The model states the breathing rate was increased ``to reduce the potassium levels,'' which is broadly correct but omits the intermediate physiological step: increasing respiratory rate lowers blood CO2 (pCO2), which drives potassium back into cells, thereby reducing serum potassium. The simplified explanation skips this mechanistic link.
+    \item \textbf{Atropine administration omitted:} The two ampoules of atropine administered without benefit are not mentioned anywhere in this output. Atropine was a significant clinical intervention for bradycardia management and its omission is a factual gap.
+    \item \textbf{Ventricular tachycardia (VT) and cardioversion omitted:} The successful electrical cardioversion for VT after the initial cardiac arrest is entirely absent from this output. This is a major clinical event involving an electric shock to restore heart rhythm and should have been included.
+    \item \textbf{Norepinephrine dose not mentioned:} The escalation of norepinephrine to 1.5 mcg/kg/min — a critical indicator of the severity of hemodynamic instability — is not included in the simplified output.
+    \item \textbf{Incorrect use of second person for a deceased patient:} The original instructions specify third-person past tense for deceased patients. The model uses neutral third-person correctly in some places but inconsistently. The phrase ``the doctor awaits the death certificate'' uses present tense, which is slightly imprecise for a document describing a completed death event.
+    \item \textbf{``Discharged'' used for death:} The model states the patient ``was discharged on 12/21'' without clarifying that the discharge was due to death. While technically the date is correct, ``discharged'' typically implies the patient left the hospital alive. A more accurate phrasing such as ``the patient passed away on 12/21'' would have been more appropriate given the fatal outcome.
+\end{itemize}
+
+\textbf{Overall Assessment:} Llama 3.1 8B (Zero-Shot) produces a largely readable and structured simplification that correctly identifies the fatal outcome and preserves most of the major clinical events. However, it omits several important interventions (atropine, VT/cardioversion, norepinephrine dose), conflates the two separate cardiac arrests, and contains minor date and framing inaccuracies. Compared to the fine-tuned local models, it is significantly more reliable and factually grounded, but requires more complete coverage of all documented clinical events to be suitable for patient-family communication.
+
+\subsection{Llama 3.1 8B — One-Shot Output and Error Analysis}
+
+\begin{mdframed}[backgroundcolor=yellow!5, linewidth=0.5pt]
+\small
+\textbf{Llama 3.1 8B One-Shot Output:}\\
+The patient was admitted to the hospital on 12th June and was sent home on 21st June after a 14-day and 11-hour stay. They were in a general hospital room and were covered under the government health scheme.
+
+The patient had a few serious health issues. They had a condition called heart failure, which affects the heart's ability to pump blood properly. To check this, they underwent a test called dobutamine on 7th and 8th December.
+
+They also had a pus-filled swelling in their left thigh, which was infected with a type of bacteria called Escherichia coli. This infection was spreading and had reached their pubic bone, causing a condition called osteomyelitis. They also had a condition called Fournier's syndrome, which affects the skin and underlying tissues. To treat this, they had a procedure called drainage on 3rd December, where pus was removed from the swelling. Later, on 15th December, a tube was placed to drain the pus. They were given an antibiotic called ceftriaxone to fight the infection. After a while, the infection caused a severe reaction, and they had to undergo a serious procedure called incision in the ICU on 17th December, where a large amount of pus was removed.
+
+The patient also had a condition called septic shock, which is a severe reaction to an infection. This was caused by an infection in their urinary tract. They were given medicines called polymyxin, amikacin, and vancomycin to treat this.
+
+Their kidneys were not functioning properly due to chronic kidney disease, and they had to undergo a procedure called acute dialysis on 16th December. This is a process where the blood is cleaned using a machine when the kidneys cannot do it.
+
+On 16th December, the patient had a heart and breathing problem called cardiorespiratory arrest. Their heart stopped beating, and they had no pulse. After 10 minutes, they were given oxygen and their heart started beating again. However, they had a slow heartbeat and were unstable. They were given a medicine called norepinephrine to help their heart.
+
+The patient's potassium levels were high, which can be life-threatening. They were given two ampoules of calcium gluconate and 100 ml of bicarbonate to lower their potassium levels. However, this did not work, and they progressed to a state where their heart stopped beating again. Despite efforts to revive them, the patient was declared dead due to the absence of pulse, fixed pupils, and no heart sounds. The body was released, and the family was requested to be contacted.
+\end{mdframed}
+
+\textbf{Errors and Limitations:}
+\begin{itemize}
+    \item \textbf{Dobutamine described as a ``test'':} The model states the patient ``underwent a test called dobutamine.'' Dobutamine is a medication (an inotropic agent) used to support the heart's pumping ability, not a diagnostic test. This is a clinically significant misclassification that could mislead a family member about the nature of the treatment received.
+    \item \textbf{Incorrect cardiac arrest timeline:} The model states ``on 16th December, the patient had a heart and breathing problem'' and then ``after 10 minutes, they were given oxygen and their heart started beating again.'' This conflates the date of the septic shock/dialysis event (12/16) with the cardiorespiratory arrest, which is not explicitly dated in the original summary. The 10-minute detail actually refers to the time elapsed after intubation before the arrest, not the duration of CPR.
+    \item \textbf{CPR mechanism omitted:} The model states the patient was ``given oxygen'' to restart the heart. The actual intervention was cardiopulmonary resuscitation (CPR) — chest compressions combined with ventilatory support — for 1 minute. Describing CPR merely as ``given oxygen'' is an inaccurate and incomplete simplification of a critical resuscitation event.
+    \item \textbf{Ventricular tachycardia and cardioversion omitted:} The VT episode following the initial arrest and the successful electrical cardioversion are entirely absent, representing a significant omission of a documented clinical event.
+    \item \textbf{Atropine administration omitted:} The administration of 2 ampoules of atropine without clinical benefit is not mentioned. This is a factual gap in the medication record.
+    \item \textbf{``Sent home on 21st June'' for a deceased patient:} The model states the patient was ``sent home on 21st June,'' which strongly implies survival and discharge from hospital. The patient died on this date. Using ``sent home'' language for a death is a serious misrepresentation that could cause confusion and distress for the patient's family.
+    \item \textbf{QRS widening not mentioned:} The abnormal ECG finding of QRS widening, indicative of cardiac conduction deterioration, is absent from the output.
+    \item \textbf{Norepinephrine dose omitted:} The model mentions norepinephrine but does not state the dose (1.5 mcg/kg/min), which is important context for conveying the severity of the hemodynamic deterioration.
+    \item \textbf{Ventilator respiratory rate increase not mentioned:} The deliberate increase in ventilator breathing rate to reduce pCO2 and manage hyperkalemia — a specific clinical decision — is not documented in the output.
+    \item \textbf{Septic shock origin partially incorrect:} As in the zero-shot version, the septic shock origin is described as ``an infection in their urinary tract,'' omitting the cutaneous (skin) focus mentioned in the original text.
+\end{itemize}
+
+\textbf{Overall Assessment:} Llama 3.1 8B (One-Shot) produces more fluent and naturally structured prose compared to zero-shot, benefiting from the structural anchoring provided by the example. However, it introduces a critical misclassification (dobutamine as a test), omits multiple important clinical events (VT, cardioversion, atropine, ventilator adjustment), and uses inappropriate language (``sent home'') for a fatal outcome. The one-shot example appears to have improved formatting at the cost of some factual completeness.
+
+\subsection{Llama 3.1 8B — Few-Shot Output and Error Analysis}
+
+\begin{mdframed}[backgroundcolor=yellow!5, linewidth=0.5pt]
+\small
+\textbf{Llama 3.1 8B Few-Shot Output:}\\
+The patient was admitted to the hospital on 12th June and sent home on 21st June after a 14-day and 11-hour stay. He was in a general hospital room and was covered under the government health scheme.
+
+During his stay, the patient had several health issues. Firstly, he had a heart failure profile (a test to check the heart's pumping ability) on 7th and 8th June, and was given a medicine called Dobutamine to help the heart work better.
+
+He also had a pus-filled swelling in his left thigh (osteomyelitis in the pubis --- an infection in the bone) and Fournier's syndrome (a serious infection of the genital area). On 3rd June, a fluid was drained from the swelling using an ultrasound and a drain was placed on 15th June. The infection was caused by E. coli bacteria and was treated with antibiotics called Ceftriaxone.
+
+On 16th June, he developed septic shock (a life-threatening condition caused by a severe infection) due to a urinary tract infection. He was given medicines called Polymyxin, Amikacin, and Vancomycin to fight the infection.
+
+The patient also had chronic kidney disease (a long-term condition where the kidneys do not work properly) and had to undergo acute dialysis (a treatment to clean the blood when the kidneys are not working) on 16th June using a fistula (a surgically created connection between an artery and a vein).
+
+On 16th June, the patient had a cardiorespiratory arrest (a sudden stop of the heart and breathing) with pulseless electrical activity (a condition where the heart does not beat). He was given a shock to try and restart the heart, but unfortunately, he did not recover.
+
+The patient also had a very fast heartbeat (VT) after the arrest, but was given a shock to try and control it. Unfortunately, the patient's condition continued to worsen, and he became unstable. He was given medicines to try and improve his condition, but unfortunately, he did not respond.
+
+Given the high levels of potassium in his blood, the patient was given 2 ampoules of calcium gluconate and 100 ml of bicarbonate to try and bring the levels down. However, the patient's condition continued to deteriorate, and he progressed to asystolic cardiorespiratory arrest (a condition where the heart stops beating).
+
+Unfortunately, the patient was declared dead due to the absence of central pulses, fixed pupils, absence of heart sounds, and absence of brainstem reflexes. The body was released, and I request contact with the family.
+\end{mdframed}
+
+\textbf{Errors and Limitations:}
+\begin{itemize}
+    \item \textbf{``Heart failure profile'' incorrectly described as a ``test'':} The model states ``he had a heart failure profile (a test to check the heart's pumping ability).'' This reframes a clinical syndrome (the patient's documented condition of heart failure) and its treatment with dobutamine as a diagnostic procedure. Heart failure is a diagnosis, and dobutamine is a treatment — neither is a test. This misclassification could seriously mislead the patient's family about the nature of the condition.
+    \item \textbf{Hallucinated gender:} The model assigns a male gender (``he,'' ``his'') to the patient, whose gender is unspecified in the original text. This is an unprompted hallucination, albeit less harmful than some other errors.
+    \item \textbf{``Sent home on 21st June'' for a fatal outcome:} As with the one-shot variant, describing the discharge date as ``sent home'' is wholly inappropriate for a deceased patient. This phrasing is factually wrong and would cause significant confusion for any family member reading the document.
+    \item \textbf{All events erroneously dated to June:} The few-shot output assigns all clinical events to June. The original document uses a MM/DD numeric format (e.g., 12/06 = December 6 for admission; 12/07 = December 7 for dobutamine; 12/15, 12/16, 12/17 for subsequent events --- all in December). The model re-interpreted the admission date as ``12th June'' under a DD/MM reading and then propagated the month ``June'' to all subsequent event dates, placing every clinical event in June regardless of its correct position in the timeline. This is a systematic date format parsing failure, likely triggered by the date style in the few-shot examples, and produces an entirely incorrect temporal ordering of the patient's hospital stay.
+    \item \textbf{PEA arrest conflated with cardioversion shock:} The model states ``He was given a shock to try and restart the heart'' in the context of the PEA arrest. However, electrical cardioversion/defibrillation is not the appropriate or documented treatment for PEA — CPR was performed. The shock was given later for VT. The model conflates these two separate events, misattributing the cardioversion shock to the PEA arrest.
+    \item \textbf{CPR details omitted:} The 1-minute CPR episode following the PEA arrest is not documented. The model's claim that ``he did not recover'' from the initial arrest is also factually incorrect — the patient did have return of circulation following CPR, before subsequently deteriorating.
+    \item \textbf{Atropine administration omitted:} The 2 ampoules of atropine given without benefit are absent from the output.
+    \item \textbf{Ventilator breathing rate adjustment omitted:} The deliberate increase in the ventilator rate to manage hyperkalemia is not mentioned.
+    \item \textbf{Norepinephrine dose omitted:} The escalation of norepinephrine to 1.5 mcg/kg/min is absent.
+    \item \textbf{QRS widening absent:} The ECG finding of QRS widening is not documented in the output.
+    \item \textbf{First-person narrative voice (``I request contact''):} The output ends with ``I request contact with the family,'' adopting the first-person voice of the treating physician from the original document. A lay language summary for the patient's family should not be written in the physician's voice. This represents a failure to transform the document's perspective appropriately.
+    \item \textbf{ICU incision on December 17 omitted:} The surgical incision performed in the ICU on 12/17 with abundant purulent secretion is not mentioned in the few-shot output.
+\end{itemize}
+
+\textbf{Overall Assessment:} Llama 3.1 8B (Few-Shot) shows improved structural fluency and correctly identifies many clinical events, including the VT/cardioversion sequence. However, it introduces a systematic date parsing error (all events assigned to June), misclassifies the heart failure treatment as a diagnostic test, incorrectly describes the patient as having been ``sent home,'' and confuses the sequence of cardiac resuscitation events. The few-shot examples appear to have improved structural awareness at the cost of introducing new categories of factual error.
+
+\subsection{Llama 3.3 70B — Zero-Shot Output and Error Analysis (via Groq)}
+
+\begin{mdframed}[backgroundcolor=green!5, linewidth=0.5pt]
+\small
+\textbf{Llama 3.3 70B Zero-Shot Output:}\\
+The patient was admitted to the hospital on 12/06 and sent home on 12/21, staying for 14 days and 11 hours in a general hospital room, with the government health scheme as the payer. The patient had heart failure (a condition where the heart does not pump blood well) and was given dobutamine (a medicine to help the heart pump better) on 12/07 and 12/08. The patient also had a pus-filled swelling in the left thigh, which is called osteomyelitis (an infection of the bone) in the pubis, and Fournier's syndrome (a serious infection of the skin and tissues), and had drainage (a procedure to remove pus) on 12/03 with the help of ultrasound (a machine that uses sound waves to create images) and a drain (a tube to remove fluid) was placed on 12/15. The patient was treated with ceftriaxone (an antibiotic given to fight the bacterial infection) based on the culture (a test to find the cause of the infection) of the pus-filled swelling, which showed Escherichia coli (a type of bacteria) infection. The patient had septic shock (a life-threatening condition that happens when the body's response to an infection becomes uncontrolled) from a cutaneous urinary focus (an infection that started in the skin and spread to the urinary system) on 12/16 and was given polymyxin (an antibiotic), amikacin (an antibiotic), and vancomycin (an antibiotic) on 12/17. The patient also had chronic kidney disease (a condition where the kidneys do not work well) and had acute dialysis (a procedure to clean the blood when the kidneys cannot) by fistula (a connection made between an artery and a vein) on 12/16. The patient's blood pressure (BP) was not stable, and the normal range for BP is around 90-120 mmHg, but the patient's BP was not within this range. The patient's heart rate (the number of times the heart beats per minute) was also not stable, and the normal range is around 60-100 beats per minute, but the patient's heart rate was not within this range. The patient had cardiorespiratory arrest (a condition where the heart and lungs stop working) with pulseless electrical activity (a condition where the heart is not pumping blood), and was given treatment, but unfortunately, the patient's condition worsened, and the patient had a slow heartbeat, and the QRS (a part of the heartbeat) was widening, and the patient had worsening shock (a condition where the body's tissues do not get enough blood). The patient was given calcium gluconate (a medicine to treat high potassium levels) and bicarbonate (a medicine to treat acidosis) to treat hyperkalemia (high potassium levels), but unfortunately, the patient's condition did not improve. The patient was also given atropine (a medicine to treat a slow heartbeat) but it did not help. Unfortunately, the patient progressed to asystolic cardiorespiratory arrest (a condition where the heart stops beating), and despite efforts to save the patient, the patient died due to the absence of central pulses (no heartbeat), pupils in fixed mydriasis (no response to light), absence of heart sounds, and asystole (no heartbeat) on the monitor, as well as absence of brainstem reflexes (no response to stimulation). The body was released, and the doctor requests contact with the family to complete the death certificate.
+\end{mdframed}
+
+\textbf{Errors and Limitations:}
+\begin{itemize}
+    \item \textbf{``Sent home on 12/21'' for a deceased patient:} Like the Llama 8B variants, the 70B model uses ``sent home'' to describe a date that is actually the date of death. For a document about a fatal outcome, this phrasing is factually wrong and inappropriate. The instructions specify third-person past tense for deceased patients, and ``sent home'' implies the patient survived.
+    \item \textbf{Blood pressure and heart rate values not in source:} The model invents statements such as ``the normal range for BP is around 90-120 mmHg, but the patient's BP was not within this range'' and analogous statements for heart rate. The original document does not provide specific BP or heart rate values. This is an instance of the model following the instruction to compare values to normal ranges but fabricating the patient's values when none are given — a hallucination born from over-eager rule compliance.
+    \item \textbf{Cardiorespiratory arrest sequence compressed and imprecise:} The model merges the two discrete cardiac events (the initial PEA arrest with CPR and subsequent recovery, followed by the final asystolic arrest) into a single continuous description. The CPR episode and the brief return of circulation are not mentioned. This conflation obscures the clinical timeline.
+    \item \textbf{VT and cardioversion omitted:} The ventricular tachycardia episode and the successful electrical cardioversion that followed the initial arrest are absent from the output. This is a significant clinical event that is entirely undocumented.
+    \item \textbf{Norepinephrine dose not stated:} While the hemodynamic instability is mentioned, the specific norepinephrine dose of 1.5 mcg/kg/min is not included, losing an important indicator of severity.
+    \item \textbf{Ventilator rate increase and mechanism not explained:} The deliberate ventilator rate increase to reduce pCO2 and thereby lower serum potassium is not documented in the output.
+    \item \textbf{Abscess distinct from osteomyelitis not clearly separated:} The output conflates the pus-filled abscess in the left thigh with the description of osteomyelitis. The abscess and the osteomyelitis in the pubis are two related but anatomically distinct findings, and their relationship to Fournier's gangrene is not clearly communicated.
+    \item \textbf{``Bicarbonate to treat acidosis'' — imprecise rationale:} The model describes bicarbonate as ``a medicine to treat acidosis.'' While bicarbonate does treat acidosis, in this specific clinical context it was administered primarily as part of the hyperkalemia management protocol. The stated rationale is partially correct but misses the primary clinical indication.
+\end{itemize}
+
+\textbf{Overall Assessment:} Llama 3.3 70B (Zero-Shot) is substantially more capable than the 8B variant and all fine-tuned local models. It correctly identifies the death, preserves most medications with appropriate explanations, documents the death declaration criteria, and includes the atropine administration. The primary weaknesses are the inappropriate ``sent home'' phrasing for a fatal outcome, the fabrication of blood pressure and heart rate values not present in the source, and the omission of the VT/cardioversion event. Overall, it represents a significant step forward in factual reliability and completeness.
+
+\subsection{Gemini 2.5 Flash Output and Error Analysis}
+
+\begin{mdframed}[backgroundcolor=green!5, linewidth=0.5pt]
+\small
+\textbf{Gemini 2.5 Flash Output:}\\
+The patient was admitted to the hospital on December 6th and passed away on December 21st, after a stay of 14 days and 11 hours. He/She was in a general hospital room, and the hospital bill was covered by a government health scheme. During the hospital stay, the patient had several serious conditions. He/She had heart failure (a condition where the heart cannot pump blood well enough). On December 7th and 8th, he/she received dobutamine (a medicine given to help the heart pump stronger). The patient also had a pus-filled swelling (a collection of thick, yellowish fluid from infection) in the left thigh, and osteomyelitis (a serious infection in the bone) in the pubis (a bone in the hip area). He/She also suffered from Fournier's syndrome (a very serious and fast-spreading infection of the skin and tissues around the private parts). On December 3rd, doctors performed drainage (removed the pus or fluid) from the swelling, guided by an ultrasound (a scan using sound waves to see inside the body). A drain (a tube to let fluid out) was placed on December 15th. The infection was treated with ceftriaxone (an antibiotic given to fight bacterial infections). This treatment was guided by a culture (a test to grow and identify the germs causing the infection) of the pus, which showed Escherichia coli (a type of bacteria) that was susceptible to many infection-fighting medicines. After the patient went into shock, an incision (a cut made by a doctor) was made in the ICU (serious care room) on December 17th, and a lot of pus came out. \{omitted\}. On December 16th, the patient developed septic shock (a very dangerous condition where the body's response to an infection causes very low BP and organ damage), which came from a skin infection related to the urinary system. He/She was given polymyxin (an antibiotic) starting December 15th, and amikacin (an antibiotic) and vancomycin (an antibiotic) on December 17th. The patient had chronic kidney disease (long-term kidney damage where the kidneys don't work well). On December 16th, he/she needed acute dialysis (a procedure to clean the blood when the kidneys suddenly stop working) through a fistula (a special connection made in the arm for dialysis). The patient experienced cardiorespiratory arrest (when the heart and breathing stop) with pulseless electrical activity (meaning the heart's electrical system was working, but it was not strong enough to produce a pulse or pump blood). This happened 10 minutes after intubation (placing a breathing tube into the windpipe). There was a report of a previous slow heartbeat (a heart rate lower than the normal 60-100 beats per minute). After 1 minute of cardiopulmonary resuscitation (CPR -- chest compressions and rescue breaths to restart the heart and breathing), the patient's heartbeat returned. After the cardiorespiratory arrest, the patient developed VT with pulse (ventricular tachycardia -- a very fast and abnormal heart rhythm, but the heart was still pumping blood). He/She received effective electrical cardioversion (using an electric shock to reset the heart's rhythm). In the last half hour, [person]'s condition became unstable (worse), requiring an increase in norepinephrine (a medicine to raise blood pressure) up to 1.5 mcg/kg/min. His/Her condition progressed with a slow heartbeat (lower than normal), QRS widening (an abnormal finding on the heart tracing), and worsening shock (the dangerous condition of very low BP and organ damage was getting worse). Even after kidney dialysis, the patient had hyperkalemia (high levels of potassium in the blood; normal potassium levels are usually 3.5-5.0 mEq/L). To address this, he/she was given 2 ampoules (small sealed glass capsules) of calcium gluconate (a medicine to protect the heart from high potassium) and 100 ml of bicarbonate (a medicine to correct acid levels in the blood and help with high potassium). The respiratory rate (breathing rate) on the ventilator (breathing machine) was increased to reduce the pCO2 (carbon dioxide level in the blood; normal range is usually 35-45 mmHg), which would also help reduce the potassium levels. Two ampoules of atropine (a medicine sometimes used to speed up a slow heart rate) were given, but they did not help. [person] then progressed to asystolic cardiorespiratory arrest (when the heart and breathing stop, and there is no electrical activity in the heart, showing a flat line on the monitor), \{omitted\} in refractory shock (shock that did not respond to treatment). The doctor declared \{omitted\} dead due to the absence of central pulses (no heartbeat felt in major arteries), pupils (the black part of the eye) being wide open and not reacting to light (fixed mydriasis), absence of heart sounds (no heartbeat heard with a stethoscope), asystole (a flat line) on the monitor, and absence of brainstem reflexes (no automatic body responses controlled by the brainstem). The body was released. The doctor requested contact with the family and was awaiting the completion of the death certificate. The cause of death was related to the Fournier's gangrene and its complications.
+\end{mdframed}
+
+\textbf{Errors and Limitations:}
+\begin{itemize}
+    \item \textbf{Gender ambiguity expressed as ``He/She'':} The original document contains no gender information; the patient's gender is protected by placeholders. The model handles this by consistently writing ``He/She,'' which is technically correct but stylistically awkward for a patient-facing document. A preferred approach would be to use gender-neutral pronouns (``they/their'') or to note to the reader that gender information was not recorded.
+    \item \textbf{Cause of death slightly overstated:} The model adds ``The cause of death was related to the Fournier's gangrene and its complications.'' While Fournier's gangrene was indeed a major contributing condition, the direct cause of death as documented was asystolic cardiorespiratory arrest in the setting of refractory septic shock and hyperkalemia. Attributing death solely to Fournier's gangrene slightly oversimplifies the multi-factorial terminal event, though this is a minor editorial issue rather than a dangerous error.
+    \item \textbf{Minor: polymyxin start date presentation:} The model states polymyxin was given ``starting December 15th'' by correctly interpreting ``polymyxin d0 12/15'' (day zero of polymyxin therapy on 12/15). This is factually correct but could be made slightly clearer for a lay reader.
+\end{itemize}
+
+\textbf{Overall Assessment:} Gemini 2.5 Flash produces the most complete, accurate, and well-structured lay language conversion of any model tested. It correctly identifies the fatal outcome from the outset (``passed away''), preserves all major clinical events including the VT/cardioversion sequence, CPR details, norepinephrine dose, atropine administration, ventilator adjustment and its rationale, and the full death declaration criteria. It provides appropriate normal range context for laboratory values and vital signs, faithfully reproduces placeholders, and maintains a respectful, calm tone throughout. The errors identified are minor — a stylistic awkwardness with gender pronouns and a slight oversimplification of the cause of death attribution. This model, with its large context window and instruction-following capability, is clearly the most suitable for clinical lay language conversion of the models evaluated.
+
+\subsection{Comparative Summary of All Models}
 
 Table~\ref{tab:comparison} provides a side-by-side comparison of model performance across key evaluation dimensions for this example.
 
-\begin{longtable}{@{}p{3.5cm}p{2.2cm}p{2.2cm}p{2.2cm}p{2.2cm}@{}}
-\caption{Qualitative comparison of model outputs on the representative discharge summary.}
+\begin{longtable}{@{}p{3.2cm}p{1.5cm}p{1.5cm}p{1.5cm}p{1.6cm}p{1.6cm}p{1.6cm}@{}}
+\caption{Qualitative comparison of model outputs on the representative discharge summary. Llama 8B column reflects the zero-shot variant (see Section~\ref{sec:comparative} for prompting strategy comparison).}
 \label{tab:comparison}\\
 \toprule
-\textbf{Criterion} & \textbf{BioBART} & \textbf{BioGPT} & \textbf{Flan-T5} & \textbf{SciFive} \\
+\textbf{Criterion} & \textbf{BioBART} & \textbf{BioGPT} & \textbf{Flan-T5} & \textbf{SciFive} & \textbf{Llama 8B} & \textbf{Llama 70B} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Criterion} & \textbf{BioBART} & \textbf{BioGPT} & \textbf{Flan-T5} & \textbf{SciFive} \\
+\textbf{Criterion} & \textbf{BioBART} & \textbf{BioGPT} & \textbf{Flan-T5} & \textbf{SciFive} & \textbf{Llama 8B} & \textbf{Llama 70B} \\
 \midrule
 \endhead
-Factual accuracy & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} \\
-Death outcome correctly stated & \textcolor{red}{No} & \textcolor{orange}{Partial} & \textcolor{red}{No} & \textcolor{red}{No} \\
-Cause of death correct & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\
-No hallucinated content & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} \\
-Prose fluency & \textcolor{orange}{Moderate} & \textcolor{orange}{Moderate} & \textcolor{red}{Poor} & \textcolor{green}{Good} \\
-Date accuracy & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{red}{Poor} \\
-Medications preserved & \textcolor{orange}{Partial} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} \\
-No prompt leakage & \textcolor{green}{Yes} & \textcolor{green}{Yes} & \textcolor{red}{No} & \textcolor{green}{Yes} \\
-Output completeness & \textcolor{orange}{Partial} & \textcolor{red}{Truncated} & \textcolor{red}{Degenerated} & \textcolor{orange}{Partial} \\
-Appropriate tone & \textcolor{orange}{Partial} & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} \\
+\bottomrule
+\endfoot
+Factual accuracy & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{green}{Good} \\
+Death outcome correctly stated & \textcolor{red}{No} & \textcolor{orange}{Partial} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} \\
+Cause of death correct & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} \\
+No hallucinated content & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} \\
+Prose fluency & \textcolor{orange}{Moderate} & \textcolor{orange}{Moderate} & \textcolor{red}{Poor} & \textcolor{green}{Good} & \textcolor{green}{Good} & \textcolor{green}{Good} \\
+Date accuracy & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{green}{Good} \\
+Medications preserved & \textcolor{orange}{Partial} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{green}{Good} \\
+No prompt leakage & \textcolor{green}{Yes} & \textcolor{green}{Yes} & \textcolor{red}{No} & \textcolor{green}{Yes} & \textcolor{green}{Yes} & \textcolor{green}{Yes} \\
+Output completeness & \textcolor{orange}{Partial} & \textcolor{red}{Truncated} & \textcolor{red}{Degen.} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} \\
+Appropriate tone & \textcolor{orange}{Partial} & \textcolor{red}{Poor} & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{green}{Good} & \textcolor{green}{Good} \\
+VT/cardioversion captured & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{red}{No} & \textcolor{orange}{Few-shot only} & \textcolor{red}{No} \\
+\midrule
+\endlastfoot
+\multicolumn{7}{l}{\small $^{*}$Llama 8B results reflect the zero-shot variant; few-shot correctly captured VT/cardioversion (see Section~\ref{sec:comparative}).} \\
+\multicolumn{7}{l}{\small Gemini 2.5 Flash is assessed separately in Table~\ref{tab:gemini} due to its superior overall performance.} \\
 \bottomrule
 \end{longtable}
 
-The results demonstrate that all four fine-tuned models fail to meet the requirements for safe and accurate lay language conversion on this complex case. The most critical failure mode shared across all models is \textbf{hallucination of clinical content} — particularly the cause of death. This highlights a fundamental limitation of current fine-tuning approaches: models optimized for fluency and surface-level simplification do not inherently acquire the factual grounding necessary for clinical document conversion. Future work should explore retrieval-augmented generation (RAG), constrained decoding strategies, or larger instruction-tuned foundation models as base architectures to address these shortcomings.
+\begin{table}[h]
+\centering
+\caption{Gemini 2.5 Flash performance on the representative discharge summary.}
+\label{tab:gemini}
+\begin{tabular}{lc}
+\toprule
+\textbf{Criterion} & \textbf{Gemini 2.5 Flash} \\
+\midrule
+Factual accuracy & \textcolor{green}{Excellent} \\
+Death outcome correctly stated & \textcolor{green}{Yes} \\
+Cause of death correct & \textcolor{green}{Yes (minor simplification)} \\
+No hallucinated content & \textcolor{green}{Yes} \\
+Prose fluency & \textcolor{green}{Excellent} \\
+Date accuracy & \textcolor{green}{Excellent} \\
+Medications preserved & \textcolor{green}{Yes} \\
+No prompt leakage & \textcolor{green}{Yes} \\
+Output completeness & \textcolor{green}{Complete} \\
+Appropriate tone & \textcolor{green}{Excellent} \\
+VT/cardioversion captured & \textcolor{green}{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Comparative Analysis: LLM-Based Strategies and Local vs.\ Cloud Models}
+\label{sec:comparative}
+
+\subsection{Prompting Strategy Comparison: Zero-Shot vs.\ One-Shot vs.\ Few-Shot (Llama 3.1 8B)}
+
+The three prompting strategies applied to Llama 3.1 8B reveal a nuanced trade-off between structural quality and factual accuracy:
+
+\textbf{Zero-Shot} produced the most factually reliable output among the three 8B variants. Relying purely on the 12-rule system prompt, the model correctly identified the fatal outcome and preserved most major clinical events with appropriate lay explanations. The primary weaknesses were omissions (atropine, VT/cardioversion, norepinephrine dose) and the use of ``discharged'' language for a fatal outcome. The absence of in-context examples meant the model had no structural anchor, but this also reduced the risk of inheriting stylistic errors from example outputs.
+
+\textbf{One-Shot} improved prose fluency and structural organisation. However, the in-context example appears to have introduced a category confusion: dobutamine, likely presented as a medication in the example, was mischaracterised as a diagnostic ``test'' in the output. This illustrates a key risk of one-shot prompting — the model can over-generalise from a single example, applying patterns from the example inappropriately to different clinical contexts.
+
+\textbf{Few-Shot} produced the most fluent prose and correctly identified the VT/cardioversion sequence — a complex event that the zero-shot and one-shot variants missed entirely. However, it introduced the most severe systematic error: a month-level date parsing failure. The original document uses MM/DD format (all events in December), but the model re-read the admission date ``12/06'' as the 12th of June under a DD/MM interpretation and propagated the month ``June'' to all subsequent dates. This appears to be a consequence of the model pattern-matching the date format from the few-shot examples without correctly parsing the discharge summary's own date structure. The few-shot approach also continued to use ``sent home'' language for the death date, and misattributed the cardioversion shock to the PEA arrest rather than the subsequent VT episode.
+
+Overall, for the Llama 3.1 8B model, \textbf{zero-shot prompting with the 12-rule system prompt offers the best reliability-accuracy trade-off at the overall level}, given that few-shot's gain in capturing VT/cardioversion is outweighed by its introduction of a catastrophic date parsing failure affecting every clinical event. However, these results also suggest that if few-shot examples could be carefully curated with consistent date formats, the few-shot approach could yield the best of both worlds. Example selection and format normalisation are therefore critical factors when applying few-shot prompting in clinical domains.
+
+\subsection{Model Scale Comparison: Llama 3.1 8B vs.\ Llama 3.3 70B}
+
+Comparing the 8B and 70B variants under zero-shot conditions reveals the substantial impact of model scale on clinical lay language conversion:
+
+Llama 3.3 70B preserved significantly more clinical detail, including all three antibiotics for septic shock with their correct start dates, the death declaration criteria, the atropine administration, and contextual normal ranges for laboratory values. Its prose fluency was markedly superior and it demonstrated a better understanding of the sequential causality of the clinical deterioration.
+
+The 70B model's primary weaknesses — the ``sent home'' phrasing for a death, the fabricated BP/heart rate values, and the omission of VT/cardioversion — are all relatively minor compared to the hallucinations, date confusions, and cause-of-death falsifications seen in the local fine-tuned models. This suggests that the improvements from 8B to 70B are primarily in \textbf{factual recall and completeness} rather than in eliminating all error categories.
+
+\subsection{Local Fine-Tuned Models vs.\ Cloud LLMs}
+
+The most striking finding of this evaluation is the categorical performance gap between the locally fine-tuned biomedical models (BioGPT, SciFive, BioBART, Flan-T5) and the cloud-based LLMs (Llama 3.1 8B, Llama 3.3 70B, Gemini 2.5 Flash). The key dimensions of this gap are summarised below:
+
+\textbf{Hallucination Rate:} All four fine-tuned local models produced dangerous hallucinations — fabricated conditions (``driasis,'' ``burn in the ear, nose, and throat''), invented medications (``kidney diazepam''), falsified causes of death (``Abstinence,'' ``ENT burn''), and incorrect gender assignments. The cloud LLMs produced significantly fewer hallucinations. Gemini 2.5 Flash produced no clinically dangerous hallucinations. The Llama 70B model's fabrication of BP/heart rate values not present in the source is a minor over-compliance hallucination rather than a factual invention.
+
+\textbf{Output Completeness:} Local models were consistently plagued by truncation (BioGPT), decoder degeneration (Flan-T5), and large-scale omissions of critical clinical events. Cloud LLMs, benefiting from much larger context windows and more stable decoding at inference time, produced complete outputs without chunking artifacts or boundary stitching failures.
+
+\textbf{Instruction Following:} Fine-tuning on the medical simplification dataset appears to have damaged rather than improved instruction-following capability in the local models. Flan-T5 exhibited prompt leakage. BioGPT adopted an inappropriate academic case-report register. None of the local models reliably applied the third-person past tense rule for deceased patients. Cloud LLMs, with far more extensive instruction-tuning, followed the system prompt's structural and tonal rules far more consistently.
+
+\textbf{Prose Quality:} SciFive produced the most readable prose among local models, but its factual accuracy was poor. Cloud LLMs produced consistently fluent, well-organised prose that appropriately explained technical terms without introducing new jargon.
+
+\textbf{Computational Trade-offs:} Local models offer the significant advantage of data privacy — clinical discharge summaries contain protected health information (PHI), and processing them via cloud APIs raises regulatory concerns (HIPAA, GDPR). Local deployment avoids data transmission to third-party servers. However, the quality gap at the parameter scales feasible on consumer or research-grade hardware is too large to be bridged by fine-tuning alone. Future work exploring techniques such as quantized local inference of 70B+ models, retrieval-augmented generation (RAG) with clinical knowledge bases, or constrained decoding may narrow this gap.
+
+\textbf{Summary:} Gemini 2.5 Flash is the clear best-performing model for this task in the current evaluation, achieving near-complete factual preservation, correct death outcome handling, appropriate tone, and excellent prose quality. Llama 3.3 70B via Groq is a strong second, with minor gaps in completeness. The locally fine-tuned models, despite their domain specialisation, are not yet suitable for clinical deployment due to persistent hallucination and instruction-following failures.
+
+\begin{table}[h]
+\centering
+\caption{High-level comparison of local fine-tuned models vs.\ cloud LLMs.}
+\label{tab:localvscloud}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Dimension} & \textbf{Local (Best: SciFive)} & \textbf{Llama 8B} & \textbf{Llama 70B} & \textbf{Gemini 2.5 Flash} \\
+\midrule
+Hallucination risk & \textcolor{red}{High} & \textcolor{orange}{Low-Medium} & \textcolor{orange}{Low} & \textcolor{green}{Minimal} \\
+Output completeness & \textcolor{red}{Partial/Truncated} & \textcolor{orange}{Partial} & \textcolor{orange}{Good} & \textcolor{green}{Complete} \\
+Date accuracy & \textcolor{red}{Poor} & \textcolor{orange}{Partial} & \textcolor{green}{Good} & \textcolor{green}{Excellent} \\
+Death handling & \textcolor{red}{Fails} & \textcolor{orange}{Partial} & \textcolor{orange}{Partial} & \textcolor{green}{Correct} \\
+Prose quality & \textcolor{orange}{Moderate} & \textcolor{green}{Good} & \textcolor{green}{Good} & \textcolor{green}{Excellent} \\
+Chunking required & \textcolor{red}{Yes (artifacts)} & \textcolor{green}{No} & \textcolor{green}{No} & \textcolor{green}{No} \\
+Data privacy & \textcolor{green}{Local/Private} & \textcolor{red}{Cloud API} & \textcolor{red}{Cloud API} & \textcolor{red}{Cloud API} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section*{References}
 \begin{itemize}
