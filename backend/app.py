@@ -153,7 +153,7 @@ def load_scifive():
         return None, None
     
     model_path = os.path.join(os.path.dirname(__file__), "..", "SciFive", "model")
-    hf_fallback = "razent/SciFive-base-Pubmed_Pmc"
+    hf_fallback = "11Raghav/SciFive"
     
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -202,7 +202,7 @@ def load_biobart():
         return None, None
 
     model_path = _resolve_biobart_model_path()
-    hf_fallback = "GanjinZero/biobart-v2-base"
+    hf_fallback = "11Raghav/BioBART"
 
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -249,7 +249,7 @@ def load_biogpt():
         return None, None
 
     model_path = _resolve_biogpt_model_path()
-    hf_fallback = "microsoft/biogpt"
+    hf_fallback = "11Raghav/BioGPT"
 
     try:
         device = "cuda" if torch.cuda.is_available() else "cpu"
