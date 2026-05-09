@@ -11,6 +11,9 @@
 \usepackage{longtable}
 \usepackage{enumitem}
 \usepackage{mdframed}
+\usepackage{xurl}
+\DeclareUnicodeCharacter{2581}{\_}
+
 
 
 \title{Medical Discharge Summary Simplification for Patients}
@@ -113,7 +116,7 @@ The pipeline consists of several stages:
 
 \textbf{Why it failed in this context:} 
 \begin{itemize}
-    \item \textbf{Memory Intensity:} Due to its large parameter count and the complexity of the GSG-informed attention mechanism, the model consistently triggered \texttt{OutOfMemoryError} (OOM) on the Kaggle T4 x2 GPU environment.
+    \item \textbf{Memory Intensity:} Due to its large parameter count and the complexity of the GSG-informed attention mechanism, the model consistently triggered \texttt{OutOfMemoryError} (OOM) on the Kaggle T4 x2 GPU environment. \sloppy
     \item \textbf{Input Scaling:} The model's efficiency on long clinical documents was limited by the high VRAM requirements of its specific Transformer implementation when processing documents at the 512-1024 token scale.
 \end{itemize}
 
