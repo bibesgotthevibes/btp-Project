@@ -41,6 +41,13 @@ The task involves a sequence-to-sequence transformation where the input is a tec
 \end{itemize}
 
 \section{Datasets}
+\subsection{Data Sources}
+The datasets and models used in this project are publicly available through the following repositories:
+\begin{itemize}
+    \item \textbf{MedSiML Project Repository:} \url{https://github.com/nepython/MedSiML/tree/main/data}
+    \item \textbf{Harvard Dataverse Dataset:} \url{https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/GWNBQQ}
+\end{itemize}
+
 \subsection{Fine-tuning Dataset: \texttt{data.tsv}}
 The models are fine-tuned on the \texttt{data.tsv} dataset, which contains parallel pairs of original medical texts and their simplified English counterparts. To ensure the model learns simplification rather than aggressive summarization, a preservation filter is applied to discard samples where the simplified text is significantly shorter than the original (ratio $< 0.45$). Due to computational resource constraints on the Kaggle platform—specifically GPU memory and session time limits—fine-tuning was restricted to a subset of 10,000 samples.
 
