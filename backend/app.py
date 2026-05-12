@@ -505,8 +505,6 @@ def simplify():
     # ── No valid API configured ───────────────────────────────────────────
     return jsonify({"error": "No valid API configured. Set CEREBRAS_API_KEY, GEMINI_API_KEY, or GROQ_API_KEY in .env"}), 500
 
-
-
 def _text_chunk_hf(text, max_words=150, overlap=30):
     words = text.split()
     chunks = []
@@ -520,31 +518,51 @@ def _text_chunk_hf(text, max_words=150, overlap=30):
     return chunks
 
 def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
+    import requests
+    import os
     API_URL = f"https://api-inference.huggingface.co/models/{hf_repo}"
-    
-    # HF is public, token is optional but helps with rate limits
     hf_token = os.getenv("HF_TOKEN", "")
-    headers = {"Authorization": f"Bearer {hf_token}"} if hf_token else {}
+    
+    if not hf_token:
+        from flask import jsonify
+        return jsonify({"error": "Missing HF_TOKEN in .env. Please add HF_TOKEN='your_huggingface_token' to the backend/.env file to use Hugging Face inference."}), 502
+
+    headers = {"Authorization": f"Bearer {hf_token}"}
     
     chunks = _text_chunk_hf(text)
     outputs = []
     
-    import requests
     for chunk in chunks:
         payload = {
             "inputs": prefix + chunk + suffix,
-            "inputs": pr:                       "inputs": pr:                          "input":             "inputs": pr:    nalty": 1.5,
+            "parameters": {
+                "max_new_tokens": 512,
+                "num_beams": 4,
+                "length_penalty": 1.5,
                 "early_stopping": True,
-                "no_repe             ":                "no_repe             ":            os                "no_reper              d)         
-                                0:                              er                                0:           s.tex                                              .j                         ce(js              and "generated_text" in json_res[0]:
+                "no_repeat_ngram_size": 4
+            }
+        }
+        res = requests.post(API_URL, headers=headers, json=payload)
+        
+        if res.status_code != 200:
+            return jsonify({"error": f"HF API Error ({res.status_code}): {res.text}"}), 502
+            
+        json_res = res.json()
+        if isinstance(json_res, list) and "generated_text" in json_res[0]:
             out_text = json_res[0]["generated_text"]
-            out_text = out_text.replace(prefix    hunk + suffix, "").strip()
+            out_text = out_text.replace(prefix + chunk + suffix, "").strip()
             outputs.append(out_text)
         elif "error" in json_res:
             return jsonify({"error": f"HF API Model Error: {json_res['error']}"}), 502
-                                  ut    )
+            
+    return " ".join(outputs)
 
-def _call_deffidef _call_deffegy="zdef _call_deffidef _cmethdef _call_deffide redef _call_deffidef _call_deffegy="zdef _calive"def _call_deffidef _call_deffegy="zdef _call_deffidef _cmethdef _call_deffide redef _call_deffidef _call_deffegy="zdef _calive"def _call mdef _call_deffidef _call_deffegy="zdefreturn jsonify({"result": res, "model": model_info["name"] if model_info else "SciFive", "tokens": None})
+def _call_scifive(text, strategy="zero-shot", selection_method="random"):
+    res = _call_hf_inference(text, "11Raghav/SciFive", prefix="lay simplify preserving all details: ")
+    if isinstance(res, tuple): return res 
+    model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
+    return jsonify({"result": res, "model": model_info["name"] if model_info else "SciFive", "tokens": None})
 
 def _call_biobart(text, strategy="zero-shot", selection_method="random"):
     res = _call_hf_inference(text, "11Raghav/BioBART")
@@ -552,7 +570,9 @@ def _call_biobart(text, strategy="zero-shot", selection_method="random"):
     model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioBART", "tokens": None})
 
-def _call_biogpt(text, strategy="zero-shot", selectdef _call_biogpt(text, strategy="calldef _call_biogpt(text, strategy=oGdef _call_biogpt(text, strategy="zero-shot", selectdef _call_biogpt(text, strategy="   def _call_biogpt(text, strategy="zero-
+def _call_biogpt(text, strategy="zero-shot", selection_method="random"):
+    res = _call_hf_inference(text, "11Raghav/BioGPT", prefix="lay simplify preserving all details: ", suffix="\n### Simplified: ")
+    if isinstance(res, tuple): return res 
     model_info = next((m for m in MODELS if m["id"] == "biogpt-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioGPT", "tokens": None})
 

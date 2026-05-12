@@ -11,10 +11,10 @@ module.exports = {
     },
     {
       name: "medsimplify-backend",
-      script: "../.venv/bin/gunicorn",
-      args: "-w 4 -b 127.0.0.1:5001 app:app",
+      script: "gunicorn",
+      args: "-w 4 --access-logfile - -b 127.0.0.1:5001 app:app",
       cwd: "./backend",
-      interpreter: "python3", 
+      interpreter: "../.venv/bin/python", 
       env: {
         PORT: 5001,
         FLASK_ENV: "production"

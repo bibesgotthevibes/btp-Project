@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Proxy API requests to backend
 app.use(
-  '/api',
+  '/api', (req, res, next) => { req.url = req.originalUrl; next(); },
   createProxyMiddleware({
     target: 'http://127.0.0.1:5001',
     changeOrigin: true,
