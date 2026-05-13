@@ -50,6 +50,7 @@ from db import db
 from auth import auth_bp
 from chunking_logic import generate_scifive_chunked, generate_biobart_chunked, generate_biogpt_chunked
 
+
 # ── App setup ─────────────────────────────────────────────────────────────────
 app = Flask(__name__)
 
@@ -69,7 +70,7 @@ CORS(
 )
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/medsimplify"
+    "DATABASE_URL", "sqlite:///medsimplify.db"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -524,7 +525,7 @@ def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
     hf_token = os.getenv("HF_TOKEN", "")
     
     if not hf_token:
-        from flask import jsonify
+        # User needs to add HF Token to .env
         return jsonify({"error": "Missing HF_TOKEN in .env. Please add HF_TOKEN='your_huggingface_token' to the backend/.env file to use Hugging Face inference."}), 502
 
     headers = {"Authorization": f"Bearer {hf_token}"}
@@ -540,7 +541,8 @@ def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
                 "num_beams": 4,
                 "length_penalty": 1.5,
                 "early_stopping": True,
-                "no_repeat_ngram_size": 4
+                "no_repeat_ngram_size": 4,
+                "return_full_text": False
             }
         }
         res = requests.post(API_URL, headers=headers, json=payload)
@@ -550,8 +552,12 @@ def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
             
         json_res = res.json()
         if isinstance(json_res, list) and "generated_text" in json_res[0]:
-            out_text = json_res[0]["generated_text"]
-            out_text = out_text.replace(prefix + chunk + suffix, "").strip()
+            out_text = json_res[0]["generated_text"].strip()
+            # Fallback in case Model Ignores return_full_text
+            prompt_str = prefix + chunk + suffix
+            if out_text.startswith(prompt_str):
+                out_text = out_text[len(prompt_str):].strip()
+            
             outputs.append(out_text)
         elif "error" in json_res:
             return jsonify({"error": f"HF API Model Error: {json_res['error']}"}), 502
@@ -559,20 +565,44 @@ def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
     return " ".join(outputs)
 
 def _call_scifive(text, strategy="zero-shot", selection_method="random"):
-    res = _call_hf_inference(text, "11Raghav/SciFive", prefix="lay simplify preserving all details: ")
-    if isinstance(res, tuple): return res 
+    if torch is None: # fallback to huggingface
+        res = _call_hf_inference(text, "11Raghav/SciFive", prefix="lay simplify preserving all details: ")
+        if isinstance(res, tuple): return res
+    else:
+        model, tokenizer = load_scifive()
+        if model is None:
+            return jsonify({"error": "SciFive local model failed to load"}), 500
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        res = generate_scifive_chunked(text, model, tokenizer, device)
+        
     model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "SciFive", "tokens": None})
 
 def _call_biobart(text, strategy="zero-shot", selection_method="random"):
-    res = _call_hf_inference(text, "11Raghav/BioBART")
-    if isinstance(res, tuple): return res 
+    if torch is None: # fallback to huggingface
+        res = _call_hf_inference(text, "11Raghav/BioBART")
+        if isinstance(res, tuple): return res 
+    else:
+        model, tokenizer = load_biobart()
+        if model is None:
+            return jsonify({"error": "BioBART local model failed to load"}), 500
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        res = generate_biobart_chunked(text, model, tokenizer, device)
+        
     model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioBART", "tokens": None})
 
 def _call_biogpt(text, strategy="zero-shot", selection_method="random"):
-    res = _call_hf_inference(text, "11Raghav/BioGPT", prefix="lay simplify preserving all details: ", suffix="\n### Simplified: ")
-    if isinstance(res, tuple): return res 
+    if torch is None: # fallback to huggingface
+        res = _call_hf_inference(text, "11Raghav/BioGPT", prefix="lay simplify preserving all details: ", suffix="\n### Simplified: ")
+        if isinstance(res, tuple): return res 
+    else:
+        model, tokenizer = load_biogpt()
+        if model is None:
+            return jsonify({"error": "BioGPT local model failed to load"}), 500
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        res = generate_biogpt_chunked(text, model, tokenizer, device)
+        
     model_info = next((m for m in MODELS if m["id"] == "biogpt-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioGPT", "tokens": None})
 

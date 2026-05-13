@@ -4,13 +4,21 @@ A full-stack web application that simplifies complex medical discharge summaries
 
 ---
 
+## 🚀 Live Demo & AWS Deployment
+
+**Live App URL:** [http://16.171.200.81/](http://16.171.200.81/)
+
+*Note on AWS Free Tier:* The app runs on an AWS EC2 instance. Due to the strict 1GB RAM memory constraints of the AWS Free Tier, the heavy local PyTorch models (SciFive, BioBART, BioGPT) cannot be loaded directly into memory without causing an out-of-memory crash. However, **all Cloud LLM API-based models (Gemini, Llama 3 via Groq & Cerebras) are fully functional** on the live demo!
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
 | Frontend | React 18, Vite, Tailwind CSS, Axios |
 | Backend | Python Flask, Flask-JWT-Extended, PyTorch, HuggingFace Transformers |
-| Database | PostgreSQL + SQLAlchemy ORM |
+| Database | SQLite + SQLAlchemy ORM |
 | AI Cloud APIs | Google GenAI (Gemini), Groq, Cerebras Cloud SDK |
 | AI Local Models | SciFive (T5), BioBART, BioGPT (Causal LM) |
 
@@ -41,36 +49,34 @@ btp-Project/
 
 - **Python 3.9+**
 - **Node.js 18+**
-- **PostgreSQL** (running locally)
 - API Keys for one (or more) of the supported Cloud APIs (optional if only using local weights):
   - [Gemini API Key](https://aistudio.google.com/)
   - [Groq API Key](https://console.groq.com/)
   - [Cerebras API Key](https://cloud.cerebras.ai)
+  - [Hugging Face Token](https://huggingface.co/settings/tokens) (Optional, for downloading fine-tuned weights)
 
 ---
 
 ## Installation & Setup
 
-### 1. Clone the repository & Database
+### 1. Clone the repository
 ```bash
 git clone <your-repo-url>
 cd btp-Project
-
-# Create the PostgreSQL database locally
-createdb medsimplify
 ```
 
 ### 2. Configure Environment Variables
-Create a `.env` file in the project root containing your database configs and API keys:
+Create a `.env` file in the project root containing your database config and API keys. The app uses a local auto-created SQLite database by default.
 
 ```env
 # Cloud AI Keys
 CEREBRAS_API_KEY="your_cerebras_key"
 GEMINI_API_KEY="your_gemini_key"
 GROQ_API_KEY="your_groq_key"
+HF_TOKEN="your_huggingface_token"
 
 # Database & Auth
-DATABASE_URL="postgresql://localhost:5432/medsimplify"
+DATABASE_URL="sqlite:///medsimplify.db"
 JWT_SECRET_KEY="your_jwt_secret_key"
 PORT=5001
 ```
@@ -88,22 +94,28 @@ pip install -r requirements.txt
 cd ..
 ```
 
-### 4. Start the Backend Server
-```bash
-source .venv/bin/activate
-cd backend
-python3 app.py
-```
-> The Flask API will start on **http://localhost:5001** and auto-create the database tables upon first request.
+### 4. Running the App
 
-### 5. Frontend Setup & Run
-Open a **new terminal** window:
+To run the app continuously in the background (ideal for EC2 or local background processing), use **PM2** to run both the frontend and backend using the provided `ecosystem.config.js`.
+
 ```bash
+# Install PM2 globally if you haven't already
+npm install -g pm2
+
+# Build the frontend setup
 cd frontend
 npm install
-npm run dev
+npm run build
+cd ..
+
+# Start both backend and frontend using the ecosystem file
+pm2 start ecosystem.config.js
+
+# To view logs or manage processes:
+pm2 logs
+pm2 status
+pm2 restart all
 ```
-> The React Vite app will launch on **http://localhost:5173** (or 5174). Look for the local link in your terminal. All `/api/*` frontend fetches automatically proxy to `5001`.
 
 ---
 
@@ -115,7 +127,11 @@ The UI allows you to select advanced reasoning modes. Cloud LLMs (Gemini, Llama 
 ### 2. Local Models (SciFive, BioGPT, BioBART)
 The backend supports processing summaries entirely locally for strict privacy. 
 - **Chunked Architecture:** Because clinical discharge summaries frequently exceed the 512/1024 token maximum boundaries, the backend automatically tokenizes and runs a sliding-window chunk generation (e.g., 400 chunk size with 50 overlap). This replicates the training pipelines perfectly.
-- **HuggingFace Fallback:** The backend dynamically searches for base models locally in their respective folders (`SciFive/model/`, `BioBART/model/`, `BioGPT/model/`). If the directories represent fine-tuned weights and aren't found locally, PyTorch will automatically download the base model weights from the Hugging Face Hub (e.g., `razent/SciFive-base-Pubmed_Pmc` or `microsoft/biogpt`).
+- **HuggingFace Auto-Download (Fallback):** The backend dynamically searches for model weight folders locally (`SciFive/model/`, `BioBART/model/`, `BioGPT/model/`). If you don't have the folders downloaded, PyTorch will automatically download the custom fine-tuned weights directly from the Hugging Face Hub (e.g., `11Raghav/SciFive`, `11Raghav/BioBART`, `11Raghav/BioGPT`) and load them into memory automatically cleanly!
+- **Download Model Weights (Google Drive):** If you prefer to download the weights manually instead of letting Hugging Face auto-download them, you can download the local PyTorch `model.safetensors` packages directly:
+  - 📂 **SciFive:** [Insert SciFive Google Drive Link Here]
+  - 📂 **BioBART:** [Insert BioBART Google Drive Link Here]
+  - 📂 **BioGPT:** [Insert BioGPT Google Drive Link Here]
 - **No Hallucinations:** Engineered min-length ceilings dynamically drop to 0 on small trailing text chunks to elegantly stop iteration, preventing models from repeating sentences endlessly.
 
 ---
