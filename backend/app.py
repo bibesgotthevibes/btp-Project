@@ -165,12 +165,17 @@ def load_scifive():
             print(f"[SciFive] Model loaded from local path {model_path} on {device}")
         else:
             print(f"[SciFive] Local path not found. Downloading from HF: {hf_fallback}")
-            SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
-            SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback).to(device)
+            hf_token = os.getenv("HF_TOKEN", "")
+            token_kwarg = {"token": hf_token} if hf_token else {}
+            token_kwarg["extra_special_tokens"] = {}
+            SCIFIVE_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback, **token_kwarg)
+            SCIFIVE_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback, **token_kwarg).to(device)
             print(f"[SciFive] Model downloaded from HF {hf_fallback} on {device}")
             
         return SCIFIVE_MODEL, SCIFIVE_TOKENIZER
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"[SciFive] Failed to load model: {str(e)}")
         return None, None
 
@@ -214,12 +219,17 @@ def load_biobart():
             print(f"[BioBART] Model loaded from local path {model_path} on {device}")
         else:
             print(f"[BioBART] Local path not found. Downloading from HF: {hf_fallback}")
-            BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
-            BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback).to(device)
+            hf_token = os.getenv("HF_TOKEN", "")
+            token_kwarg = {"token": hf_token} if hf_token else {}
+            token_kwarg["extra_special_tokens"] = {}
+            BIOBART_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback, **token_kwarg)
+            BIOBART_MODEL = AutoModelForSeq2SeqLM.from_pretrained(hf_fallback, **token_kwarg).to(device)
             print(f"[BioBART] Model downloaded from HF {hf_fallback} on {device}")
             
         return BIOBART_MODEL, BIOBART_TOKENIZER
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"[BioBART] Failed to load model: {str(e)}")
         return None, None
 
@@ -261,8 +271,11 @@ def load_biogpt():
             print(f"[BioGPT] Model loaded from local path {model_path} on {device}")
         else:
             print(f"[BioGPT] Local path not found. Downloading from HF: {hf_fallback}")
-            BIOGPT_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback)
-            BIOGPT_MODEL = AutoModelForCausalLM.from_pretrained(hf_fallback).to(device)
+            hf_token = os.getenv("HF_TOKEN", "")
+            token_kwarg = {"token": hf_token} if hf_token else {}
+            token_kwarg["extra_special_tokens"] = {}
+            BIOGPT_TOKENIZER = AutoTokenizer.from_pretrained(hf_fallback, **token_kwarg)
+            BIOGPT_MODEL = AutoModelForCausalLM.from_pretrained(hf_fallback, **token_kwarg).to(device)
             print(f"[BioGPT] Model downloaded from HF {hf_fallback} on {device}")
 
         # BioGPT tokenizer has no default pad token — required for generation
@@ -272,6 +285,8 @@ def load_biogpt():
 
         return BIOGPT_MODEL, BIOGPT_TOKENIZER
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"[BioGPT] Failed to load model: {str(e)}")
         return None, None
 
@@ -565,43 +580,43 @@ def _call_hf_inference(text, hf_repo, prefix="", suffix=""):
     return " ".join(outputs)
 
 def _call_scifive(text, strategy="zero-shot", selection_method="random"):
-    if torch is None: # fallback to huggingface
-        res = _call_hf_inference(text, "11Raghav/SciFive", prefix="lay simplify preserving all details: ")
-        if isinstance(res, tuple): return res
-    else:
+    res = None
+    if torch is not None:
         model, tokenizer = load_scifive()
-        if model is None:
-            return jsonify({"error": "SciFive local model failed to load"}), 500
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        res = generate_scifive_chunked(text, model, tokenizer, device)
+        if model is not None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            res = generate_scifive_chunked(text, model, tokenizer, device)
+            
+    if res is None:
+        return jsonify({"error": "Local model failed to load and HuggingFace inference fallback is disabled."}), 500
         
     model_info = next((m for m in MODELS if m["id"] == "scifive-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "SciFive", "tokens": None})
 
 def _call_biobart(text, strategy="zero-shot", selection_method="random"):
-    if torch is None: # fallback to huggingface
-        res = _call_hf_inference(text, "11Raghav/BioBART")
-        if isinstance(res, tuple): return res 
-    else:
+    res = None
+    if torch is not None:
         model, tokenizer = load_biobart()
-        if model is None:
-            return jsonify({"error": "BioBART local model failed to load"}), 500
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        res = generate_biobart_chunked(text, model, tokenizer, device)
+        if model is not None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            res = generate_biobart_chunked(text, model, tokenizer, device)
+            
+    if res is None:
+        return jsonify({"error": "Local model failed to load and HuggingFace inference fallback is disabled."}), 500
         
     model_info = next((m for m in MODELS if m["id"] == "biobart-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioBART", "tokens": None})
 
 def _call_biogpt(text, strategy="zero-shot", selection_method="random"):
-    if torch is None: # fallback to huggingface
-        res = _call_hf_inference(text, "11Raghav/BioGPT", prefix="lay simplify preserving all details: ", suffix="\n### Simplified: ")
-        if isinstance(res, tuple): return res 
-    else:
+    res = None
+    if torch is not None:
         model, tokenizer = load_biogpt()
-        if model is None:
-            return jsonify({"error": "BioGPT local model failed to load"}), 500
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        res = generate_biogpt_chunked(text, model, tokenizer, device)
+        if model is not None:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            res = generate_biogpt_chunked(text, model, tokenizer, device)
+            
+    if res is None:
+        return jsonify({"error": "Local model failed to load and HuggingFace inference fallback is disabled."}), 500
         
     model_info = next((m for m in MODELS if m["id"] == "biogpt-local"), None)
     return jsonify({"result": res, "model": model_info["name"] if model_info else "BioGPT", "tokens": None})

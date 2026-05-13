@@ -87,10 +87,11 @@ Set up the Python virtual environment and install dependencies:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+pip install --upgrade pip
 
 # Install requirements
 cd backend
-pip install -r requirements.txt
+pip install -r requirements.txt google-auth --upgrade
 cd ..
 ```
 
@@ -117,6 +118,13 @@ pm2 status
 pm2 restart all
 ```
 
+**Where to view the app:**
+By default, `ecosystem.config.js` configures the frontend to run on **Port 80**. 
+Once PM2 starts successfully, the working local URL will be:
+👉 **[http://localhost/](http://localhost/)** *(or [http://127.0.0.1/](http://127.0.0.1/))*
+
+> *Note: If PM2 fails to start the frontend locally due to permission issues on port 80, you can change the `PORT: 80` setting inside `ecosystem.config.js` to something like `PORT: 3000`, and then access it at `http://localhost:3000/`.*
+
 ---
 
 ## Inference Modes & AI Features
@@ -128,10 +136,10 @@ The UI allows you to select advanced reasoning modes. Cloud LLMs (Gemini, Llama 
 The backend supports processing summaries entirely locally for strict privacy. 
 - **Chunked Architecture:** Because clinical discharge summaries frequently exceed the 512/1024 token maximum boundaries, the backend automatically tokenizes and runs a sliding-window chunk generation (e.g., 400 chunk size with 50 overlap). This replicates the training pipelines perfectly.
 - **HuggingFace Auto-Download (Fallback):** The backend dynamically searches for model weight folders locally (`SciFive/model/`, `BioBART/model/`, `BioGPT/model/`). If you don't have the folders downloaded, PyTorch will automatically download the custom fine-tuned weights directly from the Hugging Face Hub (e.g., `11Raghav/SciFive`, `11Raghav/BioBART`, `11Raghav/BioGPT`) and load them into memory automatically cleanly!
-- **Download Model Weights (Google Drive):** If you prefer to download the weights manually instead of letting Hugging Face auto-download them, you can download the local PyTorch `model.safetensors` packages directly:
-  - 📂 **SciFive:** [Insert SciFive Google Drive Link Here]
-  - 📂 **BioBART:** [Insert BioBART Google Drive Link Here]
-  - 📂 **BioGPT:** [Insert BioGPT Google Drive Link Here]
+- **Download Model Weights (Google Drive):** Models will be automatically downloaded from Hugging Face if they are missing locally. However, if you face any issues during the automatic download, you can download the local PyTorch `model.safetensors` packages manually from the links below and place them in their respective `model/` folders:
+  - 📂 **SciFive:** [Download SciFive Weights](https://drive.google.com/file/d/1_RbT3U1QPiKYO9lQOjo3AEPqwUK__tbR/view?usp=sharing)
+  - 📂 **BioBART:** [Download BioBART Weights](https://drive.google.com/file/d/1i46AFGnyadSCF5qCQjCFxkFiw-9MjvJg/view?usp=sharing)
+  - 📂 **BioGPT:** [Download BioGPT Weights](https://drive.google.com/file/d/11hqKKYXMPdNzLR5ePieDwSuasOdvr5iV/view?usp=sharing)
 - **No Hallucinations:** Engineered min-length ceilings dynamically drop to 0 on small trailing text chunks to elegantly stop iteration, preventing models from repeating sentences endlessly.
 
 ---
