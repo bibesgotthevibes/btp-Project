@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../models/simplify_result.dart';
 import '../screens/history_screen.dart';
 import '../screens/settings_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   final bool isDark;
   final VoidCallback onToggleTheme;
+  final ValueChanged<SimplifyResult>? onSelectHistory;
 
   const AppDrawer({
     super.key,
     required this.isDark,
     required this.onToggleTheme,
+    this.onSelectHistory,
   });
 
   @override
@@ -87,10 +90,15 @@ class AppDrawer extends StatelessWidget {
               icon: Icons.history_rounded,
               label: 'History',
               isDark: isDark,
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const HistoryScreen()));
+                final res = await Navigator.push<SimplifyResult>(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                );
+                if (res != null && onSelectHistory != null) {
+                  onSelectHistory!(res);
+                }
               },
             ),
             _DrawerItem(

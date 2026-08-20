@@ -4,11 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/simplify_result.dart';
 import '../services/storage_service.dart';
-import '../screens/result_screen.dart';
 import '../theme/app_theme.dart';
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
+  final ValueChanged<SimplifyResult>? onSelect;
+  const HistoryScreen({super.key, this.onSelect});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -90,7 +90,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.history_rounded,
-                      size: 48, color: subColor.withValues(alpha: 0.3)),
+                       size: 48, color: subColor.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   Text(
                     'No history yet',
@@ -118,6 +118,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   result: item,
                   isDark: isDark,
                   index: index,
+                  onSelect: widget.onSelect,
                 );
               },
             ),
@@ -129,11 +130,13 @@ class _HistoryCard extends StatelessWidget {
   final SimplifyResult result;
   final bool isDark;
   final int index;
+  final ValueChanged<SimplifyResult>? onSelect;
 
   const _HistoryCard({
     required this.result,
     required this.isDark,
     required this.index,
+    this.onSelect,
   });
 
   @override
@@ -151,10 +154,12 @@ class _HistoryCard extends StatelessWidget {
         '${result.timestamp.minute.toString().padLeft(2, '0')}';
 
     return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ResultScreen(result: result)),
-      ),
+      onTap: () {
+        if (onSelect != null) {
+          onSelect!(result);
+        }
+        Navigator.pop(context, result);
+      },
       borderRadius: BorderRadius.circular(14),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -232,13 +237,21 @@ class _HistoryCard extends StatelessWidget {
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
-              child: Text(
-                'Tap to view full summary →',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  color: const Color(0xFF6C4DF6),
-                  fontWeight: FontWeight.w500,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Load into Card View & Chat',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: const Color(0xFF6C4DF6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: Color(0xFF6C4DF6)),
+                ],
               ),
             ),
           ],
