@@ -198,8 +198,6 @@ class _HomeScreenState extends State<HomeScreen> {
         isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
 
     final screenWidth = MediaQuery.of(context).size.width;
-    final isThreeColumn = screenWidth >= 1180;
-    final isTwoColumn = screenWidth >= 800 && screenWidth < 1180;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -300,121 +298,123 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Divider(height: 1, color: borderColor),
         ),
       ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        padding: EdgeInsets.symmetric(
-          horizontal: isThreeColumn ? 24 : (screenWidth > 600 ? 20 : 12),
-          vertical: 16,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1600),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Page header ───────────────────────────────────────────────
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Discharge Summary Simplifier & Assistant',
-                            style: GoogleFonts.inter(
-                              fontSize: isThreeColumn ? 22 : 18,
-                              fontWeight: FontWeight.w800,
-                              color: textColor,
-                            ),
-                          ).animate().fadeIn(duration: 300.ms).slideX(begin: -0.02),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Enter your clinical summary to generate an Indian Lay English explanation and chat in real-time with the health assistant.',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, color: subColor, height: 1.4),
-                          ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth;
+          final isDesktop = width >= 1180;
+          final isTablet = width >= 768 && width < 1180;
+          final isMobile = width < 768;
+          final horizontalPadding = isDesktop ? 24.0 : (width > 600 ? 16.0 : 12.0);
 
-                // ── 3-Card Layout ─────────────────────────────────────────────
-                if (isThreeColumn) ...[
-                  // 3 Columns Side-by-Side
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Card 1: Input
-                        Expanded(
-                          flex: 3,
-                          child: _buildInputCard(cardColor, borderColor,
-                              textColor, subColor, isDark),
-                        ),
-                        const SizedBox(width: 16),
-                        // Card 2: Simplified Summary
-                        Expanded(
-                          flex: 4,
-                          child: _buildSummaryCard(cardColor, borderColor,
-                              textColor, subColor, isDark),
-                        ),
-                        const SizedBox(width: 16),
-                        // Card 3: Chatbot Assistant
-                        Expanded(
-                          flex: 4,
-                          child: _buildChatCard(cardColor, borderColor,
-                              textColor, subColor, isDark),
-                        ),
-                      ],
-                    ),
-                  ),
-                ] else if (isTwoColumn) ...[
-                  // 2 Columns: Input on Left, Summary + Chat Stacked on Right
-                  IntrinsicHeight(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          return SingleChildScrollView(
+            controller: _scrollController,
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 16,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Page header ───────────────────────────────────────────────
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                          flex: 4,
-                          child: _buildInputCard(cardColor, borderColor,
-                              textColor, subColor, isDark),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 5,
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildSummaryCard(cardColor, borderColor,
-                                  textColor, subColor, isDark),
-                              const SizedBox(height: 16),
-                              _buildChatCard(cardColor, borderColor,
-                                  textColor, subColor, isDark),
+                              Text(
+                                'Discharge Summary Simplifier & Assistant',
+                                style: GoogleFonts.inter(
+                                  fontSize: isDesktop ? 22 : (isTablet ? 19 : 17),
+                                  fontWeight: FontWeight.w800,
+                                  color: textColor,
+                                ),
+                              ).animate().fadeIn(duration: 300.ms).slideX(begin: -0.02),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Enter your clinical summary to generate an Indian Lay English explanation and chat in real-time with the health assistant.',
+                                style: GoogleFonts.inter(
+                                    fontSize: isMobile ? 12 : 13,
+                                    color: subColor,
+                                    height: 1.4),
+                              ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
                             ],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ] else ...[
-                  // Mobile Single Column Stack
-                  _buildInputCard(
-                      cardColor, borderColor, textColor, subColor, isDark),
-                  const SizedBox(height: 16),
-                  _buildSummaryCard(
-                      cardColor, borderColor, textColor, subColor, isDark),
-                  const SizedBox(height: 16),
-                  _buildChatCard(
-                      cardColor, borderColor, textColor, subColor, isDark),
-                ],
+                    const SizedBox(height: 18),
 
-                const SizedBox(height: 30),
-              ],
+                    // ── Responsive Card Layout ────────────────────────────────────
+                    if (isDesktop) ...[
+                      // Desktop: 3 Columns Side-by-Side
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Card 1: Input
+                          Expanded(
+                            flex: 3,
+                            child: _buildInputCard(cardColor, borderColor,
+                                textColor, subColor, isDark),
+                          ),
+                          const SizedBox(width: 16),
+                          // Card 2: Simplified Summary
+                          Expanded(
+                            flex: 4,
+                            child: _buildSummaryCard(cardColor, borderColor,
+                                textColor, subColor, isDark),
+                          ),
+                          const SizedBox(width: 16),
+                          // Card 3: Chatbot Assistant
+                          Expanded(
+                            flex: 4,
+                            child: _buildChatCard(cardColor, borderColor,
+                                textColor, subColor, isDark),
+                          ),
+                        ],
+                      ),
+                    ] else if (isTablet) ...[
+                      // Tablet: 2 Columns on top (Input + Summary), Chat below
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildInputCard(cardColor, borderColor,
+                                textColor, subColor, isDark),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildSummaryCard(cardColor, borderColor,
+                                textColor, subColor, isDark),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildChatCard(cardColor, borderColor,
+                          textColor, subColor, isDark),
+                    ] else ...[
+                      // Mobile: Single Column Stack
+                      _buildInputCard(
+                          cardColor, borderColor, textColor, subColor, isDark),
+                      const SizedBox(height: 16),
+                      _buildSummaryCard(
+                          cardColor, borderColor, textColor, subColor, isDark),
+                      const SizedBox(height: 16),
+                      _buildChatCard(
+                          cardColor, borderColor, textColor, subColor, isDark),
+                    ],
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -804,10 +804,11 @@ class _HomeScreenState extends State<HomeScreen> {
       Color subColor, bool isDark) {
     if (_result != null) {
       return ChatPanel(
-        result: _result!,
+        result: _result,
+        rawClinicalText: _textController.text,
         model: _selectedModel,
         isCompact: false,
-      ).animate().fadeIn(duration: 250.ms, delay: 100.ms);
+      );
     }
 
     return Container(
@@ -820,17 +821,18 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
                 width: 26,
                 height: 26,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                  color: const Color(0xFF6C4DF6).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.forum_rounded,
-                    size: 16, color: Color(0xFFF59E0B)),
+                    size: 16, color: Color(0xFF6C4DF6)),
               ),
               const SizedBox(width: 8),
               Text(
@@ -842,13 +844,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   letterSpacing: 0.6,
                 ),
               ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: subColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Inactive',
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: subColor,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),
           Divider(height: 1, color: borderColor),
           const SizedBox(height: 12),
           Container(
-            height: 330,
+            height: 280,
             decoration: BoxDecoration(
               color: isDark ? AppTheme.bgDark : AppTheme.bgLight,
               borderRadius: BorderRadius.circular(12),
@@ -856,38 +874,37 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
+                        color: const Color(0xFF6C4DF6).withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.smart_toy_rounded,
-                          size: 24, color: Colors.white),
+                      child: Icon(Icons.lock_clock_rounded,
+                          size: 24,
+                          color: const Color(0xFF6C4DF6).withValues(alpha: 0.7)),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 12),
                     Text(
-                      'Chatbot Ready on Generation',
+                      'Assistant Inactive',
                       style: GoogleFonts.inter(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: textColor),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
-                      'Once your discharge summary is simplified, you can ask follow-up questions about medicines, diet, precautions, and warning signs right here.',
-                      style: GoogleFonts.inter(
-                          fontSize: 12, color: subColor, height: 1.45),
+                      'Please provide and simplify a discharge summary in Card 1 first to unlock the interactive medical Q&A assistant.',
                       textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: subColor.withValues(alpha: 0.8),
+                          height: 1.4),
                     ),
                   ],
                 ),
@@ -896,6 +913,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 250.ms, delay: 100.ms);
+    ).animate().fadeIn(duration: 250.ms, delay: 50.ms);
   }
 }

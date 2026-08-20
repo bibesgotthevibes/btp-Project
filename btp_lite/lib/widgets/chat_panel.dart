@@ -12,13 +12,15 @@ import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 
 class ChatPanel extends StatefulWidget {
-  final SimplifyResult result;
+  final SimplifyResult? result;
+  final String? rawClinicalText;
   final ApiModel model;
   final bool isCompact;
 
   const ChatPanel({
     super.key,
-    required this.result,
+    this.result,
+    this.rawClinicalText,
     required this.model,
     this.isCompact = false,
   });
@@ -30,6 +32,7 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   final _inputController = TextEditingController();
   final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
   final List<ChatMessage> _messages = [];
   bool _isSending = false;
   String? _chatError;
@@ -52,8 +55,8 @@ class _ChatPanelState extends State<ChatPanel> {
       ChatMessage(
         role: 'assistant',
         text:
-            '**Namaste!** I am your **MedSimplify Assistant**. I have reviewed this discharge summary.\n\n'
-            'Feel free to ask me anything about your medicines, diet, daily precautions, or recovery instructions in plain English or Hindi medical terms.',
+            '**Namaste!** I am your **MedSimplify Assistant**.\n\n'
+            'Feel free to ask me anything about your medicines, diet, precautions, warning signs, or recovery instructions in plain English or Hindi medical terms.',
         timestamp: DateTime.now(),
       ),
     );
@@ -85,10 +88,13 @@ class _ChatPanelState extends State<ChatPanel> {
       final storage = context.read<StorageService>();
       final chatService = ChatService(storage);
 
+      final originalText = widget.result?.originalText ?? widget.rawClinicalText ?? '';
+      final simplifiedText = widget.result?.simplifiedText ?? '';
+
       final assistantMsg = await chatService.sendMessage(
         conversationHistory: _messages,
-        originalText: widget.result.originalText,
-        simplifiedText: widget.result.simplifiedText,
+        originalText: originalText,
+        simplifiedText: simplifiedText,
         model: widget.model,
       );
 
@@ -131,6 +137,7 @@ class _ChatPanelState extends State<ChatPanel> {
   void dispose() {
     _inputController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -187,7 +194,7 @@ class _ChatPanelState extends State<ChatPanel> {
                         ),
                       ),
                       Text(
-                        'Powered by ${widget.model.name} · Ask questions about your summary',
+                        'Powered by ${widget.model.name} · Ask any question',
                         style: GoogleFonts.inter(
                           fontSize: 11,
                           color: subColor,
@@ -212,7 +219,7 @@ class _ChatPanelState extends State<ChatPanel> {
           // ── Messages List ───────────────────────────────────────────────────
           Container(
             constraints: BoxConstraints(
-              maxHeight: widget.isCompact ? 360 : 460,
+              maxHeight: widget.isCompact ? 360 : 420,
               minHeight: 220,
             ),
             child: ListView.builder(
@@ -237,23 +244,33 @@ class _ChatPanelState extends State<ChatPanel> {
                 spacing: 8,
                 runSpacing: 8,
                 children: _starterPrompts.map((prompt) {
-                  return ActionChip(
-                    label: Text(
-                      prompt,
-                      style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF6C4DF6),
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: _isSending ? null : () => _sendMessage(prompt),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6C4DF6).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF6C4DF6).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Text(
+                          prompt,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? const Color(0xFFA78BFA)
+                                : const Color(0xFF6C4DF6),
+                          ),
+                        ),
                       ),
                     ),
-                    backgroundColor: const Color(0xFF6C4DF6).withValues(alpha: 0.08),
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    onPressed: _isSending ? null : () => _sendMessage(prompt),
                   );
                 }).toList(),
               ),
@@ -295,34 +312,42 @@ class _ChatPanelState extends State<ChatPanel> {
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _inputController,
-                    minLines: 1,
-                    maxLines: 3,
-                    style: GoogleFonts.inter(fontSize: 13, color: textColor),
-                    onSubmitted: (_) => _sendMessage(),
-                    decoration: InputDecoration(
-                      hintText: 'Ask follow-up question (e.g. "What to eat?")...',
-                      hintStyle: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: subColor.withValues(alpha: 0.7),
-                      ),
-                      filled: true,
-                      fillColor: bgInputColor,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide(color: borderColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: const BorderSide(
-                            color: AppTheme.primaryIndigo, width: 1.5),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _focusNode.requestFocus(),
+                    child: TextField(
+                      controller: _inputController,
+                      focusNode: _focusNode,
+                      minLines: 1,
+                      maxLines: 4,
+                      textAlignVertical: TextAlignVertical.center,
+                      style: GoogleFonts.inter(fontSize: 13, color: textColor),
+                      onSubmitted: (_) => _sendMessage(),
+                      textInputAction: TextInputAction.send,
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: 'Ask follow-up question (e.g. "What to eat?")...',
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: subColor.withValues(alpha: 0.7),
+                        ),
+                        filled: true,
+                        fillColor: bgInputColor,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: borderColor),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide(color: borderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: const BorderSide(
+                              color: AppTheme.primaryIndigo, width: 1.5),
+                        ),
                       ),
                     ),
                   ),
@@ -351,7 +376,7 @@ class _ChatPanelState extends State<ChatPanel> {
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.04, end: 0);
+    );
   }
 
   Widget _buildMessageBubble(
