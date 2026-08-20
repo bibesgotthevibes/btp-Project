@@ -1,6 +1,7 @@
 /// The result of a successful simplification
 class SimplifyResult {
   final String simplifiedText;
+  final String originalText;
   final String modelName;
   final String provider;
   final int? tokensUsed;
@@ -10,6 +11,7 @@ class SimplifyResult {
 
   SimplifyResult({
     required this.simplifiedText,
+    required this.originalText,
     required this.modelName,
     required this.provider,
     this.tokensUsed,
@@ -21,6 +23,7 @@ class SimplifyResult {
   /// Serialise to a JSON-safe map for shared_preferences storage
   Map<String, dynamic> toJson() => {
         'simplifiedText': simplifiedText,
+        'originalText': originalText,
         'modelName': modelName,
         'provider': provider,
         'tokensUsed': tokensUsed,
@@ -31,6 +34,7 @@ class SimplifyResult {
 
   factory SimplifyResult.fromJson(Map<String, dynamic> json) => SimplifyResult(
         simplifiedText: json['simplifiedText'] as String,
+        originalText: (json['originalText'] as String?) ?? (json['originalSnippet'] as String? ?? ''),
         modelName: json['modelName'] as String,
         provider: json['provider'] as String,
         tokensUsed: json['tokensUsed'] as int?,

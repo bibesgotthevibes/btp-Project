@@ -4,13 +4,22 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import '../models/api_model.dart';
 import '../models/simplify_result.dart';
+import '../screens/chat_screen.dart';
 import '../screens/result_screen.dart';
 
 class OutputCard extends StatelessWidget {
   final SimplifyResult result;
+  final ApiModel? model;
+  final VoidCallback? onOpenChat;
 
-  const OutputCard({super.key, required this.result});
+  const OutputCard({
+    super.key,
+    required this.result,
+    this.model,
+    this.onOpenChat,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +33,12 @@ class OutputCard extends StatelessWidget {
         isDark ? const Color(0xFF8B949E) : const Color(0xFF6B7280);
     final codeBgColor =
         isDark ? const Color(0xFF0D1117) : const Color(0xFFF5F7FA);
+
+    final resolvedModel = model ??
+        ApiModel.all.firstWhere(
+          (m) => m.name == result.modelName || m.id == result.modelName,
+          orElse: () => ApiModel.all.first,
+        );
 
     return Container(
       decoration: BoxDecoration(
@@ -91,6 +106,28 @@ class OutputCard extends StatelessWidget {
                   ),
                 ],
                 const Spacer(),
+                // Chat button
+                ElevatedButton.icon(
+                  onPressed: onOpenChat ??
+                      () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ChatScreen(
+                                result: result,
+                                model: resolvedModel,
+                              ),
+                            ),
+                          ),
+                  icon: const Icon(Icons.forum_rounded, size: 14),
+                  label: const Text('Ask Assistant'),
+                  style: ElevatedButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    textStyle: GoogleFonts.inter(
+                        fontSize: 11, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 6),
                 // Action buttons
                 _ActionBtn(
                   icon: Icons.open_in_full_rounded,

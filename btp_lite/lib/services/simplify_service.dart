@@ -68,6 +68,7 @@ class SimplifyService {
 
     final result = SimplifyResult(
       simplifiedText: apiResult.text,
+      originalText: rawText,
       modelName: model.name,
       provider: model.provider,
       tokensUsed: apiResult.tokens,

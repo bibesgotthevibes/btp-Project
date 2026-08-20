@@ -1,5 +1,5 @@
 /// Prompt building logic — ported directly from backend/app.py
-/// All 11 rules + 4 few-shot examples preserved exactly.
+/// All 11 rules + 4 few-shot examples preserved exactly, with enhanced clinical guardrails.
 library;
 
 const String kSystemPrompt =
@@ -34,7 +34,11 @@ const String kSystemPrompt =
     "done, e.g. 'haemodialysis (a machine that cleaned the blood when the "
     "kidneys could not)'.\n"
     "11. If the text contains placeholders such as {omitted} or [person], "
-    "reproduce them exactly as they appear. Do not guess or replace them.\n";
+    "reproduce them exactly as they appear. Do not guess or replace them.\n"
+    "12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. "
+    "If the input is not a medical discharge summary, clinical case report, or health record, "
+    "do not generate non-medical content; instead respond solely with "
+    "'Please provide a valid medical discharge summary or clinical report.'\n";
 
 /// 4 curated discharge summary → Indian Lay English pairs
 const List<(String, String)> kFewShotExamples = [
