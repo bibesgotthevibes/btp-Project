@@ -1,0 +1,927 @@
+{
+  "provider": "Groq-GPT-OSS",
+  "model": "openai/gpt-oss-20b",
+  "extraction_timestamp": "2026-08-21T04:37:54+0530",
+  "num_summaries_processed": 5,
+  "num_successful": 5,
+  "num_failed": 0,
+  "total_time_seconds": 16.16,
+  "extractions": [
+    {
+      "summary_id": 2,
+      "original_summary_snippet": "male, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associa...",
+      "dataset_diagnosis_icd": "a41. other septicemias. k220. achalasia of the heart. k509. crohn disease of nes localization. n17. acute renal failure.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "99999 {1}",
+      "extraction": {
+        "patient_demographics": {
+          "gender": "male",
+          "age": 42
+        },
+        "diagnoses": {
+          "primary": "Crohn's disease with abdominal sepsis",
+          "primary_lay_explanation": "Crohn's disease is a long‑term condition that makes the intestines inflamed. The patient had a serious belly infection (sepsis) because of this.",
+          "secondary": [
+            "Acute on chronic kidney disease",
+            "Acute perforative abdomen",
+            "Intra‑abdominal collection"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Low blood pressure (hypotension)",
+          "Fever",
+          "Fainting for 1 day"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Vital Sign",
+            "finding": "Borderline low blood pressure",
+            "lay_explanation": "Blood pressure was a little lower than normal, which can make you feel dizzy or faint.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Worsening kidney function",
+            "lay_explanation": "Kidneys were not filtering waste well, so toxins can build up in the body.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Intra‑abdominal collection (pus/fluid inside belly)",
+            "lay_explanation": "There was infected fluid collecting inside the belly, which needed treatment.",
+            "severity": "critical"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "Eupneic on room air (breathing fine)",
+            "lay_explanation": "The patient was breathing normally without needing extra oxygen.",
+            "severity": "normal"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Ileocolectomy",
+            "lay_explanation": "Surgery to remove a damaged part of the intestine (the ileum and part of the colon).",
+            "date": null
+          },
+          {
+            "name": "Creation of new anastomosis",
+            "lay_explanation": "The surgeon reconnected the healthy ends of the intestine after removing the damaged part.",
+            "date": null
+          },
+          {
+            "name": "Ileostomy",
+            "lay_explanation": "An opening (stoma) was made in the belly wall to let waste exit into a bag outside the body while the intestine heals.",
+            "date": null
+          },
+          {
+            "name": "Transfer to Intensive Care Unit (ICU)",
+            "lay_explanation": "Patient was moved to the ICU for close monitoring because of the serious infection.",
+            "date": "26/12/2021"
+          }
+        ],
+        "medications": [
+          {
+            "name": "Ertapenem",
+            "purpose_lay": "Strong antibiotic injection to kill the bacteria causing the belly infection.",
+            "timing_dosage": "1 gram per day, injected into muscle, for 4 weeks"
+          },
+          {
+            "name": "Vancomycin",
+            "purpose_lay": "Powerful antibiotic used against tough bacteria that other antibiotics cannot kill.",
+            "timing_dosage": "Given during hospital stay (IV)"
+          },
+          {
+            "name": "Meropenem",
+            "purpose_lay": "Broad‑spectrum antibiotic to treat serious infections in the blood and belly.",
+            "timing_dosage": "Given during hospital stay (IV)"
+          },
+          {
+            "name": "KCL 6% (Potassium Chloride)",
+            "purpose_lay": "Potassium supplement to keep normal potassium levels in the blood, which is important for heart function.",
+            "timing_dosage": "Taken by mouth (oral), continuously"
+          },
+          {
+            "name": "Loperamide",
+            "purpose_lay": "Medicine to slow down bowel movements and reduce diarrhea or high ostomy output.",
+            "timing_dosage": "Ongoing, as prescribed"
+          },
+          {
+            "name": "Calcium Carbonate",
+            "purpose_lay": "Calcium supplement to keep bones strong and maintain calcium levels in the blood.",
+            "timing_dosage": "Ongoing, as prescribed"
+          },
+          {
+            "name": "Cholestyramine",
+            "purpose_lay": "Medicine that binds bile acids to help reduce diarrhea that can happen after intestine surgery.",
+            "timing_dosage": "Ongoing, as prescribed"
+          },
+          {
+            "name": "Muciloid",
+            "purpose_lay": "Fiber supplement to help regulate bowel movements and make stool more formed.",
+            "timing_dosage": "Ongoing, as prescribed"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "Return of fever or chills (infection may be back)",
+          "Sudden drop in blood pressure, dizziness, or fainting",
+          "Severe belly pain or swelling",
+          "Decrease in ostomy output or no output for more than 6 hours",
+          "Blood in ostomy bag or dark/black coloured output",
+          "Reduced urine output (kidney problem getting worse)"
+        ],
+        "follow_up_care": {
+          "appointments": [
+            "Follow‑up appointment and planned hospitalization on 01/22"
+          ],
+          "ongoing_treatments": [
+            "Continue oral medications: Loperamide, Calcium Carbonate, Cholestyramine, Muciloid",
+            "Continue oral KCL 6% potassium supplement"
+          ],
+          "lifestyle_diet_advice": [
+            "Monitor ostomy output regularly",
+            "Stay hydrated to support kidney function"
+          ]
+        },
+        "stay_duration": "23 hours",
+        "outcome": "alive"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "Crohn's disease with abdominal sepsis",
+        "num_secondary_diagnoses": 3,
+        "num_symptoms": 3,
+        "num_anomalies": 4,
+        "num_procedures": 4,
+        "num_medications": 8,
+        "num_warning_signs": 6,
+        "outcome": "alive"
+      },
+      "error": null,
+      "time_seconds": 2.55
+    },
+    {
+      "summary_id": 3,
+      "original_summary_snippet": "1. bloodstream infection associated with Schilley catheter in the right femoral vein sac 11/08 2. bacterial endocarditis associated with catheter echocardiogram 11/18: presence of vegetation in the mi...",
+      "dataset_diagnosis_icd": "l89. pressure ulcer. m464. discitis n. m650. tendon sheath abscess. m761. psoas tendonitis. r509 . fever n. a419. septicemia n. i33. acute and subacute endocarditis. i330. acute and subacute infective endocarditis. i339. acute endocarditis n. i38. valvular endocarditis unspecified. r579. shock n. n17. acute renal failure. a41. other septicemia. a412. staphylococcal septicemia n. n188. other chronic renal failure. n18. chronic renal failure. n180. end-stage renal disease.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "55",
+      "extraction": {
+        "patient_demographics": {
+          "gender": null,
+          "age": null
+        },
+        "diagnoses": {
+          "primary": "Bloodstream infection (MRSA) with complications",
+          "primary_lay_explanation": "A serious infection in the blood caused by a tough bacteria that is resistant to many medicines. It spread to the heart, spine and muscle.",
+          "secondary": [
+            "Spondylodiscitis (infection of the L2‑L4 vertebrae and discs)",
+            "Mitral valve infective endocarditis (infection of the heart valve)",
+            "Ileopsoas muscle abscess (pus collection in the left thigh muscle)",
+            "Sacral pressure injury (skin sore on the lower back)",
+            "Chronic kidney disease requiring dialysis",
+            "Arteriovenous fistula stenosis (narrowing of the fistula used for dialysis)",
+            "Possible cardiac amyloidosis"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Severe left lower back pain",
+          "Weakness (asthenia)",
+          "Difficulty walking (altered gait)",
+          "Catheter dressing with discharge"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Lab Result",
+            "finding": "Positive blood cultures for methicillin‑resistant Staphylococcus aureus (MRSA)",
+            "lay_explanation": "The bacteria that caused the infection was found in the blood and it is a type that is hard to kill with many antibiotics.",
+            "severity": "critical"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Negative blood cultures after 12/02",
+            "lay_explanation": "The infection was cleared from the blood after treatment.",
+            "severity": "normal"
+          },
+          {
+            "type": "Imaging Finding",
+            "finding": "Spondylodiscitis at L2‑L4 with epidural abscess",
+            "lay_explanation": "The lower spine bones and discs were infected and there was pus pressing on the spinal cord.",
+            "severity": "critical"
+          },
+          {
+            "type": "Imaging Finding",
+            "finding": "Mitral valve vegetation (infection on the heart valve)",
+            "lay_explanation": "A small growth of infected material was seen on the heart valve.",
+            "severity": "critical"
+          },
+          {
+            "type": "Imaging Finding",
+            "finding": "Left ileopsoas abscess 15 x 2.1 x 1.8 cm with edema",
+            "lay_explanation": "A pus collection in the left thigh muscle near the spine.",
+            "severity": "critical"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Sacral pressure injury (skin sore on lower back)",
+            "lay_explanation": "A sore on the skin caused by staying in one position for too long.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Arteriovenous fistula stenosis",
+            "lay_explanation": "The tube used for dialysis was narrowed, which can make dialysis less effective.",
+            "severity": "abnormal"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Removal of femoral catheter",
+            "lay_explanation": "The tube that was used to give medicines and take blood was taken out to stop the infection.",
+            "date": "11/08/2020"
+          },
+          {
+            "name": "Surgical debridement of sacral pressure injury",
+            "lay_explanation": "The sore on the lower back was cleaned and the dead tissue was removed to help it heal.",
+            "date": "not specified"
+          },
+          {
+            "name": "Hemodialysis sessions",
+            "lay_explanation": "Blood was filtered through a machine to replace kidney function.",
+            "date": "Tuesdays, Thursdays, Saturdays (ongoing)"
+          },
+          {
+            "name": "Attempted percutaneous abscess puncture",
+            "lay_explanation": "A needle was tried to drain the pus from the thigh muscle but was not done because of nearby intestines.",
+            "date": "12/02/2020"
+          }
+        ],
+        "medications": [
+          {
+            "name": "Vancomycin",
+            "purpose_lay": "Strong antibiotic that kills MRSA bacteria.",
+            "timing_dosage": "0.5 g given after each hemodialysis session until 01/09/2021"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "New or worsening fever",
+          "Increasing back pain or new pain in the chest or abdomen",
+          "Sudden weakness or numbness in limbs",
+          "Shortness of breath or chest pain",
+          "Signs of heart failure (rapid heartbeat, swelling in legs)",
+          "Any new or worsening skin sore that does not heal",
+          "Reduced urine output or sudden change in dialysis effectiveness"
+        ],
+        "follow_up_care": {
+          "appointments": [
+            "Pressure injury reassessment – 16/01/2021",
+            "Cardiology amyloidosis investigation – 01/13/2021",
+            "Physiatry (motor rehabilitation) – 12/27/2020 (pending)",
+            "Dialysis sessions – Tuesdays, Thursdays, Saturdays (ongoing)",
+            "Phlebography of arteriovenous fistula – scheduled (date not set)"
+          ],
+          "ongoing_treatments": [
+            "Hemodialysis (Tuesdays, Thursdays, Saturdays)",
+            "Vancomycin after each dialysis session",
+            "Continued monitoring of blood cultures",
+            "Pressure injury care (home instructions provided)"
+          ],
+          "lifestyle_diet_advice": []
+        },
+        "stay_duration": "01 month 24 days 15 hours",
+        "outcome": "alive"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "Bloodstream infection (MRSA) with complications",
+        "num_secondary_diagnoses": 7,
+        "num_symptoms": 4,
+        "num_anomalies": 7,
+        "num_procedures": 4,
+        "num_medications": 1,
+        "num_warning_signs": 7,
+        "outcome": "alive"
+      },
+      "error": null,
+      "time_seconds": 2.6
+    },
+    {
+      "summary_id": 4,
+      "original_summary_snippet": "1sensitive pulmonary tuberculosis. diagnosis 2019, ripe 07/02/2020 ri 07/04 2 pulmonary complications secondary to tuberculosis: spontaneous pneumothorax on the right chest drainage on the right on 03...",
+      "dataset_diagnosis_icd": "a15. respiratory tuberculosis, with bacteriological and histological confirmation. b908. sequelae of tuberculosis of other organs. b909. sequelae of tuberculosis of airways and organs n.e.c. b90. sequelae of tuberculosis. a41. other septicemias. a483. toxic shock syndrome. z540. convalescence after surgery. r04. haemorrhage of airways. a499. bacterial infection n.e.c. e43. severe protein-calorie malnutrition, unspecified. z713. dietary advice and supervision. a159. tuberculosis of airways n.e.c., with bacteriological and histological confirmation. a153. pulmonary tuberculosis, with confirmation n.e.c. j93. pneumothorax.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "95",
+      "extraction": {
+        "patient_demographics": {
+          "gender": "male",
+          "age": null
+        },
+        "diagnoses": {
+          "primary": "Pulmonary tuberculosis (sensitive to isoniazid)",
+          "primary_lay_explanation": "A lung infection caused by a bacteria that can spread through the air. The bacteria in this case can be killed by the medicine isoniazid.",
+          "secondary": [
+            "Spontaneous pneumothorax (air in the chest cavity causing lung collapse)",
+            "Pleural effusion (fluid around the lungs)",
+            "Lung collapse",
+            "Pleurostomy (surgical opening in the chest wall)",
+            "Exploratory thoracotomy (surgery to look inside the chest)",
+            "Bleeding in tuberculous cavities",
+            "Hypovolemic shock (low blood volume after bleeding)",
+            "Cardiopulmonary arrest (heart stopped briefly)",
+            "Surgical wound infection",
+            "Multidrug‑resistant Acinetobacter baumannii infection",
+            "Right pneumonectomy (removal of the right lung)"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Persistent dry cough for 4 weeks",
+          "Night sweats",
+          "Fever 3 days ago",
+          "Shortness of breath (dyspnea)",
+          "Sudden pain in the right chest that spreads to the right neck",
+          "Progressive worsening of breathing difficulty",
+          "Weight loss of about 8 kg"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Vital Sign",
+            "finding": "Heart rate 85 beats per minute",
+            "lay_explanation": "Normal heart beat rate for an adult.",
+            "severity": "normal"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "Oxygen saturation 98%",
+            "lay_explanation": "Blood has enough oxygen, which is normal.",
+            "severity": "normal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Auscultation: breath sounds absent on the right side, present on the left",
+            "lay_explanation": "The doctor could not hear breathing sounds on the right side because the lung is collapsed or filled with fluid.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Asymmetry of chest expansion",
+            "lay_explanation": "The chest does not expand evenly on both sides, indicating a problem on the right side.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Procalcitonin 0.09 ng/mL",
+            "lay_explanation": "A low level of a marker that usually rises when there is a serious infection.",
+            "severity": "borderline"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Sputum bacilloscopy positive 10‑99 bacilli per 100 fields",
+            "lay_explanation": "The test found many tuberculosis bacteria in the cough sample.",
+            "severity": "critical"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Sensitivity test: isoniazid sensitive, rifampin element present",
+            "lay_explanation": "The tuberculosis bacteria can be killed by the medicines isoniazid and rifampin.",
+            "severity": "normal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Surgical wound in good condition, dry, no dehiscence",
+            "lay_explanation": "The surgical scar looks healthy and is not opening up.",
+            "severity": "normal"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Right chest drainage",
+            "lay_explanation": "A tube was inserted into the chest to remove air or fluid from around the lungs.",
+            "date": "02/03/2020"
+          },
+          {
+            "name": "Pleurostomy",
+            "lay_explanation": "A surgical opening was made in the chest wall to help drain fluid or air.",
+            "date": "03/03/2020"
+          },
+          {
+            "name": "Closure of pleurostomy",
+            "lay_explanation": "The surgical opening was closed after the chest was cleared.",
+            "date": "03/03/2020"
+          },
+          {
+            "name": "New pleurotomy",
+            "lay_explanation": "Another opening was made in the chest wall to drain fluid.",
+            "date": "27/03/2020"
+          },
+          {
+            "name": "Exploratory thoracotomy",
+            "lay_explanation": "A surgical cut was made in the chest to look inside and treat bleeding.",
+            "date": "31/03/2020"
+          },
+          {
+            "name": "Packing of tuberculous cavity with compresses",
+            "lay_explanation": "The surgeon filled the infected cavity with gauze to stop bleeding.",
+            "date": "07/04/2020"
+          },
+          {
+            "name": "Right pneumonectomy by lateral thoracotomy",
+            "lay_explanation": "The entire right lung was removed through a side cut in the chest.",
+            "date": "11/04/2020"
+          },
+          {
+            "name": "Tracheostomy",
+            "lay_explanation": "A small opening was made in the windpipe to help breathing after lung removal.",
+            "date": "11/04/2020"
+          },
+          {
+            "name": "Chest drain removal",
+            "lay_explanation": "The tube that drained fluid from the chest was taken out.",
+            "date": "06/06/2020"
+          },
+          {
+            "name": "Tracheostomy removal",
+            "lay_explanation": "The opening in the windpipe was closed after breathing was stable.",
+            "date": "06/06/2020"
+          }
+        ],
+        "medications": [
+          {
+            "name": "Vancomycin",
+            "purpose_lay": "Strong antibiotic to kill tough bacteria that other medicines cannot kill.",
+            "timing_dosage": "Given during hospital stay (IV), stopped 02/04/2020"
+          },
+          {
+            "name": "Meropenem",
+            "purpose_lay": "Broad‑spectrum antibiotic for serious infections.",
+            "timing_dosage": "Given during hospital stay (IV), stopped 02/04/2020"
+          },
+          {
+            "name": "Amikacin",
+            "purpose_lay": "Antibiotic used for resistant bacterial infections.",
+            "timing_dosage": "Given during hospital stay (IV), stopped 02/04/2020"
+          },
+          {
+            "name": "Rifampicin",
+            "purpose_lay": "Medicine that kills tuberculosis bacteria.",
+            "timing_dosage": "Continued as part of TB treatment (oral)"
+          },
+          {
+            "name": "Isoniazid",
+            "purpose_lay": "Medicine that kills tuberculosis bacteria.",
+            "timing_dosage": "Continued as part of TB treatment (oral)"
+          },
+          {
+            "name": "Oral iron replacement",
+            "purpose_lay": "Supplement to treat low iron levels and help make healthy blood.",
+            "timing_dosage": "Ongoing as prescribed"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "Sudden chest pain or swelling",
+          "Shortness of breath that gets worse quickly",
+          "Fever or chills that come back",
+          "Blood in cough or sputum",
+          "Sudden drop in oxygen level or feeling faint",
+          "Any new or worsening pain in the chest or abdomen"
+        ],
+        "follow_up_care": {
+          "appointments": [
+            "Follow‑up appointment at the organization (date not specified)",
+            "Follow‑up appointment with thoracic surgery team (date not specified)"
+          ],
+          "ongoing_treatments": [
+            "Continue oral rifampicin and isoniazid for tuberculosis",
+            "Continue oral iron supplement",
+            "Continue any other TB medications as prescribed"
+          ],
+          "lifestyle_diet_advice": [
+            "Maintain good hydration",
+            "Follow any dietary advice given by the team (not specified)"
+          ]
+        },
+        "stay_duration": "3 months 6 days 7 hours",
+        "outcome": "alive"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "Pulmonary tuberculosis (sensitive to isoniazid)",
+        "num_secondary_diagnoses": 11,
+        "num_symptoms": 7,
+        "num_anomalies": 8,
+        "num_procedures": 10,
+        "num_medications": 6,
+        "num_warning_signs": 6,
+        "outcome": "alive"
+      },
+      "error": null,
+      "time_seconds": 3.3
+    },
+    {
+      "summary_id": 5,
+      "original_summary_snippet": "admission: 12/06, discharge: 12/21, stay: 14 d 11 h, location: ward, payer: sus. 1. heart failure profile c dobutamine on 12/07 and 12/08, 2. abscess in the left thigh, osteomyelitis in the pubis, fou...",
+      "dataset_diagnosis_icd": "e788. other disorders of lipoprotein metabolism. h360. diabetic retinopathy e10e14 with fourth common feature 3. i351. aortic valve insufficiency. n083. glomerular disorders in diabetes mellitus e10e14 with fourth common feature. n329. bladder disorder ne. e112. non-insulin-dependent diabetes mellitus with renal complications. m726. necrotizing fasciitis. r02. gangrene not classified elsewhere. b342. coronavirus infection, ne. m86. osteomyelitis. n178. acute renal failure, other. b962. escherichia coli [e. coli], as a cause of diseases classified elsewhere. n40. prostatic hyperplasia. b961. klebsiella pneumoniae [m. pneumoniae] as a cause of diseases classif. in others. e10. insulin-dependent diabetes mellitus. i509. heart failure nes. a415. septicaemia due to other gram-negative organisms. i702. atherosclerosis of arteries of extremities. z899. acquired absence of limb nes. c61. malignant neoplasm of prostate. e115. non-insulin-dependent diabetes mellitus with peripheral circulatory complications. i06. rheumatic diseases of aortic valve. i132. hypertensive heart and kidney disease with congestive heart failure and i. i48. atrial flutter and fibrillation. i792. peripheral angiopathy in diseases classif. elsewhere. z895. acquired absence of leg at or below the knee. z940. transplanted kidney. n17. acute renal failure. n390. urinary tract infection of ne. localization.",
+      "dataset_outcome": "death",
+      "dataset_stay": "15",
+      "extraction": {
+        "patient_demographics": {
+          "gender": null,
+          "age": null
+        },
+        "diagnoses": {
+          "primary": "Septic shock with multi‑organ failure leading to cardiorespiratory arrest",
+          "primary_lay_explanation": "A severe infection that made the blood pressure drop and the heart stop working, causing the patient to die.",
+          "secondary": [
+            "Heart failure",
+            "Abscess in the left thigh",
+            "Osteomyelitis of the pubis",
+            "Fournier's gangrene (skin infection of the genital area)",
+            "Chronic kidney disease",
+            "Acute kidney failure requiring dialysis"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Low blood pressure (shock)",
+          "Heart failure signs",
+          "Infection in the thigh and pubis",
+          "Skin infection in the genital area"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Vital Sign",
+            "finding": "Septic shock with low blood pressure",
+            "lay_explanation": "Blood pressure was very low because the infection was spreading fast.",
+            "severity": "critical"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "Bradycardia (slow heart rate)",
+            "lay_explanation": "Heart was beating slower than normal.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "QRS widening on ECG",
+            "lay_explanation": "Heart’s electrical signal was delayed, which can lead to serious rhythm problems.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Hyperkalemia (high potassium in blood)",
+            "lay_explanation": "Too much potassium in the blood, which can stop the heart.",
+            "severity": "critical"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Cardiorespiratory arrest (heart stopped)",
+            "lay_explanation": "The heart stopped beating and the patient could not breathe on their own.",
+            "severity": "critical"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Drainage of thigh abscess (12/03)",
+            "lay_explanation": "A tube was inserted to remove pus from the infected thigh.",
+            "date": "12/03"
+          },
+          {
+            "name": "Drain placement (12/15)",
+            "lay_explanation": "A drain was put in to keep pus from building up again.",
+            "date": "12/15"
+          },
+          {
+            "name": "Incision in ICU (12/17)",
+            "lay_explanation": "A surgical cut was made to remove infected tissue and drain pus.",
+            "date": "12/17"
+          },
+          {
+            "name": "Dialysis via fistula (12/16)",
+            "lay_explanation": "Kidneys were helped by a machine that filters the blood through a fistula.",
+            "date": "12/16"
+          },
+          {
+            "name": "Intubation and mechanical ventilation",
+            "lay_explanation": "A tube was put into the airway to help the patient breathe.",
+            "date": "12/16"
+          },
+          {
+            "name": "Cardiopulmonary resuscitation (CPR) after arrest",
+            "lay_explanation": "Hands‑on chest compressions and rescue breaths were given to try to restart the heart.",
+            "date": "12/16"
+          },
+          {
+            "name": "Electrical cardioversion",
+            "lay_explanation": "A shock was delivered to the heart to try to restore a normal rhythm.",
+            "date": "12/16"
+          },
+          {
+            "name": "Drainage of Fournier's gangrene",
+            "lay_explanation": "Infected tissue in the genital area was removed and drained.",
+            "date": null
+          }
+        ],
+        "medications": [
+          {
+            "name": "Dobutamine",
+            "purpose_lay": "Medicine to help the heart pump better during low blood pressure.",
+            "timing_dosage": "Administered on 12/07 and 12/08"
+          },
+          {
+            "name": "Ceftriaxone",
+            "purpose_lay": "Strong antibiotic to kill the bacteria in the abscess.",
+            "timing_dosage": "Given after culture showed Escherichia coli"
+          },
+          {
+            "name": "Polymyxin D",
+            "purpose_lay": "Antibiotic for tough bacteria that other drugs cannot kill.",
+            "timing_dosage": "Administered on 12/15"
+          },
+          {
+            "name": "Amikacin",
+            "purpose_lay": "Antibiotic to treat serious infections.",
+            "timing_dosage": "Administered on 12/17"
+          },
+          {
+            "name": "Vancomycin",
+            "purpose_lay": "Strong antibiotic for resistant bacteria.",
+            "timing_dosage": "Administered on 12/17"
+          },
+          {
+            "name": "Norepinephrine",
+            "purpose_lay": "Medicine to raise blood pressure during shock.",
+            "timing_dosage": "Infused up to 1.5 mcg/kg/min"
+          },
+          {
+            "name": "Calcium gluconate",
+            "purpose_lay": "Medicine to lower dangerous potassium levels.",
+            "timing_dosage": "2 ampoules given"
+          },
+          {
+            "name": "Bicarbonate",
+            "purpose_lay": "Medicine to help balance blood acidity and lower potassium.",
+            "timing_dosage": "100 ml given"
+          },
+          {
+            "name": "Atropine",
+            "purpose_lay": "Medicine to try to stop slow heart rate.",
+            "timing_dosage": "2 ampoules given"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "Sudden drop in blood pressure or fainting",
+          "Heart stops beating (cardiac arrest)",
+          "Very high potassium levels (hyperkalemia)",
+          "Severe infection spreading to the bloodstream (septic shock)",
+          "Uncontrolled bleeding or pus drainage"
+        ],
+        "follow_up_care": {
+          "appointments": [],
+          "ongoing_treatments": [],
+          "lifestyle_diet_advice": []
+        },
+        "stay_duration": "14 days 11 hours",
+        "outcome": "death"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "Septic shock with multi‑organ failure leading to cardiorespiratory arrest",
+        "num_secondary_diagnoses": 6,
+        "num_symptoms": 4,
+        "num_anomalies": 5,
+        "num_procedures": 8,
+        "num_medications": 9,
+        "num_warning_signs": 5,
+        "outcome": "death"
+      },
+      "error": null,
+      "time_seconds": 3.62
+    },
+    {
+      "summary_id": 11,
+      "original_summary_snippet": "1 coronavirus respiratory infection onset of symptoms 06/07: dyspnea, myalgia, hyporexia worsening of symptoms 06/09: drop in oxygen saturation positive rtpcr on 06/09 pao2/fio2 ratio on admission: 17...",
+      "dataset_diagnosis_icd": "j189. pneumonia ne. u071. novel coronavirus infection coronavirus. a419. septicemia ne. r57. shock unclassified elsewhere. z515. palliative care. b342. coronavirus infection, ne. j80. adult respiratory distress syndrome.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "25",
+      "extraction": {
+        "patient_demographics": {
+          "gender": null,
+          "age": null
+        },
+        "diagnoses": {
+          "primary": "COVID-19 (coronavirus respiratory infection)",
+          "primary_lay_explanation": "A viral infection that affects the lungs and can make breathing hard.",
+          "secondary": [
+            "Candidemia (blood infection with Candida albicans)",
+            "Acute Kidney Injury (stage 1)",
+            "Hypokalemia (low potassium)",
+            "Hypercapnia (high carbon dioxide in blood)",
+            "Hydroelectrolytic disturbance",
+            "Glasgow Coma Scale 11 (low alertness)"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Shortness of breath (dyspnea)",
+          "Muscle aches (myalgia)",
+          "Loss of appetite (hyporexia)",
+          "Low oxygen levels",
+          "Drowsiness",
+          "High carbon dioxide in blood (hypercapnia)"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Lab Result",
+            "finding": "Positive RT‑PCR for coronavirus on 06/09",
+            "lay_explanation": "The test showed the virus was present in the body.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Negative RT‑PCR for coronavirus on 06/26",
+            "lay_explanation": "The virus was no longer detected in the body.",
+            "severity": "normal"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "PaO2/FiO2 ratio 174 on admission",
+            "lay_explanation": "Blood oxygen level was very low compared to the amount of oxygen given.",
+            "severity": "critical"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Candidemia – blood and catheter tip cultures positive for Candida albicans on 06/23",
+            "lay_explanation": "Fungus was found in the blood, which can spread quickly.",
+            "severity": "critical"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Creatinine values 1.07, 1.82, 1.12, 0.99, 0.73, 0.67, 0.5 (various dates)",
+            "lay_explanation": "Kidney function was fluctuating and at one point was higher than normal, indicating kidney injury.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Hypokalemia (low potassium) resolved after magnesium replacement",
+            "lay_explanation": "Potassium levels were too low, which can affect heart and muscle function.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Hypercapnia (high CO2) seen in blood gas analysis on 06/07",
+            "lay_explanation": "Too much carbon dioxide in the blood, meaning breathing was not clearing it well.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "Glasgow Coma Scale 11t",
+            "lay_explanation": "The patient was not fully alert and had a low level of consciousness.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Vital Sign",
+            "finding": "Blood pressure 132/80, heart rate 80, oxygen saturation 100% on 3.5 L/min via tracheostomy, respiratory rate 16",
+            "lay_explanation": "These vital signs were within normal limits.",
+            "severity": "normal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "No signs of respiratory distress, no edema, normal pulses, capillary refill <3 sec",
+            "lay_explanation": "The body was not showing signs of severe fluid or breathing problems at that time.",
+            "severity": "normal"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Intubation and mechanical ventilation",
+            "lay_explanation": "A tube was inserted into the airway to help the patient breathe.",
+            "date": "06/07"
+          },
+          {
+            "name": "Extubation",
+            "lay_explanation": "The breathing tube was removed to allow the patient to breathe on their own.",
+            "date": "06/19"
+          },
+          {
+            "name": "Reintubation",
+            "lay_explanation": "The breathing tube was put back in because the patient could not breathe well after extubation.",
+            "date": "06/23"
+          },
+          {
+            "name": "Tracheostomy",
+            "lay_explanation": "A surgical opening was made in the windpipe to allow easier breathing and suctioning.",
+            "date": "06/30"
+          },
+          {
+            "name": "Cannula exchange for tracheostomy",
+            "lay_explanation": "The tube in the tracheostomy was replaced to keep the airway clear.",
+            "date": "07/10"
+          },
+          {
+            "name": "Echocardiogram",
+            "lay_explanation": "An ultrasound of the heart to check for infections or problems.",
+            "date": "06/29"
+          },
+          {
+            "name": "BIPAP therapy",
+            "lay_explanation": "A machine that helps the patient breathe by giving extra pressure during inhalation and exhalation.",
+            "date": "06/07 to 06/09"
+          }
+        ],
+        "medications": [
+          {
+            "name": "Micafungin",
+            "purpose_lay": "An antifungal medicine to treat the blood infection caused by Candida.",
+            "timing_dosage": "Started on 06/27"
+          },
+          {
+            "name": "Fluconazole",
+            "purpose_lay": "Another antifungal medicine used to treat the Candida infection.",
+            "timing_dosage": "Started on 06/30, dose increased to 200 mg every 8 hours after negative blood culture"
+          },
+          {
+            "name": "Furosemide",
+            "purpose_lay": "A diuretic (water pill) to help the kidneys remove excess fluid.",
+            "timing_dosage": "Administered during the hospital stay"
+          },
+          {
+            "name": "Magnesium replacement",
+            "purpose_lay": "Supplement to correct low magnesium levels.",
+            "timing_dosage": "From 25/06 to 03/07"
+          },
+          {
+            "name": "Ceftriaxone",
+            "purpose_lay": "An antibiotic used to treat a urinary tract infection.",
+            "timing_dosage": "Between 18/05 and 24/05"
+          },
+          {
+            "name": "Quetiapine",
+            "purpose_lay": "An antipsychotic medication that was stopped during the hospital stay.",
+            "timing_dosage": "Suspended"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "Sudden drop in oxygen saturation or breathing difficulty",
+          "New or worsening fever or chills",
+          "Increased redness, swelling, or pain around the tracheostomy site",
+          "Blood in the tracheostomy tube or sudden loss of breathing",
+          "Sudden increase in blood pressure or heart rate",
+          "New or worsening abdominal pain or distension",
+          "Signs of sepsis such as high temperature, rapid heart rate, or low blood pressure"
+        ],
+        "follow_up_care": {
+          "appointments": [
+            "Tracheostomy cannula change on 07/10",
+            "BIPAP weaning plan (date not specified)"
+          ],
+          "ongoing_treatments": [
+            "Continue fluconazole for 14 days after negative blood culture",
+            "Continue magnesium replacement if needed",
+            "Continue monitoring kidney function"
+          ],
+          "lifestyle_diet_advice": [
+            "Maintain adequate hydration",
+            "Follow a balanced diet to support kidney health"
+          ]
+        },
+        "stay_duration": "25 days 10 hours",
+        "outcome": "alive"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "COVID-19 (coronavirus respiratory infection)",
+        "num_secondary_diagnoses": 6,
+        "num_symptoms": 6,
+        "num_anomalies": 10,
+        "num_procedures": 7,
+        "num_medications": 6,
+        "num_warning_signs": 7,
+        "outcome": "alive"
+      },
+      "error": null,
+      "time_seconds": 4.08
+    }
+  ]
+}

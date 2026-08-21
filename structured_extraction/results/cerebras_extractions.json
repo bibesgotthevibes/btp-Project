@@ -1,0 +1,71 @@
+{
+  "provider": "Cerebras",
+  "model": "gemma-4-31b",
+  "extraction_timestamp": "2026-08-21T04:41:38+0530",
+  "num_summaries_processed": 5,
+  "num_successful": 0,
+  "num_failed": 5,
+  "total_time_seconds": 0,
+  "extractions": [
+    {
+      "summary_id": 2,
+      "original_summary_snippet": "male, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associa...",
+      "dataset_diagnosis_icd": "a41. other septicemias. k220. achalasia of the heart. k509. crohn disease of nes localization. n17. acute renal failure.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "99999 {1}",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "API Error 402: {\"message\":\"Payment required to access this resource. Visit your billing tab.\",\"type\":\"payment_required_error\",\"param\":\"quota\",\"code\":\"payment_required\"}",
+      "time_seconds": 0
+    },
+    {
+      "summary_id": 3,
+      "original_summary_snippet": "1. bloodstream infection associated with Schilley catheter in the right femoral vein sac 11/08 2. bacterial endocarditis associated with catheter echocardiogram 11/18: presence of vegetation in the mi...",
+      "dataset_diagnosis_icd": "l89. pressure ulcer. m464. discitis n. m650. tendon sheath abscess. m761. psoas tendonitis. r509 . fever n. a419. septicemia n. i33. acute and subacute endocarditis. i330. acute and subacute infective endocarditis. i339. acute endocarditis n. i38. valvular endocarditis unspecified. r579. shock n. n17. acute renal failure. a41. other septicemia. a412. staphylococcal septicemia n. n188. other chronic renal failure. n18. chronic renal failure. n180. end-stage renal disease.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "55",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "API Error 402: {\"message\":\"Payment required to access this resource. Visit your billing tab.\",\"type\":\"payment_required_error\",\"param\":\"quota\",\"code\":\"payment_required\"}",
+      "time_seconds": 0
+    },
+    {
+      "summary_id": 4,
+      "original_summary_snippet": "1sensitive pulmonary tuberculosis. diagnosis 2019, ripe 07/02/2020 ri 07/04 2 pulmonary complications secondary to tuberculosis: spontaneous pneumothorax on the right chest drainage on the right on 03...",
+      "dataset_diagnosis_icd": "a15. respiratory tuberculosis, with bacteriological and histological confirmation. b908. sequelae of tuberculosis of other organs. b909. sequelae of tuberculosis of airways and organs n.e.c. b90. sequelae of tuberculosis. a41. other septicemias. a483. toxic shock syndrome. z540. convalescence after surgery. r04. haemorrhage of airways. a499. bacterial infection n.e.c. e43. severe protein-calorie malnutrition, unspecified. z713. dietary advice and supervision. a159. tuberculosis of airways n.e.c., with bacteriological and histological confirmation. a153. pulmonary tuberculosis, with confirmation n.e.c. j93. pneumothorax.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "95",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "API Error 402: {\"message\":\"Payment required to access this resource. Visit your billing tab.\",\"type\":\"payment_required_error\",\"param\":\"quota\",\"code\":\"payment_required\"}",
+      "time_seconds": 0
+    },
+    {
+      "summary_id": 5,
+      "original_summary_snippet": "admission: 12/06, discharge: 12/21, stay: 14 d 11 h, location: ward, payer: sus. 1. heart failure profile c dobutamine on 12/07 and 12/08, 2. abscess in the left thigh, osteomyelitis in the pubis, fou...",
+      "dataset_diagnosis_icd": "e788. other disorders of lipoprotein metabolism. h360. diabetic retinopathy e10e14 with fourth common feature 3. i351. aortic valve insufficiency. n083. glomerular disorders in diabetes mellitus e10e14 with fourth common feature. n329. bladder disorder ne. e112. non-insulin-dependent diabetes mellitus with renal complications. m726. necrotizing fasciitis. r02. gangrene not classified elsewhere. b342. coronavirus infection, ne. m86. osteomyelitis. n178. acute renal failure, other. b962. escherichia coli [e. coli], as a cause of diseases classified elsewhere. n40. prostatic hyperplasia. b961. klebsiella pneumoniae [m. pneumoniae] as a cause of diseases classif. in others. e10. insulin-dependent diabetes mellitus. i509. heart failure nes. a415. septicaemia due to other gram-negative organisms. i702. atherosclerosis of arteries of extremities. z899. acquired absence of limb nes. c61. malignant neoplasm of prostate. e115. non-insulin-dependent diabetes mellitus with peripheral circulatory complications. i06. rheumatic diseases of aortic valve. i132. hypertensive heart and kidney disease with congestive heart failure and i. i48. atrial flutter and fibrillation. i792. peripheral angiopathy in diseases classif. elsewhere. z895. acquired absence of leg at or below the knee. z940. transplanted kidney. n17. acute renal failure. n390. urinary tract infection of ne. localization.",
+      "dataset_outcome": "death",
+      "dataset_stay": "15",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "API Error 402: {\"message\":\"Payment required to access this resource. Visit your billing tab.\",\"type\":\"payment_required_error\",\"param\":\"quota\",\"code\":\"payment_required\"}",
+      "time_seconds": 0
+    },
+    {
+      "summary_id": 11,
+      "original_summary_snippet": "1 coronavirus respiratory infection onset of symptoms 06/07: dyspnea, myalgia, hyporexia worsening of symptoms 06/09: drop in oxygen saturation positive rtpcr on 06/09 pao2/fio2 ratio on admission: 17...",
+      "dataset_diagnosis_icd": "j189. pneumonia ne. u071. novel coronavirus infection coronavirus. a419. septicemia ne. r57. shock unclassified elsewhere. z515. palliative care. b342. coronavirus infection, ne. j80. adult respiratory distress syndrome.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "25",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "API Error 402: {\"message\":\"Payment required to access this resource. Visit your billing tab.\",\"type\":\"payment_required_error\",\"param\":\"quota\",\"code\":\"payment_required\"}",
+      "time_seconds": 0
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "timestamp": "2026-08-21T04:41:52+0530",
+  "providers_compared": [
+    {
+      "name": "Groq",
+      "model": "qwen/qwen3.6-27b",
+      "successful": 1,
+      "failed": 4,
+      "total_time_seconds": 33.18
+    },
+    {
+      "name": "Cerebras",
+      "model": "openai/gpt-oss-20b",
+      "successful": 5,
+      "failed": 0,
+      "total_time_seconds": 16.16
+    }
+  ],
+  "per_summary_comparison": [
+    {
+      "summary_id": 2,
+      "groq": {
+        "success": true,
+        "time_seconds": 8.28,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "Abdominal sepsis associated with acute on chronic kidney disease",
+          "num_secondary_diagnoses": 3,
+          "num_symptoms": 3,
+          "num_anomalies": 4,
+          "num_procedures": 3,
+          "num_medications": 8,
+          "num_warning_signs": 7,
+          "outcome": "alive"
+        }
+      },
+      "cerebras": {
+        "success": true,
+        "time_seconds": 2.55,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "Crohn's disease with abdominal sepsis",
+          "num_secondary_diagnoses": 3,
+          "num_symptoms": 3,
+          "num_anomalies": 4,
+          "num_procedures": 4,
+          "num_medications": 8,
+          "num_warning_signs": 6,
+          "outcome": "alive"
+        }
+      }
+    },
+    {
+      "summary_id": 3,
+      "groq": {
+        "success": false,
+        "time_seconds": 0,
+        "summary": null
+      },
+      "cerebras": {
+        "success": true,
+        "time_seconds": 2.6,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "Bloodstream infection (MRSA) with complications",
+          "num_secondary_diagnoses": 7,
+          "num_symptoms": 4,
+          "num_anomalies": 7,
+          "num_procedures": 4,
+          "num_medications": 1,
+          "num_warning_signs": 7,
+          "outcome": "alive"
+        }
+      }
+    },
+    {
+      "summary_id": 4,
+      "groq": {
+        "success": false,
+        "time_seconds": 8.36,
+        "summary": null
+      },
+      "cerebras": {
+        "success": true,
+        "time_seconds": 3.3,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "Pulmonary tuberculosis (sensitive to isoniazid)",
+          "num_secondary_diagnoses": 11,
+          "num_symptoms": 7,
+          "num_anomalies": 8,
+          "num_procedures": 10,
+          "num_medications": 6,
+          "num_warning_signs": 6,
+          "outcome": "alive"
+        }
+      }
+    },
+    {
+      "summary_id": 5,
+      "groq": {
+        "success": false,
+        "time_seconds": 8.19,
+        "summary": null
+      },
+      "cerebras": {
+        "success": true,
+        "time_seconds": 3.62,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "Septic shock with multi‑organ failure leading to cardiorespiratory arrest",
+          "num_secondary_diagnoses": 6,
+          "num_symptoms": 4,
+          "num_anomalies": 5,
+          "num_procedures": 8,
+          "num_medications": 9,
+          "num_warning_signs": 5,
+          "outcome": "death"
+        }
+      }
+    },
+    {
+      "summary_id": 11,
+      "groq": {
+        "success": false,
+        "time_seconds": 8.35,
+        "summary": null
+      },
+      "cerebras": {
+        "success": true,
+        "time_seconds": 4.08,
+        "summary": {
+          "has_demographics": true,
+          "primary_diagnosis": "COVID-19 (coronavirus respiratory infection)",
+          "num_secondary_diagnoses": 6,
+          "num_symptoms": 6,
+          "num_anomalies": 10,
+          "num_procedures": 7,
+          "num_medications": 6,
+          "num_warning_signs": 7,
+          "outcome": "alive"
+        }
+      }
+    }
+  ]
+}

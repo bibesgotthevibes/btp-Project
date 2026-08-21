@@ -1,0 +1,214 @@
+{
+  "provider": "Groq",
+  "model": "qwen/qwen3.6-27b",
+  "extraction_timestamp": "2026-08-21T04:34:42+0530",
+  "num_summaries_processed": 5,
+  "num_successful": 1,
+  "num_failed": 4,
+  "total_time_seconds": 33.18,
+  "extractions": [
+    {
+      "summary_id": 2,
+      "original_summary_snippet": "male, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associa...",
+      "dataset_diagnosis_icd": "a41. other septicemias. k220. achalasia of the heart. k509. crohn disease of nes localization. n17. acute renal failure.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "99999 {1}",
+      "extraction": {
+        "patient_demographics": {
+          "gender": "male",
+          "age": 42
+        },
+        "diagnoses": {
+          "primary": "Abdominal sepsis associated with acute on chronic kidney disease",
+          "primary_lay_explanation": "A serious belly infection that has spread to the body, happening alongside a sudden worsening of long-term kidney problems.",
+          "secondary": [
+            "Crohn's disease",
+            "Acute perforative abdomen (hole in the intestine)",
+            "Intra-abdominal collection (pus/fluid inside the belly)"
+          ],
+          "icd_codes_mentioned": []
+        },
+        "symptoms_at_admission": [
+          "Low blood pressure (hypotension)",
+          "Fever",
+          "Fainting episodes for 1 day"
+        ],
+        "anomalies_detected": [
+          {
+            "type": "Vital Sign",
+            "finding": "Hypotension / Borderline blood pressure",
+            "lay_explanation": "Blood pressure is lower than normal, which can cause dizziness, weakness, or fainting.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Lab Result",
+            "finding": "Worsening renal function",
+            "lay_explanation": "Kidneys are not filtering waste properly, which can lead to toxin buildup in the body.",
+            "severity": "abnormal"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Intra-abdominal collection",
+            "lay_explanation": "A pocket of infected fluid or pus collecting inside the belly area.",
+            "severity": "critical"
+          },
+          {
+            "type": "Clinical Finding",
+            "finding": "Increased urinary output via ileostomy",
+            "lay_explanation": "Too much fluid and waste coming out of the stoma bag, which can lead to dehydration and electrolyte imbalance.",
+            "severity": "abnormal"
+          }
+        ],
+        "procedures_performed": [
+          {
+            "name": "Ileocolectomy",
+            "lay_explanation": "Surgery to remove a damaged part of the small and large intestine.",
+            "date": "prior admission"
+          },
+          {
+            "name": "Creation of new anastomosis",
+            "lay_explanation": "Surgically reconnecting the healthy ends of the intestine after removing the damaged part.",
+            "date": "prior admission"
+          },
+          {
+            "name": "Transfer to Intensive Care Unit (ICU)",
+            "lay_explanation": "Moved to a special high-care unit for close monitoring of vital signs and infection.",
+            "date": "26/12/2021"
+          }
+        ],
+        "medications": [
+          {
+            "name": "Ertapenem",
+            "purpose_lay": "Strong antibiotic injection to fight the belly infection.",
+            "timing_dosage": "1 g/day, injected into muscle, for 4 weeks"
+          },
+          {
+            "name": "Vancomycin",
+            "purpose_lay": "Powerful antibiotic to kill resistant bacteria causing infection.",
+            "timing_dosage": "Given during hospital stay (IV)"
+          },
+          {
+            "name": "Meropenem",
+            "purpose_lay": "Broad-spectrum antibiotic for serious blood and belly infections.",
+            "timing_dosage": "Given during hospital stay (IV)"
+          },
+          {
+            "name": "KCL 6% (Potassium Chloride)",
+            "purpose_lay": "Potassium supplement to keep heart and muscles working properly.",
+            "timing_dosage": "Taken by mouth, continuously"
+          },
+          {
+            "name": "Loperamide",
+            "purpose_lay": "Medicine to slow down bowel movements and reduce diarrhea or high ostomy output.",
+            "timing_dosage": "Continuous"
+          },
+          {
+            "name": "Calcium carbonate",
+            "purpose_lay": "Calcium supplement to maintain healthy bone and blood calcium levels.",
+            "timing_dosage": "Continuous"
+          },
+          {
+            "name": "Cholestyramine",
+            "purpose_lay": "Medicine that binds bile acids to reduce diarrhea after intestine surgery.",
+            "timing_dosage": "Continuous"
+          },
+          {
+            "name": "Muciloid",
+            "purpose_lay": "Fiber supplement to help regulate bowel movements and form stool.",
+            "timing_dosage": "Continuous"
+          }
+        ],
+        "warning_signs_red_flags": [
+          "Return of fever, chills, or sweating (sign of infection returning)",
+          "Severe belly pain, swelling, or hardness",
+          "Fainting, extreme dizziness, or very low blood pressure",
+          "Significantly decreased urine output or no urine for 6+ hours",
+          "Ostomy blockage, no output for 6+ hours, or excessive watery output",
+          "Blood in the ostomy bag or dark/black colored output",
+          "Shortness of breath or difficulty breathing"
+        ],
+        "follow_up_care": {
+          "appointments": [
+            "Follow-up appointment on 12/27/2021",
+            "Planned hospitalization on 01/22"
+          ],
+          "ongoing_treatments": [
+            "Oral KCL 6% potassium replacement",
+            "Loperamide",
+            "Calcium carbonate",
+            "Cholestyramine",
+            "Muciloid"
+          ],
+          "lifestyle_diet_advice": []
+        },
+        "stay_duration": "23 hours",
+        "outcome": "alive"
+      },
+      "validation": {
+        "is_valid": true,
+        "issues": []
+      },
+      "extraction_summary": {
+        "has_demographics": true,
+        "primary_diagnosis": "Abdominal sepsis associated with acute on chronic kidney disease",
+        "num_secondary_diagnoses": 3,
+        "num_symptoms": 3,
+        "num_anomalies": 4,
+        "num_procedures": 3,
+        "num_medications": 8,
+        "num_warning_signs": 7,
+        "outcome": "alive"
+      },
+      "error": null,
+      "time_seconds": 8.28
+    },
+    {
+      "summary_id": 3,
+      "original_summary_snippet": "1. bloodstream infection associated with Schilley catheter in the right femoral vein sac 11/08 2. bacterial endocarditis associated with catheter echocardiogram 11/18: presence of vegetation in the mi...",
+      "dataset_diagnosis_icd": "l89. pressure ulcer. m464. discitis n. m650. tendon sheath abscess. m761. psoas tendonitis. r509 . fever n. a419. septicemia n. i33. acute and subacute endocarditis. i330. acute and subacute infective endocarditis. i339. acute endocarditis n. i38. valvular endocarditis unspecified. r579. shock n. n17. acute renal failure. a41. other septicemia. a412. staphylococcal septicemia n. n188. other chronic renal failure. n18. chronic renal failure. n180. end-stage renal disease.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "55",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "Request too large for model: API Error 413: {\"error\":{\"message\":\"Request too large for model `qwen/qwen3.6-27b` in organization `org_01kf9enm4aenjb6yypedj9n6j6` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Req",
+      "time_seconds": 0
+    },
+    {
+      "summary_id": 4,
+      "original_summary_snippet": "1sensitive pulmonary tuberculosis. diagnosis 2019, ripe 07/02/2020 ri 07/04 2 pulmonary complications secondary to tuberculosis: spontaneous pneumothorax on the right chest drainage on the right on 03...",
+      "dataset_diagnosis_icd": "a15. respiratory tuberculosis, with bacteriological and histological confirmation. b908. sequelae of tuberculosis of other organs. b909. sequelae of tuberculosis of airways and organs n.e.c. b90. sequelae of tuberculosis. a41. other septicemias. a483. toxic shock syndrome. z540. convalescence after surgery. r04. haemorrhage of airways. a499. bacterial infection n.e.c. e43. severe protein-calorie malnutrition, unspecified. z713. dietary advice and supervision. a159. tuberculosis of airways n.e.c., with bacteriological and histological confirmation. a153. pulmonary tuberculosis, with confirmation n.e.c. j93. pneumothorax.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "95",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "Failed to parse JSON from response. Raw (first 500 chars): {\n  \"patient_demographics\": {\n    \"gender\": null,\n    \"age\": null\n  },\n  \"diagnoses\": {\n    \"primary\": \"Sensitive Pulmonary Tuberculosis\",\n    \"primary_lay_explanation\": \"A lung infection caused by TB bacteria that responds well to standard TB medicines. It causes coughing, fever, and breathing trouble.\",\n    \"secondary\": [\n      \"Spontaneous pneumothorax (collapsed right lung)\",\n      \"Surgical wound infection (Multidrug-resistant Acinetobacter baumannii)\",\n      \"Hypovolemic shock (severe low ",
+      "time_seconds": 8.36
+    },
+    {
+      "summary_id": 5,
+      "original_summary_snippet": "admission: 12/06, discharge: 12/21, stay: 14 d 11 h, location: ward, payer: sus. 1. heart failure profile c dobutamine on 12/07 and 12/08, 2. abscess in the left thigh, osteomyelitis in the pubis, fou...",
+      "dataset_diagnosis_icd": "e788. other disorders of lipoprotein metabolism. h360. diabetic retinopathy e10e14 with fourth common feature 3. i351. aortic valve insufficiency. n083. glomerular disorders in diabetes mellitus e10e14 with fourth common feature. n329. bladder disorder ne. e112. non-insulin-dependent diabetes mellitus with renal complications. m726. necrotizing fasciitis. r02. gangrene not classified elsewhere. b342. coronavirus infection, ne. m86. osteomyelitis. n178. acute renal failure, other. b962. escherichia coli [e. coli], as a cause of diseases classified elsewhere. n40. prostatic hyperplasia. b961. klebsiella pneumoniae [m. pneumoniae] as a cause of diseases classif. in others. e10. insulin-dependent diabetes mellitus. i509. heart failure nes. a415. septicaemia due to other gram-negative organisms. i702. atherosclerosis of arteries of extremities. z899. acquired absence of limb nes. c61. malignant neoplasm of prostate. e115. non-insulin-dependent diabetes mellitus with peripheral circulatory complications. i06. rheumatic diseases of aortic valve. i132. hypertensive heart and kidney disease with congestive heart failure and i. i48. atrial flutter and fibrillation. i792. peripheral angiopathy in diseases classif. elsewhere. z895. acquired absence of leg at or below the knee. z940. transplanted kidney. n17. acute renal failure. n390. urinary tract infection of ne. localization.",
+      "dataset_outcome": "death",
+      "dataset_stay": "15",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "Failed to parse JSON from response. Raw (first 500 chars): ",
+      "time_seconds": 8.19
+    },
+    {
+      "summary_id": 11,
+      "original_summary_snippet": "1 coronavirus respiratory infection onset of symptoms 06/07: dyspnea, myalgia, hyporexia worsening of symptoms 06/09: drop in oxygen saturation positive rtpcr on 06/09 pao2/fio2 ratio on admission: 17...",
+      "dataset_diagnosis_icd": "j189. pneumonia ne. u071. novel coronavirus infection coronavirus. a419. septicemia ne. r57. shock unclassified elsewhere. z515. palliative care. b342. coronavirus infection, ne. j80. adult respiratory distress syndrome.",
+      "dataset_outcome": "alive",
+      "dataset_stay": "25",
+      "extraction": null,
+      "validation": null,
+      "extraction_summary": null,
+      "error": "Failed to parse JSON from response. Raw (first 500 chars): ",
+      "time_seconds": 8.35
+    }
+  ]
+}
