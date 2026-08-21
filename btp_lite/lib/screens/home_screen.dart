@@ -19,6 +19,7 @@ import '../widgets/model_selector.dart';
 import 'history_screen.dart';
 import 'result_screen.dart';
 import 'settings_screen.dart';
+import 'discharge_upload_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -376,6 +377,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 20),
 
+                // ── Chat with Discharge Summary Banner ──────────────────────
+                _buildChatBanner(isDark, textColor, subColor),
+                const SizedBox(height: 16),
+
                 // ── Card View ─────────────────────────────────────────────────
                 _buildInputCard(
                     cardColor, borderColor, textColor, subColor, isDark),
@@ -393,6 +398,103 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  // ── BANNER: Chat with Discharge Summary ──────────────────────────────────
+  Widget _buildChatBanner(bool isDark, Color textColor, Color subColor) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const DischargeUploadScreen()),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF1E1445), const Color(0xFF2D1F5E)]
+                  : [const Color(0xFFEDE9FE), const Color(0xFFDDD6FE)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF6C4DF6).withValues(alpha: 0.4),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6C4DF6).withValues(alpha: isDark ? 0.15 : 0.1),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6C4DF6).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.health_and_safety_rounded,
+                    color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Chat with your Discharge Summary',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: isDark
+                            ? const Color(0xFFA78BFA)
+                            : const Color(0xFF4A2DD4),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Upload your summary → AI extracts key info → Ask anything in plain language',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: isDark
+                            ? const Color(0xFF9B7FFF).withValues(alpha: 0.8)
+                            : const Color(0xFF6C4DF6).withValues(alpha: 0.8),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: const Color(0xFF6C4DF6).withValues(alpha: 0.7),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 350.ms, delay: 150.ms).slideY(begin: 0.03, end: 0, duration: 350.ms, delay: 150.ms);
   }
 
   // ── CARD 1: INPUT ───────────────────────────────────────────────────────────

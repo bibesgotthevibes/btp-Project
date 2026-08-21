@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/api_model.dart';
 import '../models/chat_message.dart';
+import '../models/discharge_knowledge.dart';
 import '../models/simplify_result.dart';
 import '../services/chat_service.dart';
 import '../services/storage_service.dart';
@@ -16,6 +17,8 @@ class ChatPanel extends StatefulWidget {
   final String? rawClinicalText;
   final ApiModel model;
   final bool isCompact;
+  final DischargeKnowledge? knowledge;
+  final String? initialMessage;
 
   const ChatPanel({
     super.key,
@@ -23,6 +26,8 @@ class ChatPanel extends StatefulWidget {
     this.rawClinicalText,
     required this.model,
     this.isCompact = false,
+    this.knowledge,
+    this.initialMessage,
   });
 
   @override
@@ -37,17 +42,50 @@ class _ChatPanelState extends State<ChatPanel> {
   bool _isSending = false;
   String? _chatError;
 
-  final List<String> _starterPrompts = [
-    '💊 Explain my medicines & timings',
-    '⚠️ What warning signs should we watch for?',
-    '🥗 What food & diet should I follow?',
-    '🩺 When is the doctor follow-up?',
-  ];
+  final List<String> _starterPrompts = [];
+
+  List<String> _buildStarterPrompts() {
+    final k = widget.knowledge;
+    if (k != null) {
+      // Personalized chips from extracted knowledge
+      final chips = <String>[];
+      chips.add('🩺 Explain my diagnosis in simple words');
+      if (k.medications.isNotEmpty) {
+        chips.add('💊 Why do I need ${k.medications.first.name}?');
+      }
+      if (k.anomalies.any((a) => a.severity == 'critical')) {
+        chips.add('🔬 Explain my critical test results');
+      } else if (k.anomalies.isNotEmpty) {
+        chips.add('🔬 Explain my lab and test findings');
+      }
+      if (k.hasAppointments) {
+        chips.add('📅 When is my next appointment?');
+      }
+      if (k.warningSignals.isNotEmpty) {
+        chips.add('🚨 What are my emergency warning signs?');
+      }
+      return chips;
+    }
+    // Default chips for non-grounded mode
+    return [
+      '💊 Explain my medicines & timings',
+      '⚠️ What warning signs should we watch for?',
+      '🥗 What food & diet should I follow?',
+      '🩺 When is the doctor follow-up?',
+    ];
+  }
 
   @override
   void initState() {
     super.initState();
+    _starterPrompts.addAll(_buildStarterPrompts());
     _initGreeting();
+    // Auto-send initialMessage if provided (from smart chip tap on dashboard)
+    if (widget.initialMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _sendMessage(widget.initialMessage);
+      });
+    }
   }
 
   void _initGreeting() {
@@ -88,7 +126,9 @@ class _ChatPanelState extends State<ChatPanel> {
       final storage = context.read<StorageService>();
       final chatService = ChatService(storage);
 
-      final originalText = widget.result?.originalText ?? widget.rawClinicalText ?? '';
+      final originalText = widget.knowledge != null
+          ? widget.knowledge!.toSystemPromptContext()
+          : (widget.result?.originalText ?? widget.rawClinicalText ?? '');
       final simplifiedText = widget.result?.simplifiedText ?? '';
 
       final assistantMsg = await chatService.sendMessage(

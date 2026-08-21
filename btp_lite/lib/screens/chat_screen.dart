@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/api_model.dart';
+import '../models/discharge_knowledge.dart';
 import '../models/simplify_result.dart';
 import '../theme/app_theme.dart';
 import '../widgets/chat_panel.dart';
@@ -8,11 +9,15 @@ import '../widgets/chat_panel.dart';
 class ChatScreen extends StatelessWidget {
   final SimplifyResult result;
   final ApiModel model;
+  final DischargeKnowledge? knowledge;
+  final String? initialMessage;
 
   const ChatScreen({
     super.key,
     required this.result,
     required this.model,
+    this.knowledge,
+    this.initialMessage,
   });
 
   @override
@@ -60,7 +65,9 @@ class ChatScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Follow-up Q&A · ${result.modelName}',
+                  knowledge != null
+                      ? 'Grounded · ${result.modelName}'
+                      : 'Follow-up Q&A · ${result.modelName}',
                   style: GoogleFonts.inter(
                     fontSize: 11,
                     color: const Color(0xFF6C4DF6),
@@ -86,6 +93,8 @@ class ChatScreen extends StatelessWidget {
                 result: result,
                 model: model,
                 isCompact: false,
+                knowledge: knowledge,
+                initialMessage: initialMessage,
               ),
             ),
           ),

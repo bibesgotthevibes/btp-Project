@@ -20,6 +20,8 @@ dependencies:
   printing: ^5.13.2
   # Share output
   share_plus: ^10.0.0
+  # File picker for discharge summary upload
+  file_picker: ^8.0.0
   # Animations
   flutter_animate: ^4.5.0
   # Google Fonts
