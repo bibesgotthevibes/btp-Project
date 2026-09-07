@@ -9,6 +9,8 @@ This directory contains the clinical datasets and medical reports (pathology, ra
 ```
 datasets/
 ├── README.md
+├── discharge_summaries/
+│   └── anotated_dataset_v2.xlsx
 ├── pathology_reports/
 │   ├── TCGA-242/
 │   │   └── PRAD_reports_eng.xlsx
@@ -53,6 +55,14 @@ datasets/
 | **RadEval-X** (v1.0.0) | [PhysioNet (RadEval-X)](https://physionet.org/content/rad-eval-x/1.0.0/) | *Radiology Report Generation Models Evaluation Dataset for Chest X-Rays*. Benchmark dataset annotated with clinically significant and insignificant error labels. |
 | **Radiologists Reports** | [Kaggle (saadaldoaij/radiologists-reports)](https://www.kaggle.com/datasets/saadaldoaij/radiologists-reports) | Curated collection of anonymized clinical radiology reports (`ReportsDATASET.csv`) covering diagnostic imaging modalities. |
 | **NLM-CXR / Open-i** | [National Library of Medicine (Open-i)](https://openi.nlm.nih.gov/faq?download=true) | Indiana University Chest X-Ray Collection (`ecgen-radiology`), providing paired radiological text (indications, findings, impressions) and images. |
+
+---
+
+### 3. Discharge Summaries
+
+| Dataset | Source / Reference | Description & Format |
+|---|---|---|
+| **Annotated Discharge Summaries (v2)** | N/A | 200 clinical discharge summaries (`anotated_dataset_v2.xlsx`) with original clinical narratives, English translations, primary/secondary ICD-10 diagnostic codes, patient outcomes, ICU indicators, and length of stay. Also includes sheets for clinical abbreviation mappings (301 entries) and ICD diagnostic codes. |
 
 ---
 

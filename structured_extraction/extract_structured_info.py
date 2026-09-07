@@ -58,7 +58,12 @@ NUM_SUMMARIES = 5
 SAMPLE_INDICES = [0, 1, 2, 3, 9]  # rows 1,2,3,4,10 from the dataset
 
 RESULTS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
-EXCEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "anotated_dataset_v2.xlsx")
+_candidates = [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "datasets", "discharge_summaries", "anotated_dataset_v2.xlsx"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "datasets", "anotated_dataset_v2.xlsx"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "anotated_dataset_v2.xlsx"),
+]
+EXCEL_PATH = next((p for p in _candidates if os.path.exists(p)), _candidates[0])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # EXCEL READER (using openpyxl — no pandas dependency required)
