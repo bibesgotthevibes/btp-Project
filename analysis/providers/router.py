@@ -93,7 +93,7 @@ class ModelRouter:
                 if res.status == "success":
                     return res
 
-                # If Cerebras failed (e.g. 402 payment required or 404), check Groq fallback
+                # If Cerebras failed (402 payment required, 429, 404, etc.), fallback to Groq
                 if self.groq_provider.api_key:
                     groq_model = cfg.get("groq_model_id") or model_id
                     groq_candidates = [groq_model] + [m for m in cfg.get("fallback_models", []) if m != groq_model]
@@ -106,6 +106,7 @@ class ModelRouter:
                             max_tokens=max_tokens,
                         )
                         if groq_res.status == "success" and (groq_res.text or "").strip():
+                            groq_res.extra = groq_res.extra or {}
                             groq_res.extra["fallback_provider"] = "groq"
                             groq_res.extra["requested_model"] = model_id
                             return groq_res

@@ -59,6 +59,10 @@ class GeminiProvider(BaseProvider):
             },
         }
 
+        # For models supporting thinkingConfig, allow text space by keeping thinking budget constrained
+        if any(v in model_id for v in ["2.5", "3.1", "3.8"]):
+            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}
+
         if system_prompt:
             payload["systemInstruction"] = {
                 "parts": [{"text": system_prompt}]
@@ -89,12 +93,8 @@ class GeminiProvider(BaseProvider):
 
                     if resp.status_code == 200:
                         data = resp.json()
-                        text = (
-                            data.get("candidates", [{}])[0]
-                            .get("content", {})
-                            .get("parts", [{}])[0]
-                            .get("text", "")
-                        )
+                        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                        text = "".join([p.get("text", "") for p in parts if "text" in p])
                         usage = data.get("usageMetadata", {})
                         return GenerationResult(
                             text=text.strip(),
@@ -119,12 +119,8 @@ class GeminiProvider(BaseProvider):
                     with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as response:
                         latency = time.time() - start_time
                         data = json.loads(response.read().decode("utf-8"))
-                        text = (
-                            data.get("candidates", [{}])[0]
-                            .get("content", {})
-                            .get("parts", [{}])[0]
-                            .get("text", "")
-                        )
+                        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
+                        text = "".join([p.get("text", "") for p in parts if "text" in p])
                         usage = data.get("usageMetadata", {})
                         return GenerationResult(
                             text=text.strip(),

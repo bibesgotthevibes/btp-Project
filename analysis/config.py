@@ -62,22 +62,22 @@ MODEL_ENDPOINTS = {
     # Gemini
     "gemini/3.8flash": {
         "provider": "gemini",
-        "model_id": os.getenv("GEMINI_FLASH_MODEL", "gemini-3.8-flash"),
-        "fallback_models": ["gemini-2.5-flash"],
-        "display_name": "Gemini 3.8 Flash",
+        "model_id": os.getenv("GEMINI_FLASH_MODEL", "gemini-2.5-flash"),
+        "fallback_models": ["gemini-3.5-flash"],
+        "display_name": "Gemini 2.5 Flash",
     },
     "gemini/3.1pro": {
         "provider": "gemini",
-        "model_id": os.getenv("GEMINI_PRO_MODEL", "gemini-3.1-pro-preview"),
+        "model_id": os.getenv("GEMINI_PRO_MODEL", "gemini-3.5-flash"),
         "fallback_models": ["gemini-2.5-flash"],
-        "display_name": "Gemini 3.1 Pro",
+        "display_name": "Gemini 3.5 Flash",
     },
     # Cerebras with Groq fallback
     "cerebras/gptoss": {
         "provider": "cerebras",
         "fallback_provider": "groq",
         "model_id": os.getenv("CEREBRAS_GPTOSS_MODEL", "gpt-oss-120b"),
-        "groq_model_id": os.getenv("GROQ_GPTOSS_MODEL", "openai/gpt-oss-20b"),
+        "groq_model_id": os.getenv("GROQ_GPTOSS_MODEL", "openai/gpt-oss-120b"),
         "fallback_models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b"],
         "display_name": "GPT-OSS (Cerebras/Groq)",
     },
@@ -86,7 +86,7 @@ MODEL_ENDPOINTS = {
         "fallback_provider": "groq",
         "model_id": os.getenv("CEREBRAS_QWEN_MODEL", "qwen-3.8-27b"),
         "groq_model_id": os.getenv("GROQ_QWEN_MODEL", "qwen/qwen3.8-27b"),
-        "fallback_models": ["qwen/qwen3.8-27b", "qwen/qwen3.6-27b"],
+        "fallback_models": ["qwen/qwen3.8-27b"],
         "display_name": "Qwen 3.8 (Cerebras/Groq)",
     },
 }
