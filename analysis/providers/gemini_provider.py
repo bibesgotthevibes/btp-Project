@@ -135,7 +135,7 @@ class GeminiProvider(BaseProvider):
 
                 # Inspect HTTP error for retryable conditions
                 last_error = f"HTTP {status_code}: {error_text[:300]}"
-                if status_code in (429, 503) and attempt < MAX_RETRIES:
+                if status_code in (429, 503) and "limit: 0" not in error_text and attempt < MAX_RETRIES:
                     time.sleep(delay)
                     delay *= 2
                     continue
@@ -152,7 +152,7 @@ class GeminiProvider(BaseProvider):
                 latency = time.time() - start_time
                 err_body = e.read().decode("utf-8") if e.fp else str(e)
                 last_error = f"HTTP {e.code}: {err_body[:300]}"
-                if e.code in (429, 503) and attempt < MAX_RETRIES:
+                if e.code in (429, 503) and "limit: 0" not in err_body and attempt < MAX_RETRIES:
                     time.sleep(delay)
                     delay *= 2
                     continue

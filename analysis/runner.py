@@ -81,15 +81,38 @@ def save_checkpoint(trial_id: str, record: Dict[str, Any]) -> None:
 
 
 def save_aggregated_results(records: List[Dict[str, Any]]) -> None:
-    """Atomically save all trial records to generations.json and generations.csv."""
-    # 1. Write generations.json
+    """Atomically save all trial records to generations.json and generations.csv.
+    Merges in-memory records with all available checkpoints in CHECKPOINTS_DIR."""
+    # 1. Collect all checkpoints from disk
+    all_trials = {}
+    if CHECKPOINTS_DIR.exists():
+        for ckpt in sorted(CHECKPOINTS_DIR.glob("*.json")):
+            try:
+                with open(ckpt, "r", encoding="utf-8") as f:
+                    cdata = json.load(f)
+                    tid = cdata.get("trial_id") or ckpt.stem
+                    all_trials[tid] = cdata
+            except Exception:
+                pass
+
+    # 2. Update with current in-memory records (never overwrite a success checkpoint with dry_run)
+    for r in records:
+        tid = r.get("trial_id")
+        if tid:
+            if r.get("status") == "dry_run" and tid in all_trials and all_trials[tid].get("status") == "success":
+                continue
+            all_trials[tid] = r
+
+    merged_records = list(all_trials.values()) if all_trials else records
+
+    # 3. Write generations.json
     tmp_json = GENERATIONS_JSON.with_suffix(".tmp")
     with open(tmp_json, "w", encoding="utf-8") as f:
-        json.dump(records, f, indent=2, ensure_ascii=False)
+        json.dump(merged_records, f, indent=2, ensure_ascii=False)
     tmp_json.replace(GENERATIONS_JSON)
 
-    # 2. Write generations.csv
-    if records:
+    # 4. Write generations.csv
+    if merged_records:
         fieldnames = [
             "trial_id", "task", "datatype", "sample_id", "sample_title",
             "model", "strategy", "status", "error", "provider",
@@ -101,7 +124,7 @@ def save_aggregated_results(records: List[Dict[str, Any]]) -> None:
         with open(tmp_csv, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
             writer.writeheader()
-            for r in records:
+            for r in merged_records:
                 flat = dict(r)
                 src = flat.get("source_text", "")
                 out = flat.get("output_text", "")
