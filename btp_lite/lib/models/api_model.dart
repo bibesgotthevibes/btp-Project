@@ -28,6 +28,12 @@ class ApiModel {
       provider: 'gemini',
       description: 'Google\'s fast multimodal model',
     ),
+    ApiModel(
+      id: 'gemini-2.5-pro',
+      name: 'Gemini 2.5 Pro',
+      provider: 'gemini',
+      description: 'Google\'s high-reasoning model',
+    ),
     // ── Groq ──────────────────────────────────────────────────────────────────
     ApiModel(
       id: 'llama-3.3-70b-versatile',

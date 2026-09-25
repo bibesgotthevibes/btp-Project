@@ -78,7 +78,7 @@ class GeminiService {
         },
         'contents': formattedContents,
         'generationConfig': {
-          'maxOutputTokens': 4096,
+          'maxOutputTokens': 8192,
           'temperature': 0.4,
         },
       }),
