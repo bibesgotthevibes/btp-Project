@@ -30,6 +30,7 @@ dependencies:
   provider: ^6.1.2
   # Icons
   cupertino_icons: ^1.0.8
+  syncfusion_flutter_pdf: ^34.2.9
 
 dev_dependencies:
   flutter_test:

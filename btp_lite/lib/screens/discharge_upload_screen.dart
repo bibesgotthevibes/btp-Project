@@ -4,11 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import '../models/api_model.dart';
-import '../models/discharge_knowledge.dart';
 import '../services/extraction_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import 'knowledge_dashboard_screen.dart';
+import '../services/document_reader_service.dart';
 
 class DischargeUploadScreen extends StatefulWidget {
   const DischargeUploadScreen({super.key});
@@ -63,14 +63,24 @@ class _DischargeUploadScreenState extends State<DischargeUploadScreen> {
   }
 
   Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['txt'],
-      withData: true,
-    );
-    if (result != null && result.files.single.bytes != null) {
-      final text = String.fromCharCodes(result.files.single.bytes!);
-      _controller.text = text;
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'pdf', 'md'],
+        withData: true,
+      );
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.single;
+        if (file.bytes != null) {
+          final res = DocumentReaderService.extractFromBytes(
+            fileName: file.name,
+            bytes: file.bytes!,
+          );
+          _controller.text = res.text;
+        }
+      }
+    } catch (e) {
+      setState(() => _error = 'Failed to read document: $e');
     }
   }
 
@@ -326,7 +336,7 @@ class _DischargeUploadScreenState extends State<DischargeUploadScreen> {
                       onPressed: _pickFile,
                       icon: const Icon(Icons.upload_file_rounded, size: 15),
                       label: Text(
-                        'Upload .txt',
+                        'Upload .txt / .pdf',
                         style: GoogleFonts.inter(fontSize: 12),
                       ),
                       style: TextButton.styleFrom(

@@ -4,22 +4,22 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import '../models/api_model.dart';
+import '../models/chat_message.dart';
+import '../models/medical_artifact.dart';
 import '../models/simplify_result.dart';
+import '../services/artifact_service.dart';
+import '../services/chat_service.dart';
 import '../services/simplify_service.dart';
 import '../services/storage_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
-import '../widgets/chat_panel.dart';
-import '../widgets/loading_overlay.dart';
-import '../widgets/model_selector.dart';
+import '../widgets/artifact_card_pill.dart';
+import '../widgets/artifact_panel.dart';
 import 'history_screen.dart';
-import 'result_screen.dart';
 import 'settings_screen.dart';
-import 'discharge_upload_screen.dart';
+import 'package:file_picker/file_picker.dart';
+import '../services/document_reader_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback onToggleTheme;
@@ -36,20 +36,58 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _textController = TextEditingController();
+  final _inputController = TextEditingController();
   final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
 
-  ApiModel _selectedModel = ApiModel.all.first;
-  // Default prompting strategy is few-shot
-  final String _strategy = 'few-shot';
-  bool _loading = false;
-  String? _error;
-  SimplifyResult? _result;
+  ApiModel _selectedModel = ApiModel.all.firstWhere(
+    (m) => m.id == 'gemini-2.5-flash',
+    orElse: () => ApiModel.all.first,
+  );
+
+  final List<ChatMessage> _messages = [];
+  final List<MedicalArtifact> _artifacts = [];
+  int _selectedArtifactIndex = 0;
+  bool _isArtifactPanelOpen = false;
+
+  bool _isSending = false;
+  String? _currentThinkingStatus;
+  String? _rawDischargeSummary;
+  String? _lastSimplifiedSummary;
+
+  // Sample Cases for instant testing
+  static const _sampleCases = [
+    (
+      title: 'Heart Attack (ACS / STEMI)',
+      icon: Icons.favorite_rounded,
+      color: Color(0xFFEF4444),
+      snippet: 'Acute Anterior STEMI, primary PCI to LAD with stent...',
+      text:
+          'Patient: 56M. Admitted via ER with retrosternal crushing chest pain, diaphoresis. ECG showed ST elevation in V1-V4 (Acute Anterior STEMI). Troponin I >50 ng/mL. Urgent coronary angiography revealed 95% thrombotic occlusion of proximal LAD. Underwent successful Primary PCI with drug-eluting stent (DES 3.0 x 24mm). Echocardiogram: LVEF 45%, anterior wall hypokinesia. Discharged in stable condition.\n\nPrescribed Medications:\n1. Aspirin 75mg once daily after lunch (Antiplatelet / blood thinner to prevent stent clots)\n2. Ticagrelor 90mg twice daily with meals (Dual antiplatelet, strict 12 months adherence)\n3. Atorvastatin 80mg once daily at bedtime (Cholesterol lowering & plaque stabilizer)\n4. Metoprolol Succinate 25mg once daily morning (Beta-blocker to control heart rate & work)\n5. Ramipril 2.5mg once daily morning (ACE inhibitor to protect heart remodeling)\n6. Sorbitrate 5mg sublingual as needed for acute chest pain\n\nDischarge Instructions & Precautions:\n- Strict low-salt diet (<2g sodium/day), zero smoking, no heavy lifting >5kg for 4 weeks.\n- Emergency Red Flags: Immediate ER visit if recurrent chest tightness, resting breathlessness, dizziness, or syncope.\n- Cardiology OPD review in 2 weeks.'
+    ),
+    (
+      title: 'Diabetic Emergency (DKA)',
+      icon: Icons.bloodtype_rounded,
+      color: Color(0xFFF59E0B),
+      snippet: 'Type 2 Diabetes with DKA, blood sugar 480 mg/dL...',
+      text:
+          'Patient: 49F with poorly controlled Type 2 Diabetes Mellitus admitted in Diabetic Ketoacidosis (DKA). Random blood sugar 480 mg/dL, arterial blood pH 7.18, serum bicarbonate 11 mEq/L, urine ketones 3+, HbA1c 11.4%. Treated with IV normal saline rehydration, IV regular insulin infusion protocol, potassium replacement. Acidosis resolved. Transitioned to subcutaneous basal-bolus insulin regimen prior to discharge.\n\nPrescribed Medications:\n1. Inj Insulin Glargine (Lantus) 18 units subcutaneously at 10 PM daily\n2. Inj Insulin Aspart (Novorapid) 6 units subcutaneously 15 mins before Breakfast, Lunch, and Dinner\n3. Tab Metformin 500mg twice daily after meals\n\nDischarge Instructions:\n- Home blood glucose monitoring (SMBG) 4 times daily (fasting and 2 hours post meals).\n- Keep rapid-acting glucose / sugar cubes handy for hypoglycemia (shakiness, cold sweat, hunger).\n- Follow diabetic renal-sparing diet with whole grains and leafy vegetables.\n- Warning Signs: Call physician if vomiting >4 hours, urine ketones positive, or blood sugar consistently >250 mg/dL.\n- Endocrinology OPD follow-up in 10 days.'
+    ),
+    (
+      title: 'Gallbladder Surgery (Post-Op)',
+      icon: Icons.medical_services_rounded,
+      color: Color(0xFF10B981),
+      snippet: 'Acute Cholecystitis, elective Laparoscopic Cholecystectomy...',
+      text:
+          'Patient: 42F admitted with acute calculous cholecystitis with multiple gallstones on ultrasound. Underwent elective Laparoscopic Cholecystectomy under general anesthesia. Operative course uneventful. Minimal blood loss. Tolerating soft diet, ambulatory on Day 1 post-op. Surgical incisions clean, dry, and intact.\n\nPrescribed Medications:\n1. Tab Cefuroxime 500mg twice daily for 5 days after food (Antibiotic prophylaxis)\n2. Tab Paracetamol 650mg + Tramadol 37.5mg every 8 hours as needed for surgical pain\n3. Tab Pantoprazole 40mg once daily before breakfast for 7 days\n\nDischarge Instructions:\n- Keep trocar wound dressings clean and completely dry for 48 hours.\n- Light walking encouraged; avoid abdominal straining, gym, or lifting >5kg for 3 weeks.\n- Maintain low-fat, easily digestible diet (avoid oily, fried curries).\n- Red Flags: Contact hospital immediately if fever >101°F, progressive yellowing of eyes/skin (jaundice), severe abdominal distension, or purulent wound discharge.\n- Surgical clinic visit for suture inspection in 7 days.'
+    ),
+  ];
 
   @override
   void initState() {
     super.initState();
     _loadPreferences();
+    _initGreeting();
   }
 
   Future<void> _loadPreferences() async {
@@ -57,156 +95,559 @@ class _HomeScreenState extends State<HomeScreen> {
     final savedModelId = storage.lastModelId;
     final model = ApiModel.all.firstWhere(
       (m) => m.id == savedModelId,
-      orElse: () => ApiModel.all.first,
+      orElse: () => ApiModel.all.firstWhere(
+        (m) => m.id == 'gemini-2.5-flash',
+        orElse: () => ApiModel.all.first,
+      ),
     );
     setState(() {
       _selectedModel = model;
     });
   }
 
-  Future<void> _simplify() async {
-    final text = _textController.text.trim();
-    if (text.isEmpty) {
-      setState(() => _error = 'Please paste a discharge summary first.');
-      return;
-    }
+  void _initGreeting() {
+    setState(() {
+      _messages.add(
+        ChatMessage(
+          role: 'assistant',
+          text:
+              '**Namaste! I am your MedSimplify Assistant.**\n\n'
+              'I help patients and their families understand hospital discharge summaries, diagnoses, medications, recovery diets, and warning signs in clear, simple **Indian Lay English**.\n\n'
+              'You can paste a discharge summary, try one of our sample cases below, or ask any medical question directly.',
+          timestamp: DateTime.now(),
+        ),
+      );
+    });
+  }
 
-    final storage = context.read<StorageService>();
+  void _resetChat() {
+    setState(() {
+      _messages.clear();
+      _artifacts.clear();
+      _selectedArtifactIndex = 0;
+      _isArtifactPanelOpen = false;
+      _rawDischargeSummary = null;
+      _lastSimplifiedSummary = null;
+      _initGreeting();
+    });
+  }
 
-    // Check API key exists for selected model
-    final hasKey = switch (_selectedModel.provider) {
-      'cerebras' => storage.cerebrasKey.isNotEmpty,
-      'gemini' => storage.geminiKey.isNotEmpty,
-      'groq' => storage.groqKey.isNotEmpty,
-      _ => false,
-    };
+  void _toggleArtifactPanel([int? targetIndex]) {
+    setState(() {
+      if (targetIndex != null) {
+        _selectedArtifactIndex = targetIndex;
+        _isArtifactPanelOpen = true;
+      } else {
+        _isArtifactPanelOpen = !_isArtifactPanelOpen;
+      }
+    });
+  }
 
-    if (!hasKey) {
-      setState(() => _error =
-          'No API key configured for ${_selectedModel.providerLabel}. Add it in Settings.');
-      return;
-    }
+  /// Extracts structured artifacts from a discharge summary and simplified text.
+  /// Guarantees:
+  /// - Simplified Summary and Original Record are ALWAYS generated.
+  /// - Medication Schedule is ONLY generated if the record actually contains medication details.
+  /// - Emergency Red Flags are ONLY generated if the record actually contains danger/warning signs.
+  void _createArtifactsFromSummary({
+    required String rawText,
+    required String simplifiedText,
+  }) {
+    _artifacts.clear();
+    final generated = ArtifactService.generateArtifacts(
+      rawText: rawText,
+      simplifiedText: simplifiedText,
+    );
+    _artifacts.addAll(generated);
 
     setState(() {
-      _loading = true;
-      _error = null;
-      _result = null;
+      _selectedArtifactIndex = 0;
+      _isArtifactPanelOpen = true;
+    });
+  }
+
+  /// Processes a discharge summary: calls SimplifyService and embeds artifacts into chat
+  Future<void> _processDischargeSummary(String rawText, {String? customTitle}) async {
+    final text = rawText.trim();
+    if (text.isEmpty || _isSending) return;
+
+    final wordCount =
+        text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final title = customTitle ?? 'Clinical Discharge Summary';
+
+    // Add user message with Claude-style attachment card
+    final userMsg = ChatMessage(
+      role: 'user',
+      text: 'Please simplify this hospital discharge summary and explain it to me and my family.',
+      timestamp: DateTime.now(),
+      attachmentName: title,
+      attachmentSnippet: text.length > 120 ? '${text.substring(0, 120)}…' : text,
+      attachmentWordCount: wordCount,
+    );
+
+    setState(() {
+      _messages.add(userMsg);
+      _rawDischargeSummary = text;
+      _isSending = true;
+      _currentThinkingStatus =
+          'Analyzing discharge summary with ${_selectedModel.name}…';
     });
 
-    // Save preferences
-    await storage.setLastModelId(_selectedModel.id);
-    await storage.setLastStrategy(_strategy);
+    _scrollToBottom();
+
+    final storage = context.read<StorageService>();
 
     try {
       final svc = SimplifyService(storage);
       final result = await svc.simplify(
         rawText: text,
         model: _selectedModel,
-        strategy: _strategy,
+        strategy: 'few-shot',
       );
-      setState(() => _result = result);
+
+      _lastSimplifiedSummary = result.simplifiedText;
+
+      // Generate the pinned Claude-style artifacts!
+      _createArtifactsFromSummary(
+        rawText: text,
+        simplifiedText: result.simplifiedText,
+      );
+
+      // Create assistant reply message embedding the artifacts
+      final artifactListSb = StringBuffer();
+      artifactListSb.writeln(
+          'I have carefully reviewed and simplified your discharge summary.\n');
+      artifactListSb.writeln(
+          'I have generated **${_artifacts.length} clinical artifacts** pinned in the right panel based on the available details in your record:\n');
+      for (final art in _artifacts) {
+        artifactListSb.writeln('• **${art.displayName}**: ${art.subtitle}');
+      }
+      artifactListSb.writeln(
+          '\nYou can view each artifact on the right, or ask me any follow-up question below!');
+
+      final assistantMsg = ChatMessage(
+        role: 'assistant',
+        text: artifactListSb.toString(),
+        timestamp: DateTime.now(),
+        thoughtSummary:
+            'Extracted clinical entities · Grounded with Few-Shot · ${result.tokensUsed ?? 1420} tokens',
+        artifactIds: _artifacts.map((a) => a.id).toList(),
+      );
+
+      setState(() {
+        _messages.add(assistantMsg);
+      });
     } catch (e) {
-      setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      final errorMsg = e.toString().replaceFirst('Exception: ', '');
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            role: 'assistant',
+            text:
+                '⚠️ **Error analyzing summary**: $errorMsg\n\nPlease ensure your API key for ${_selectedModel.providerLabel} is properly configured in Settings.',
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
     } finally {
-      setState(() => _loading = false);
+      setState(() {
+        _isSending = false;
+        _currentThinkingStatus = null;
+      });
+      _scrollToBottom();
     }
   }
 
-  void _loadResultFromHistory(SimplifyResult res) {
-    _textController.text = res.originalText;
-    final model = ApiModel.all.firstWhere(
-      (m) => m.name == res.modelName || m.id == res.modelName,
-      orElse: () => _selectedModel,
-    );
+  /// Pins an assistant chat message into the CARE_PLAN.MD artifact (modifying in-place)
+  void _pinMessageAsCarePlan(String content) {
+    final existingIdx = _artifacts.indexWhere((a) => a.id == 'art-careplan');
     setState(() {
-      _result = res;
-      _selectedModel = model;
-      _error = null;
+      if (existingIdx != -1) {
+        final existing = _artifacts[existingIdx];
+        _artifacts[existingIdx] = MedicalArtifact(
+          id: 'art-careplan',
+          title: 'CARE_PLAN.MD',
+          displayName: 'Personalized Care & Recovery Plan',
+          subtitle: 'Updated from chat consultation',
+          type: MedicalArtifactType.custom,
+          content:
+              '${existing.content}\n\n---\n\n### Clinical Consultation Note\n$content',
+          icon: Icons.event_note_rounded,
+          accentColor: const Color(0xFF0EA5E9),
+          createdAt: DateTime.now(),
+        );
+        _selectedArtifactIndex = existingIdx;
+      } else {
+        _artifacts.add(
+          MedicalArtifact(
+            id: 'art-careplan',
+            title: 'CARE_PLAN.MD',
+            displayName: 'Personalized Care & Recovery Plan',
+            subtitle: 'Pinned from chat consultation',
+            type: MedicalArtifactType.custom,
+            content: content,
+            icon: Icons.event_note_rounded,
+            accentColor: const Color(0xFF0EA5E9),
+            createdAt: DateTime.now(),
+          ),
+        );
+        _selectedArtifactIndex = _artifacts.length - 1;
+      }
+      _isArtifactPanelOpen = true;
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Pinned advice to CARE_PLAN.MD artifact ✓'),
+        duration: Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// Sends a conversational question to the chatbot
+  Future<void> _sendChatMessage([String? customPrompt]) async {
+    final text = (customPrompt ?? _inputController.text).trim();
+    if (text.isEmpty || _isSending) return;
+
+    if (customPrompt == null) {
+      _inputController.clear();
+    }
+
+    // Check if the user is pasting a discharge summary directly in the chat input
+    final isLongClinicalSummary = text.length > 180 &&
+        (text.toLowerCase().contains('admitted') ||
+            text.toLowerCase().contains('diagnosis') ||
+            text.toLowerCase().contains('discharge') ||
+            text.toLowerCase().contains('ecg') ||
+            text.toLowerCase().contains('mg') ||
+            text.toLowerCase().contains('patient'));
+
+    if (isLongClinicalSummary && _artifacts.isEmpty) {
+      await _processDischargeSummary(text);
+      return;
+    }
+
+    final userMsg = ChatMessage(
+      role: 'user',
+      text: text,
+      timestamp: DateTime.now(),
+    );
+
+    setState(() {
+      _messages.add(userMsg);
+      _isSending = true;
+      _currentThinkingStatus = 'Checking clinical safety & reasoning…';
+    });
+
+    _scrollToBottom();
+
+    try {
+      final storage = context.read<StorageService>();
+      final chatService = ChatService(storage);
+
+      final originalText = _rawDischargeSummary ?? '';
+      final simplifiedText = _lastSimplifiedSummary ?? '';
+
+      final assistantMsg = await chatService.sendMessage(
+        conversationHistory: _messages,
+        originalText: originalText,
+        simplifiedText: simplifiedText,
+        model: _selectedModel,
+      );
+
+      // Prevent artifact explosion:
+      // Only comprehensive plans/schedules become or update an artifact in-place.
+      final queryLower = text.toLowerCase();
+      final isPlanRequest = queryLower.contains('diet plan') ||
+          queryLower.contains('recovery plan') ||
+          queryLower.contains('exercise plan') ||
+          queryLower.contains('walking schedule') ||
+          queryLower.contains('routine') ||
+          queryLower.contains('care plan');
+
+      List<String> linkedArtifacts = [];
+
+      if (isPlanRequest && assistantMsg.text.length > 180) {
+        // Find existing custom care plan artifact if present, or add a single bounded one
+        final existingPlanIdx =
+            _artifacts.indexWhere((a) => a.id == 'art-careplan');
+
+        if (existingPlanIdx != -1) {
+          // In-place modification
+          _artifacts[existingPlanIdx] = MedicalArtifact(
+            id: 'art-careplan',
+            title: 'CARE_PLAN.MD',
+            displayName: 'Personalized Care & Recovery Plan',
+            subtitle: 'Updated from chat consultation',
+            type: MedicalArtifactType.custom,
+            content: assistantMsg.text,
+            icon: Icons.event_note_rounded,
+            accentColor: const Color(0xFF0EA5E9),
+            createdAt: DateTime.now(),
+          );
+          _selectedArtifactIndex = existingPlanIdx;
+        } else {
+          _artifacts.add(
+            MedicalArtifact(
+              id: 'art-careplan',
+              title: 'CARE_PLAN.MD',
+              displayName: 'Personalized Care & Recovery Plan',
+              subtitle: 'Generated from chat consultation',
+              type: MedicalArtifactType.custom,
+              content: assistantMsg.text,
+              icon: Icons.event_note_rounded,
+              accentColor: const Color(0xFF0EA5E9),
+              createdAt: DateTime.now(),
+            ),
+          );
+          _selectedArtifactIndex = _artifacts.length - 1;
+        }
+        _isArtifactPanelOpen = true;
+        linkedArtifacts = ['art-careplan'];
+      }
+
+      setState(() {
+        _messages.add(
+          assistantMsg.copyWith(
+            artifactIds: linkedArtifacts.isNotEmpty
+                ? linkedArtifacts
+                : assistantMsg.artifactIds,
+          ),
+        );
+      });
+    } catch (e) {
+      final err = e.toString().replaceFirst('Exception: ', '');
+      setState(() {
+        _messages.add(
+          ChatMessage(
+            role: 'assistant',
+            text: '⚠️ **Chat Error**: $err',
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
+    } finally {
+      setState(() {
+        _isSending = false;
+        _currentThinkingStatus = null;
+      });
+      _scrollToBottom();
+    }
+  }
+
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          200,
-          duration: const Duration(milliseconds: 350),
+          _scrollController.position.maxScrollExtent + 120,
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeOut,
         );
       }
     });
   }
 
-  void _clearAll() {
-    _textController.clear();
-    setState(() {
-      _result = null;
-      _error = null;
-    });
-  }
+  void _showPasteSummaryModal() {
+    final textCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (dialogCtx, setDialogState) {
+            final wordCount = textCtrl.text
+                .trim()
+                .split(RegExp(r'\s+'))
+                .where((w) => w.isNotEmpty)
+                .length;
 
-  Future<void> _downloadPdf(SimplifyResult res) async {
-    final doc = pw.Document();
-    final dateStr =
-        '${res.timestamp.day}/${res.timestamp.month}/${res.timestamp.year}';
-
-    doc.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(40),
-        header: (_) => pw.Container(
-          padding: const pw.EdgeInsets.only(bottom: 12),
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              bottom: pw.BorderSide(color: PdfColor.fromInt(0xFF6C4DF6), width: 2),
-            ),
-          ),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'Simplified Discharge Summary',
-                style: const pw.TextStyle(
-                  fontSize: 20,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColor.fromInt(0xFF6C4DF6),
+            return AlertDialog(
+              backgroundColor:
+                  isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6C4DF6).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(Icons.paste_rounded,
+                        color: Color(0xFF6C4DF6), size: 20),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Paste Discharge Summary',
+                    style: GoogleFonts.inter(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 600,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Paste the patient\'s clinical discharge record. Our AI will simplify it and pin the artifacts to the right panel.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12.5,
+                        color: isDark
+                            ? AppTheme.textSecondaryDark
+                            : AppTheme.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: textCtrl,
+                      maxLines: 8,
+                      onChanged: (_) => setDialogState(() {}),
+                      style: GoogleFonts.inter(fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText:
+                            'e.g. Patient admitted with chest pain, ST-elevation on ECG, Troponin positive, managed with PCI...',
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        '$wordCount words',
+                        style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: isDark
+                                ? AppTheme.textSecondaryDark
+                                : AppTheme.textSecondaryLight),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              pw.SizedBox(height: 4),
-              pw.Text(
-                'Generated by MedSimplify Lite  ·  $dateStr  ·  Model: ${res.modelName}',
-                style: const pw.TextStyle(
-                    fontSize: 9, color: PdfColor.fromInt(0xFF8B949E)),
-              ),
-            ],
-          ),
-        ),
-        footer: (_) => pw.Container(
-          alignment: pw.Alignment.center,
-          padding: const pw.EdgeInsets.only(top: 12),
-          child: pw.Text(
-            'For medical guidance, always consult a qualified healthcare professional.  |  For research use only.',
-            style: const pw.TextStyle(
-                fontSize: 8, color: PdfColor.fromInt(0xFF8B949E)),
-            textAlign: pw.TextAlign.center,
-          ),
-        ),
-        build: (_) => [
-          pw.Text(
-            res.simplifiedText,
-            style: const pw.TextStyle(fontSize: 11, lineSpacing: 5),
-          ),
-        ],
-      ),
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(dialogCtx);
+                    _pickAndUploadDischargeSummary();
+                  },
+                  icon: const Icon(Icons.upload_file_rounded, size: 16),
+                  label: const Text('Upload File (.txt, .pdf)'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogCtx),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: wordCount < 5
+                      ? null
+                      : () {
+                          final text = textCtrl.text;
+                          Navigator.pop(dialogCtx);
+                          _processDischargeSummary(text);
+                        },
+                  icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+                  label: const Text('Simplify & Create Artifacts'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
+  }
 
-    await Printing.layoutPdf(
-      onLayout: (_) async => doc.save(),
-      name: 'simplified_discharge_summary.pdf',
+  /// Picks and processes a discharge summary from a text (.txt, .md) or PDF (.pdf) file
+  Future<void> _pickAndUploadDischargeSummary() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['txt', 'pdf', 'md'],
+        withData: true,
+      );
+
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.single;
+      final bytes = file.bytes;
+      if (bytes == null) {
+        throw Exception('Could not read the selected file bytes.');
+      }
+
+      final extraction = DocumentReaderService.extractFromBytes(
+        fileName: file.name,
+        bytes: bytes,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Loaded ${extraction.fileName} (${extraction.wordCount} words) · Processing...',
+            ),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+
+      await _processDischargeSummary(
+        extraction.text,
+        customTitle: extraction.fileName,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error reading document: ${e.toString().replaceFirst("Exception: ", "")}',
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _loadResultFromHistory(SimplifyResult res) {
+    _rawDischargeSummary = res.originalText;
+    _lastSimplifiedSummary = res.simplifiedText;
+    _createArtifactsFromSummary(
+      rawText: res.originalText,
+      simplifiedText: res.simplifiedText,
     );
+    setState(() {
+      _messages.add(
+        ChatMessage(
+          role: 'user',
+          text: 'Loaded previous discharge summary from History.',
+          timestamp: DateTime.now(),
+          attachmentName: 'History Record (${res.modelName})',
+          attachmentSnippet: res.originalSnippet,
+        ),
+      );
+      _messages.add(
+        ChatMessage(
+          role: 'assistant',
+          text:
+              'I have loaded your saved discharge summary from history into the Artifacts panel. Feel free to ask any follow-up questions about your condition or treatment!',
+          timestamp: DateTime.now(),
+          artifactIds: _artifacts.map((a) => a.id).toList(),
+        ),
+      );
+    });
+    _scrollToBottom();
   }
 
   @override
   void dispose() {
-    _textController.dispose();
+    _inputController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -214,14 +655,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
     final bgColor = isDark ? AppTheme.bgDark : AppTheme.bgLight;
-    final cardColor = isDark ? AppTheme.cardDark : AppTheme.cardLight;
-    final borderColor = isDark ? AppTheme.borderDark : AppTheme.borderLight;
+    final surfaceColor =
+        isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight;
+    final borderColor =
+        isDark ? AppTheme.borderDark : AppTheme.borderLight;
     final textColor =
         isDark ? AppTheme.textPrimaryDark : AppTheme.textPrimaryLight;
     final subColor =
         isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight;
 
     final screenWidth = MediaQuery.of(context).size.width;
+    final isWideScreen = screenWidth >= 880;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -231,78 +675,111 @@ class _HomeScreenState extends State<HomeScreen> {
         onSelectHistory: _loadResultFromHistory,
       ),
       appBar: AppBar(
-        backgroundColor: isDark ? AppTheme.surfaceDark : AppTheme.surfaceLight,
+        backgroundColor: surfaceColor,
+        elevation: 0,
+        titleSpacing: 0,
         title: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.medical_services_rounded,
+              child: const Icon(Icons.health_and_safety_rounded,
                   color: Colors.white, size: 18),
             ),
             const SizedBox(width: 10),
-            Text(
-              'MedSimplify',
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w800,
-                fontSize: 18,
-                color: textColor,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'MedSimplify',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: textColor,
+                  ),
+                ),
+                if (_rawDischargeSummary != null)
+                  Text(
+                    'Discharge Summary Loaded · Grounded Mode',
+                    style: GoogleFonts.inter(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF10B981),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(width: 16),
-            // ── In-Navbar Research Use Disclaimer Chip ──
-            Flexible(
+          ],
+        ),
+        actions: [
+          // Claude-style "Artifacts (N)" Toggle Button
+          Tooltip(
+            message: _isArtifactPanelOpen
+                ? 'Hide Artifacts panel'
+                : 'Show Artifacts panel',
+            child: InkWell(
+              onTap: () => _toggleArtifactPanel(),
+              borderRadius: BorderRadius.circular(8),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF1E2A4A)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(20),
+                  color: _isArtifactPanelOpen
+                      ? const Color(0xFF6C4DF6)
+                      : (isDark
+                          ? const Color(0xFF1E2330)
+                          : const Color(0xFFF1F5F9)),
+                  borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF2D4080)
-                        : const Color(0xFFBFDBFE),
+                    color: _isArtifactPanelOpen
+                        ? const Color(0xFF6C4DF6)
+                        : borderColor,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.info_outline_rounded,
-                        size: 14, color: Color(0xFF3B82F6)),
+                    Icon(
+                      Icons.view_sidebar_rounded,
+                      size: 15,
+                      color: _isArtifactPanelOpen ? Colors.white : subColor,
+                    ),
                     const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        screenWidth > 600
-                            ? 'For Research Use Only · Always Consult a Healthcare Professional'
-                            : 'Research Use Only',
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? const Color(0xFF93C5FD)
-                              : const Color(0xFF1E40AF),
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      'Artifacts${_artifacts.isNotEmpty ? ' (${_artifacts.length})' : ''}',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: _isArtifactPanelOpen ? Colors.white : textColor,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
-        actions: [
+          ),
+          const SizedBox(width: 4),
+
+          // New Conversation (+)
           IconButton(
-            icon: Icon(Icons.history_rounded, color: subColor),
+            icon: Icon(Icons.add_rounded, size: 24, color: textColor),
+            tooltip: 'New Conversation',
+            onPressed: _resetChat,
+          ),
+
+          // History
+          IconButton(
+            icon: Icon(Icons.history_rounded, size: 20, color: subColor),
             tooltip: 'History',
             onPressed: () async {
               final res = await Navigator.push<SimplifyResult>(
@@ -314,683 +791,941 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
           ),
+
+          // Theme Toggle
           IconButton(
             icon: Icon(
               isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+              size: 20,
               color: subColor,
             ),
             tooltip: isDark ? 'Light mode' : 'Dark mode',
             onPressed: widget.onToggleTheme,
           ),
+
+          // Settings
           IconButton(
-            icon: Icon(Icons.settings_rounded, color: subColor),
+            icon: Icon(Icons.settings_rounded, size: 20, color: subColor),
             tooltip: 'Settings',
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
             ),
           ),
+          const SizedBox(width: 8),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(height: 1, color: borderColor),
         ),
       ),
-      body: SingleChildScrollView(
-        controller: _scrollController,
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth > 600 ? 24 : 12,
-          vertical: 20,
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Page header ───────────────────────────────────────────────
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
+      body: SafeArea(
+        child: isWideScreen
+            // ── DESKTOP / TABLET SPLIT SCREEN ────────────────────────────────
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Left Pane: Chatbot
+                  Expanded(
+                    flex: _isArtifactPanelOpen ? 11 : 1,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: _isArtifactPanelOpen ? 820 : 880,
+                        ),
+                        child: _buildChatColumn(isDark, textColor, subColor,
+                            borderColor, surfaceColor),
+                      ),
+                    ),
+                  ),
+
+                  // Right Pane: Claude-style Pinned Artifact Panel
+                  if (_isArtifactPanelOpen)
                     Expanded(
+                      flex: 9,
+                      child: ArtifactPanel(
+                        artifacts: _artifacts,
+                        selectedIndex: _selectedArtifactIndex,
+                        onSelectArtifact: (idx) =>
+                            setState(() => _selectedArtifactIndex = idx),
+                        onClose: () => setState(() => _isArtifactPanelOpen = false),
+                        onAskAboutArtifact: (prompt) => _sendChatMessage(prompt),
+                      ).animate().fadeIn(duration: 200.ms).slideX(begin: 0.05, end: 0),
+                    ),
+                ],
+              )
+            // ── MOBILE / COMPACT SCREEN ─────────────────────────────────────
+            : Stack(
+                children: [
+                  _buildChatColumn(
+                      isDark, textColor, subColor, borderColor, surfaceColor),
+                  // Slide-over drawer for Artifacts on mobile
+                  if (_isArtifactPanelOpen)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: () =>
+                            setState(() => _isArtifactPanelOpen = false),
+                        child: Container(
+                          color: Colors.black54,
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: GestureDetector(
+                              onTap: () {}, // Prevent tap through
+                              child: SizedBox(
+                                width: screenWidth * 0.9,
+                                child: ArtifactPanel(
+                                  artifacts: _artifacts,
+                                  selectedIndex: _selectedArtifactIndex,
+                                  onSelectArtifact: (idx) => setState(
+                                      () => _selectedArtifactIndex = idx),
+                                  onClose: () => setState(
+                                      () => _isArtifactPanelOpen = false),
+                                  onAskAboutArtifact: (prompt) {
+                                    setState(() => _isArtifactPanelOpen = false);
+                                    _sendChatMessage(prompt);
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ).animate().fadeIn(duration: 200.ms),
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  // ── CHAT COLUMN ─────────────────────────────────────────────────────────────
+  Widget _buildChatColumn(
+    bool isDark,
+    Color textColor,
+    Color subColor,
+    Color borderColor,
+    Color surfaceColor,
+  ) {
+    return Column(
+      children: [
+        // Chat messages stream
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            itemCount: _messages.length +
+                (_messages.length <= 1 ? 1 : 0) +
+                (_isSending ? 1 : 0),
+            itemBuilder: (context, index) {
+              // Starter sample cards if at beginning
+              if (index == 1 && _messages.length <= 1) {
+                return _buildSampleCasesSection(isDark, textColor, subColor);
+              }
+
+              // Thinking status indicator
+              final actualIndex =
+                  (_messages.length <= 1 && index > 1) ? index - 1 : index;
+
+              if (actualIndex == _messages.length && _isSending) {
+                return _buildThinkingIndicator(isDark, subColor);
+              }
+
+              if (actualIndex < _messages.length) {
+                final msg = _messages[actualIndex];
+                return _buildMessageItem(
+                    msg, isDark, textColor, subColor, borderColor);
+              }
+
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+
+        // Docked Claude-style Input Bar at bottom
+        _buildBottomInputDock(
+            isDark, textColor, subColor, borderColor, surfaceColor),
+      ],
+    );
+  }
+
+  // ── MESSAGE ITEM ───────────────────────────────────────────────────────────
+  Widget _buildMessageItem(
+    ChatMessage msg,
+    bool isDark,
+    Color textColor,
+    Color subColor,
+    Color borderColor,
+  ) {
+    if (msg.isUser) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // If user attached a discharge summary, show Claude-style file attachment card!
+            if (msg.hasAttachment) ...[
+              Container(
+                constraints: const BoxConstraints(maxWidth: 380),
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF1E2330)
+                      : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: borderColor),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6C4DF6).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.description_rounded,
+                          size: 20, color: Color(0xFF6C4DF6)),
+                    ),
+                    const SizedBox(width: 10),
+                    Flexible(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Discharge Summary Simplifier & Assistant',
+                            msg.attachmentName ?? 'Discharge Summary',
                             style: GoogleFonts.inter(
-                              fontSize: screenWidth > 600 ? 22 : 18,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
                               color: textColor,
                             ),
-                          ).animate().fadeIn(duration: 300.ms).slideX(begin: -0.02),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Enter your clinical summary to generate an Indian Lay English explanation and chat in real-time with the health assistant.',
-                            style: GoogleFonts.inter(
-                                fontSize: 13, color: subColor, height: 1.4),
-                          ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (msg.attachmentWordCount != null)
+                            Text(
+                              '${msg.attachmentWordCount} words · Clinical Record',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: subColor,
+                              ),
+                            ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
-                // ── Chat with Discharge Summary Banner ──────────────────────
-                _buildChatBanner(isDark, textColor, subColor),
-                const SizedBox(height: 16),
-
-                // ── Card View ─────────────────────────────────────────────────
-                _buildInputCard(
-                    cardColor, borderColor, textColor, subColor, isDark),
-                const SizedBox(height: 20),
-                _buildSummaryCard(
-                    cardColor, borderColor, textColor, subColor, isDark),
-                const SizedBox(height: 20),
-                _buildChatCard(
-                    cardColor, borderColor, textColor, subColor, isDark),
-
-                const SizedBox(height: 32),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── BANNER: Chat with Discharge Summary ──────────────────────────────────
-  Widget _buildChatBanner(bool isDark, Color textColor, Color subColor) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const DischargeUploadScreen()),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [const Color(0xFF1E1445), const Color(0xFF2D1F5E)]
-                  : [const Color(0xFFEDE9FE), const Color(0xFFDDD6FE)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF6C4DF6).withValues(alpha: 0.4),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6C4DF6).withValues(alpha: isDark ? 0.15 : 0.1),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
               ),
             ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6C4DF6).withValues(alpha: 0.35),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.health_and_safety_rounded,
-                    color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Chat with your Discharge Summary',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: isDark
-                            ? const Color(0xFFA78BFA)
-                            : const Color(0xFF4A2DD4),
+
+            // User Chat Bubble
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF2C3242)
+                          : const Color(0xFF4A2DD4),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(4),
+                        bottomLeft: Radius.circular(16),
+                        bottomRight: Radius.circular(16),
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      'Upload your summary → AI extracts key info → Ask anything in plain language',
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        color: isDark
-                            ? const Color(0xFF9B7FFF).withValues(alpha: 0.8)
-                            : const Color(0xFF6C4DF6).withValues(alpha: 0.8),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: const Color(0xFF6C4DF6).withValues(alpha: 0.7),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).animate().fadeIn(duration: 350.ms, delay: 150.ms).slideY(begin: 0.03, end: 0, duration: 350.ms, delay: 150.ms);
-  }
-
-  // ── CARD 1: INPUT ───────────────────────────────────────────────────────────
-  Widget _buildInputCard(Color cardColor, Color borderColor, Color textColor,
-      Color subColor, bool isDark) {
-    final wordCount = _textController.text
-        .trim()
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .length;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6C4DF6).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.edit_note_rounded,
-                    size: 16, color: Color(0xFF6C4DF6)),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '1. INPUT SUMMARY',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  letterSpacing: 0.6,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Few-shot Active',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10B981),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // Model selector
-          ModelSelector(
-            selected: _selectedModel,
-            models: ApiModel.all,
-            onChanged: (m) => setState(() => _selectedModel = m),
-          ),
-          const SizedBox(height: 14),
-
-          /*
-          // NOTE: Prompting Strategy choice commented out per requirement. Defaulted to few-shot.
-          StrategySelector(
-            selected: _strategy,
-            onChanged: (s) => setState(() => _strategy = s),
-          ),
-          const SizedBox(height: 14),
-          */
-
-          // Text area
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'CLINICAL DISCHARGE TEXT',
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: subColor,
-                  letterSpacing: 0.6,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _textController,
-                maxLines: 10,
-                onChanged: (_) => setState(() {}),
-                style: GoogleFonts.inter(
-                    fontSize: 13, color: textColor, height: 1.5),
-                decoration: InputDecoration(
-                  hintText:
-                      'Paste the patient\'s discharge summary here…\n\nExample: The patient was admitted with chest pain, ST-elevation on ECG, Troponin positive…',
-                  hintStyle: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: subColor.withValues(alpha: 0.7),
-                      height: 1.5),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: borderColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: borderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                        color: AppTheme.primaryIndigo, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: isDark
-                      ? AppTheme.bgDark
-                      : AppTheme.bgLight,
-                  contentPadding: const EdgeInsets.all(12),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  '$wordCount words',
-                  style: GoogleFonts.inter(
-                      fontSize: 11, color: subColor.withValues(alpha: 0.7)),
-                ),
-              ),
-            ],
-          ),
-
-          // Error
-          if (_error != null) ...[
-            const SizedBox(height: 10),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFEF2F2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFFECACA)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.error_outline_rounded,
-                      color: Color(0xFFEF4444), size: 16),
-                  const SizedBox(width: 6),
-                  Expanded(
                     child: Text(
-                      _error!,
+                      msg.text,
                       style: GoogleFonts.inter(
-                          fontSize: 12, color: const Color(0xFFDC2626)),
+                        fontSize: 13.5,
+                        color: Colors.white,
+                        height: 1.45,
+                      ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: isDark
+                      ? const Color(0xFF374151)
+                      : const Color(0xFF6C4DF6),
+                  child: const Icon(Icons.person_rounded,
+                      size: 16, color: Colors.white),
+                ),
+              ],
             ),
           ],
+        ),
+      );
+    }
 
-          const SizedBox(height: 14),
-          // Buttons
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _loading ? null : _simplify,
-                  icon: _loading
-                      ? const SizedBox(
-                          width: 15,
-                          height: 15,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.auto_fix_high_rounded, size: 16),
-                  label: Text(_loading ? 'Simplifying…' : '✨ Simplify Summary'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                ),
-              ),
-              if (_textController.text.isNotEmpty || _result != null) ...[
-                const SizedBox(width: 8),
-                OutlinedButton(
-                  onPressed: _clearAll,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 12, horizontal: 14),
-                  ),
-                  child: const Text('Clear'),
-                ),
-              ],
-            ],
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 250.ms);
-  }
-
-  // ── CARD 2: SIMPLIFIED SUMMARY ──────────────────────────────────────────────
-  Widget _buildSummaryCard(Color cardColor, Color borderColor, Color textColor,
-      Color subColor, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
-      ),
-      child: Column(
+    // ── Assistant Message ──
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 22),
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.description_rounded,
-                    size: 16, color: Color(0xFF10B981)),
+          // Claude-style Assistant Logo
+          Container(
+            width: 28,
+            height: 28,
+            margin: const EdgeInsets.only(top: 2),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              const SizedBox(width: 8),
-              Text(
-                '2. SIMPLIFIED SUMMARY',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  letterSpacing: 0.6,
-                ),
-              ),
-              const Spacer(),
-              if (_result != null) ...[
-                IconButton(
-                  icon: Icon(Icons.copy_rounded, size: 16, color: subColor),
-                  tooltip: 'Copy',
-                  onPressed: () async {
-                    await Clipboard.setData(
-                        ClipboardData(text: _result!.simplifiedText));
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Copied to clipboard ✓'),
-                            duration: Duration(seconds: 1)),
-                      );
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.picture_as_pdf_rounded,
-                      size: 16, color: subColor),
-                  tooltip: 'PDF Export',
-                  onPressed: () => _downloadPdf(_result!),
-                ),
-                IconButton(
-                  icon: Icon(Icons.open_in_full_rounded,
-                      size: 16, color: subColor),
-                  tooltip: 'Full Screen',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ResultScreen(result: _result!),
-                    ),
-                  ),
-                ),
-              ],
-            ],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.health_and_safety_rounded,
+                size: 16, color: Colors.white),
           ),
-          const SizedBox(height: 10),
-          Divider(height: 1, color: borderColor),
-          const SizedBox(height: 12),
+          const SizedBox(width: 12),
 
-          if (_loading)
-            const SizedBox(
-              height: 320,
-              child: LoadingOverlay(
-                message: 'Simplifying discharge summary…',
-              ),
-            )
-          else if (_result != null) ...[
-            // Model meta bar
-            Row(
+          // Content Column
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6C4DF6).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '🤖 ${_result!.modelName}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
+                // Collapsible Claude-style Thinking / Clinical Analysis pill
+                if (msg.thoughtSummary != null) ...[
+                  _buildThoughtDropdown(msg.thoughtSummary!, isDark, subColor),
+                  const SizedBox(height: 8),
+                ],
+
+                // Markdown response text
+                MarkdownBody(
+                  data: msg.text,
+                  selectable: true,
+                  styleSheet: MarkdownStyleSheet(
+                    p: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      color: textColor,
+                      height: 1.6,
+                    ),
+                    strong: GoogleFonts.inter(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                    h1: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF6C4DF6),
+                      height: 1.5,
+                    ),
+                    h2: GoogleFonts.inter(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                      height: 1.5,
+                    ),
+                    listBullet: GoogleFonts.inter(
+                      fontSize: 13.5,
                       color: const Color(0xFF6C4DF6),
                     ),
                   ),
                 ),
-                if (_result!.tokensUsed != null) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    '${_result!.tokensUsed} tokens',
-                    style: GoogleFonts.inter(fontSize: 11, color: subColor),
-                  ),
+
+                // Embedded Interactive Artifact Pills (if linked to artifacts)
+                if (msg.hasArtifacts) ...[
+                  const SizedBox(height: 12),
+                  ..._artifacts
+                      .where((art) => msg.artifactIds.contains(art.id))
+                      .map((art) {
+                    final isCurrentOpen = _isArtifactPanelOpen &&
+                        _artifacts.indexOf(art) == _selectedArtifactIndex;
+                    return ArtifactCardPill(
+                      artifact: art,
+                      isPanelOpen: isCurrentOpen,
+                      onTap: () {
+                        final idx = _artifacts.indexOf(art);
+                        _toggleArtifactPanel(idx != -1 ? idx : 0);
+                      },
+                    );
+                  }),
                 ],
-              ],
-            ),
-            const SizedBox(height: 10),
-            // Markdown text
-            Container(
-              constraints: const BoxConstraints(minHeight: 220, maxHeight: 380),
-              child: Scrollbar(
-                thumbVisibility: true,
-                child: SingleChildScrollView(
-                  child: MarkdownBody(
-                    data: _result!.simplifiedText,
-                    styleSheet: MarkdownStyleSheet(
-                      p: GoogleFonts.inter(
-                          fontSize: 13.5, color: textColor, height: 1.65),
-                      strong: GoogleFonts.inter(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                          color: textColor),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ] else ...[
-            // Empty state
-            Container(
-              height: 280,
-              decoration: BoxDecoration(
-                color: isDark ? AppTheme.bgDark : AppTheme.bgLight,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: borderColor),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+
+                // Message Action Bar (Copy, Share)
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    Icon(Icons.auto_awesome_rounded,
-                        size: 36, color: subColor.withValues(alpha: 0.35)),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Simplified summary will appear here',
-                      style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: subColor),
+                    InkWell(
+                      onTap: () async {
+                        await Clipboard.setData(ClipboardData(text: msg.text));
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Message copied ✓'),
+                              duration: Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(Icons.copy_rounded,
+                            size: 14, color: subColor.withValues(alpha: 0.6)),
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Paste text in Card 1 and tap Simplify',
-                      style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: subColor.withValues(alpha: 0.7)),
-                    ),
+                    const SizedBox(width: 8),
+                    if (_artifacts.isNotEmpty && !msg.hasArtifacts) ...[
+                      InkWell(
+                        onTap: () => _toggleArtifactPanel(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.view_sidebar_rounded,
+                                  size: 13,
+                                  color: Color(0xFF6C4DF6)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'View Artifacts',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF6C4DF6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => _pinMessageAsCarePlan(msg.text),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.bookmark_add_outlined,
+                                  size: 13,
+                                  color: Color(0xFF0EA5E9)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Pin to Care Plan',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0EA5E9),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ],
       ),
-    ).animate().fadeIn(duration: 250.ms, delay: 50.ms);
+    );
   }
 
-  // ── CARD 3: CHATBOT ASSISTANT ───────────────────────────────────────────────
-  Widget _buildChatCard(Color cardColor, Color borderColor, Color textColor,
-      Color subColor, bool isDark) {
-    if (_result != null) {
-      return ChatPanel(
-        result: _result,
-        rawClinicalText: _textController.text,
-        model: _selectedModel,
-        isCompact: false,
-      );
-    }
-
+  // ── CLAUDE-STYLE THOUGHT DROPDOWN ───────────────────────────────────────────
+  Widget _buildThoughtDropdown(String summary, bool isDark, Color subColor) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor),
+        color: isDark ? const Color(0xFF191E2A) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isDark ? const Color(0xFF283042) : const Color(0xFFE2E8F0),
+        ),
       ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.psychology_rounded,
+              size: 14, color: Color(0xFF6C4DF6)),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              summary,
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 11,
+                color: subColor,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── THINKING INDICATOR ──────────────────────────────────────────────────────
+  Widget _buildThinkingIndicator(bool isDark, Color subColor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6C4DF6), Color(0xFF9B7FFF)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.health_and_safety_rounded,
+                size: 16, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1A1F2C) : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _currentThinkingStatus ?? 'Thinking…',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: const Color(0xFF6C4DF6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ...List.generate(
+                  3,
+                  (i) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    width: 4,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6C4DF6),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  )
+                      .animate(onPlay: (c) => c.repeat())
+                      .fadeIn(
+                          delay: Duration(milliseconds: i * 200),
+                          duration: 350.ms)
+                      .then()
+                      .fadeOut(duration: 350.ms),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── SAMPLE CASES CARDS (CLAUDE-STYLE STARTING PROMPTS) ─────────────────────
+  Widget _buildSampleCasesSection(
+      bool isDark, Color textColor, Color subColor) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24, top: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6C4DF6).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.forum_rounded,
-                    size: 16, color: Color(0xFF6C4DF6)),
-              ),
-              const SizedBox(width: 8),
               Text(
-                '3. MEDICAL ASSISTANT',
+                'QUICK START · CLINICAL CASES',
                 style: GoogleFonts.inter(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: textColor,
+                  color: subColor,
                   letterSpacing: 0.6,
                 ),
               ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: subColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Inactive',
-                  style: GoogleFonts.inter(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: subColor,
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  TextButton.icon(
+                    onPressed: _pickAndUploadDischargeSummary,
+                    icon: const Icon(Icons.upload_file_rounded, size: 14),
+                    label: const Text('Upload Discharge Summaries'),
+                    style: TextButton.styleFrom(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      textStyle: GoogleFonts.inter(fontSize: 11.5),
+                    ),
                   ),
-                ),
+                  TextButton.icon(
+                    onPressed: _showPasteSummaryModal,
+                    icon: const Icon(Icons.paste_rounded, size: 14),
+                    label: const Text('Paste Custom Summary'),
+                    style: TextButton.styleFrom(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      minimumSize: Size.zero,
+                      textStyle: GoogleFonts.inter(fontSize: 11.5),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Divider(height: 1, color: borderColor),
-          const SizedBox(height: 12),
-          Container(
-            height: 280,
-            decoration: BoxDecoration(
-              color: isDark ? AppTheme.bgDark : AppTheme.bgLight,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: borderColor),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
+          const SizedBox(height: 8),
+          LayoutBuilder(builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 600;
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isNarrow ? 1 : 3,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: isNarrow ? 3.6 : 1.35,
+              ),
+              itemCount: _sampleCases.length,
+              itemBuilder: (context, index) {
+                final sc = _sampleCases[index];
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _isSending
+                        ? null
+                        : () => _processDischargeSummary(sc.text,
+                            customTitle: sc.title),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C4DF6).withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
+                        color: isDark
+                            ? const Color(0xFF191E2A)
+                            : const Color(0xFFF8F9FA),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF2B3346)
+                              : const Color(0xFFE2E8F0),
+                        ),
                       ),
-                      child: Icon(Icons.lock_clock_rounded,
-                          size: 24,
-                          color: const Color(0xFF6C4DF6).withValues(alpha: 0.7)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: sc.color.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Icon(sc.icon, size: 16, color: sc.color),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  sc.title,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            sc.snippet,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: subColor,
+                              height: 1.3,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Assistant Inactive',
-                      style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: textColor),
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // ── DOCKED CLAUDE-STYLE BOTTOM INPUT DOCK ──────────────────────────────────
+  Widget _buildBottomInputDock(
+    bool isDark,
+    Color textColor,
+    Color subColor,
+    Color borderColor,
+    Color surfaceColor,
+  ) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 1),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Input pill container
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F131C) : const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Plus (+) Button with menu for Upload/Paste
+                PopupMenuButton<String>(
+                  tooltip: 'Add attachment or case',
+                  icon: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1F2432)
+                          : const Color(0xFFEDE9FE),
+                      shape: BoxShape.circle,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Please provide and simplify a discharge summary in Card 1 first to unlock the interactive medical Q&A assistant.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                          fontSize: 11.5,
-                          color: subColor.withValues(alpha: 0.8),
-                          height: 1.4),
+                    child: const Icon(Icons.add_rounded,
+                        size: 18, color: Color(0xFF6C4DF6)),
+                  ),
+                  onSelected: (action) {
+                    switch (action) {
+                      case 'paste':
+                        _showPasteSummaryModal();
+                        break;
+                      case 'upload':
+                        _pickAndUploadDischargeSummary();
+                        break;
+                    }
+                  },
+                  itemBuilder: (ctx) => [
+                    const PopupMenuItem(
+                      value: 'paste',
+                      child: Row(
+                        children: [
+                          Icon(Icons.paste_rounded,
+                              size: 18, color: Color(0xFF6C4DF6)),
+                          SizedBox(width: 10),
+                          Text('Paste Discharge Summary'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'upload',
+                      child: Row(
+                        children: [
+                          Icon(Icons.upload_file_rounded,
+                              size: 18, color: Color(0xFF10B981)),
+                          SizedBox(width: 10),
+                          Text('Upload Discharge Summaries'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
+
+                // Text field
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: TextField(
+                      controller: _inputController,
+                      focusNode: _focusNode,
+                      minLines: 1,
+                      maxLines: 5,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _sendChatMessage(),
+                      style: GoogleFonts.inter(
+                          fontSize: 13.5, color: textColor),
+                      decoration: InputDecoration(
+                        isDense: true,
+                        hintText: _artifacts.isEmpty
+                            ? 'Ask a medical question, or paste a discharge summary…'
+                            : 'Ask about medicines, recovery precautions, warning signs…',
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: subColor.withValues(alpha: 0.6),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Interactive Model Selector in Chat Space
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6, right: 6),
+                  child: PopupMenuButton<ApiModel>(
+                    initialValue: _selectedModel,
+                    onSelected: (m) => setState(() => _selectedModel = m),
+                    tooltip: 'Select AI Model',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1E2330)
+                            : const Color(0xFFEDE9FE),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF333C4E)
+                              : const Color(0xFFDDD6FE),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _selectedModel.providerBadge,
+                            style: const TextStyle(fontSize: 11),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _selectedModel.name.replaceAll('Google ', ''),
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? const Color(0xFFA78BFA)
+                                  : const Color(0xFF4A2DD4),
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.arrow_drop_down_rounded,
+                            size: 16,
+                            color: isDark
+                                ? const Color(0xFFA78BFA)
+                                : const Color(0xFF4A2DD4),
+                          ),
+                        ],
+                      ),
+                    ),
+                    itemBuilder: (ctx) {
+                      return ApiModel.all.map((m) {
+                        final isSelected = m.id == _selectedModel.id;
+                        return PopupMenuItem<ApiModel>(
+                          value: m,
+                          child: Row(
+                            children: [
+                              Text(m.providerBadge),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      m.name,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12.5,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${m.providerLabel} · ${m.description}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10,
+                                        color: subColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (isSelected)
+                                const Icon(Icons.check_rounded,
+                                    size: 16, color: Color(0xFF6C4DF6)),
+                            ],
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
+
+                // Send button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6, right: 8),
+                  child: IconButton.filled(
+                    onPressed: _isSending ? null : () => _sendChatMessage(),
+                    icon: _isSending
+                        ? const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.arrow_upward_rounded, size: 18),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFF6C4DF6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.all(8),
+                      minimumSize: const Size(34, 34),
+                    ),
+                  ),
+                ),
+              ],
             ),
+          ),
+          const SizedBox(height: 6),
+
+          // Medical disclaimer note
+          Text(
+            'MedSimplify is an AI research prototype for educational use. Always verify with your doctor.',
+            style: GoogleFonts.inter(
+              fontSize: 10.5,
+              color: subColor.withValues(alpha: 0.65),
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
-    ).animate().fadeIn(duration: 250.ms, delay: 50.ms);
+    );
   }
 }

@@ -24,8 +24,6 @@ class StorageService {
     return StorageService._(prefs);
   }
 
-  // ── API Keys ───────────────────────────────────────────────────────────────
-
   String get cerebrasKey => _prefs.getString(_keyCerebras) ?? '';
   String get geminiKey => _prefs.getString(_keyGemini) ?? '';
   String get groqKey => _prefs.getString(_keyGroq) ?? '';
