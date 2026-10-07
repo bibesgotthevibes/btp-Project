@@ -74,3 +74,37 @@ SECONDARY & INCIDENTAL FINDINGS: Mild abnormal enhancement involving the left pr
 IMPRESSION & ACTIONABLE RECOMMENDATIONS: 1. Solid osseous lesion at left skull base/jugular foramen adjacent to facial canal; recommend dedicated high-resolution temporal bone CT to assess cortical and trabecular architecture. 2. Left facial nerve preganglionic enhancement concordant with clinical Bell's palsy."""
     }
 ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. CHEST X-RAY SIMPLIFICATION (Open-i / LaymanRRG benchmark variant)
+# ══════════════════════════════════════════════════════════════════════════════
+# Same goal as RADIOLOGY_SIMPLIFY_*, adapted to short chest X-ray reports and to the
+# sentence-by-sentence style of the LaymanRRG references. Few-shot pairs come from the
+# Open-i TRAIN split (benchmark runs on validation), so there is no test leakage.
+
+RADIOLOGY_CXR_SIMPLIFY_SYSTEM_PROMPT = """You are a medical radiology simplification assistant. Rewrite the following chest X-ray report in simple, plain English that a patient with no medical training can understand (6th-grade reading level).
+
+Rules:
+1. Rewrite the report sentence by sentence, in the same order. Use one short sentence per finding.
+2. Replace every medical term with everyday words (e.g. 'pleural effusion' -> 'fluid around the lungs', 'pneumothorax' -> 'air outside the lungs', 'cardiomediastinal silhouette' -> 'the heart and the area around it'). Keep a medical term only if there is no simple word for it.
+3. Keep every negative finding as a negative: 'No pneumothorax' must stay 'There is no air outside the lungs'. Never drop the word 'no'.
+4. Keep every positive finding, measurement, side (left/right) and comparison with earlier exams ('stable', 'increased', 'unchanged').
+5. Do not add explanations, reassurance, advice or anything that is not in the report.
+6. Write plain sentences only: no headings, bullet points or brackets.
+7. Output only the rewritten text, nothing else."""
+
+RADIOLOGY_CXR_SIMPLIFY_FEW_SHOT_EXAMPLES = [
+    {   # Open-i 3242.xml (train)
+        "input": "The heart and cardiomediastinal silhouette are normal in size and contour. There is no focal air space opacity, pleural effusion, or pneumothorax. There are multilevel degenerative changes in the thoracic spine. No acute cardiopulmonary finding.",
+        "output": "The heart and the area around it look normal in size and shape. There is no sign of pneumonia, fluid around the lungs, or air outside the lungs. There are several levels of wear and tear in the spine. No sudden heart or lung problem is found.",
+    },
+    {   # Open-i 3697.xml (train)
+        "input": "The cardiomediastinal silhouette is stable in appearance. There are extensive fibrotic changes in the right lung with rightward shift of the trachea, similar to the previous exam. The left lung is well-aerated without focal airspace consolidation, pleural effusions or pneumothorax. There is left apical pleural-parenchymal scarring. No acute bony findings. 1. No acute cardiopulmonary findings. 2. Extensive fibrotic changes of the right lung, similar to the previous exam.",
+        "output": "The heart and middle part of the chest look the same as before. The right lung has a lot of scar tissue, which is causing the windpipe to shift to the right, just like the last time it was checked. The left lung is well-inflated and doesn't have any specific areas of lung collapse, fluid around the lungs, or air outside the lungs. There is some scarring at the top of the left lung. There are no new bone issues. 1. There are no new heart or lung problems. 2. The right lung has a lot of scar tissue, just like it did before.",
+    },
+    {   # Open-i 3694.xml (train)
+        "input": "Interval removal of left-sided chest tube. Small residual left apical pneumothorax has increased slightly in size the prior exam, now measuring approximately 0.9 cm from the thoracic apex. Stable cardiomediastinal silhouette. No focal airspace consolidation. No pleural effusion. No acute cardiopulmonary abnormality.",
+        "output": "The chest tube on the left side was removed. There's a small amount of air leakage around the lung on the left side, which has gotten a little bigger since the last check, now about 0.9 cm from the top of the chest. The heart and middle part of the chest look the same as before. There's no sign of a specific lung infection. No fluid is seen around the lungs. There are no urgent heart or lung issues.",
+    },
+]

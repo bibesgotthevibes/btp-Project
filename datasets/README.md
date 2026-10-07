@@ -11,6 +11,9 @@ datasets/
 ├── README.md
 ├── discharge_summaries/
 │   └── anotated_dataset_v2.xlsx
+├── lay_reference_datasets/         # downloaded sets WITH lay-language ground truth
+│   ├── plaba/                      # PLABA abstracts + expert adaptations, TREC 2024 term data
+│   └── radiology/                  # LaymanRRG_opensource/, LaymanRRG_report_level/, openi_lay_pairs.csv
 ├── pathology_reports/
 │   ├── TCGA-242/
 │   │   └── PRAD_reports_eng.xlsx
@@ -56,6 +59,10 @@ datasets/
 | **Radiologists Reports** | [Kaggle (saadaldoaij/radiologists-reports)](https://www.kaggle.com/datasets/saadaldoaij/radiologists-reports) | Curated collection of anonymized clinical radiology reports (`ReportsDATASET.csv`) covering diagnostic imaging modalities. |
 | **NLM-CXR / Open-i** | [National Library of Medicine (Open-i)](https://openi.nlm.nih.gov/faq?download=true) | Indiana University Chest X-Ray Collection (`ecgen-radiology`), providing paired radiological text (indications, findings, impressions) and images. |
 
+| **LaymanRRG (BioLaySumm 2025, open track)** | [HF BioLaySumm/BioLaySumm2025-LaymanRRG-opensource-track](https://huggingface.co/datasets/BioLaySumm/BioLaySumm2025-LaymanRRG-opensource-track) | 171k report→lay pairs (PadChest, BIMCV-COVID19, Open-i). Test split lay text is hidden (empty). |
+| **LaymanRRG report-level** | [HF LaymanRRG/LaymanRRG-report-level](https://huggingface.co/datasets/LaymanRRG/LaymanRRG-report-level) | 50k MIMIC-CXR lay reports; join to source by `study_id` (needs MIMIC-CXR access). |
+| **openi_lay_pairs.csv** | Derived | 2,377 NLMCXR reports (findings/impression) joined to LaymanRRG lay references by image id. |
+
 ---
 
 ### 3. Discharge Summaries
@@ -63,6 +70,15 @@ datasets/
 | Dataset | Source / Reference | Description & Format |
 |---|---|---|
 | **Annotated Discharge Summaries (v2)** | N/A | 200 clinical discharge summaries (`anotated_dataset_v2.xlsx`) with original clinical narratives, English translations, primary/secondary ICD-10 diagnostic codes, patient outcomes, ICU indicators, and length of stay. Also includes sheets for clinical abbreviation mappings (301 entries) and ICD diagnostic codes. |
+
+---
+
+### 4. Biomedical Plain Language (reference sets)
+
+| Dataset | Source / Reference | Description & Format |
+|---|---|---|
+| **PLABA** | [OSF rnpmf](https://osf.io/rnpmf/) · [paper](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9811873/) | 749 PubMed abstracts, 919 expert sentence-aligned adaptations (7.6k sentences). |
+| **TREC 2024 PLABA** | [trec.nist.gov/data/plaba2024.html](https://trec.nist.gov/data/plaba2024.html) | Task 1: expert terms + replacement type (SUBSTITUTE/EXPLAIN/GENERALIZE/EXEMPLIFY/OMIT) + replacement text for 100 abstracts. Task 2: test sources. |
 
 ---
 

@@ -52,25 +52,19 @@ CEREBRAS_API_KEY = clean_api_key(os.getenv("CEREBRAS_API_KEY", ""))
 GROQ_API_KEY = clean_api_key(os.getenv("GROQ_API_KEY", ""))
 
 # ── Default Model IDs & Endpoints ─────────────────────────────────────────────
-# User specifications:
-#   cerebras/gptoss  -> GPT-OSS on Cerebras or Groq fallback (openai/gpt-oss-20b)
-#   cerebras/qwen3.8 -> Qwen on Cerebras or Groq fallback (qwen/qwen3.6-27b / qwen3.8)
+# Verified 2026-10-08 against the Gemini/Groq /models endpoints (free tier):
 #   gemini/3.8flash  -> gemini-3.8-flash
-#   gemini/3.1pro    -> gemini-3.1-pro-preview
+#   (one Gemini model only: free-tier quota is small; 3.1-pro-preview has no free quota, 2.5-pro retired)
+#   cerebras/gptoss  -> gpt-oss-120b on Cerebras, else Groq openai/gpt-oss-120b
+#   cerebras/qwen3.8 -> qwen-3.8-27b on Cerebras, else Groq qwen/qwen3.8-27b
 
 MODEL_ENDPOINTS = {
     # Gemini
     "gemini/3.8flash": {
         "provider": "gemini",
-        "model_id": os.getenv("GEMINI_FLASH_MODEL", "gemini-2.5-flash"),
+        "model_id": os.getenv("GEMINI_FLASH_MODEL", "gemini-3.8-flash"),
         "fallback_models": ["gemini-3.5-flash"],
-        "display_name": "Gemini 2.5 Flash",
-    },
-    "gemini/3.1pro": {
-        "provider": "gemini",
-        "model_id": os.getenv("GEMINI_PRO_MODEL", "gemini-3.5-flash"),
-        "fallback_models": ["gemini-2.5-flash"],
-        "display_name": "Gemini 3.5 Flash",
+        "display_name": "Gemini 3.8 Flash",
     },
     # Cerebras with Groq fallback
     "cerebras/gptoss": {
@@ -91,7 +85,16 @@ MODEL_ENDPOINTS = {
     },
 }
 
+# Local Ollama models (no key): LOCAL_MODELS="llama3.1:8b,medgemma:4b" (not OLLAMA_MODELS: Ollama uses that for its storage path).
+for _tag in filter(None, (t.strip() for t in os.getenv("LOCAL_MODELS", "llama3.1:8b").split(","))):
+    MODEL_ENDPOINTS[f"ollama/{_tag}"] = {
+        "provider": "ollama",
+        "model_id": _tag,
+        "display_name": f"{_tag} (Ollama, local)",
+    }
+
 # ── API Endpoints ─────────────────────────────────────────────────────────────
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434").rstrip("/")
 GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 CEREBRAS_API_URL = "https://api.cerebras.ai/v1/chat/completions"
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"

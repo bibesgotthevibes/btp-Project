@@ -7,6 +7,7 @@ Unified evaluator bringing together all metric dimensions:
 - Lexical Complexity (average word frequency, average word length, MTLD, TTR, proportion difficult words)
 - Meaning Preservation (SBERT cosine similarity)
 - Clinical & Jargon (parenthetical explanation count/rate, jargon reduction, compression ratio)
+- Factuality (AlignScore vs source) & Negation preservation (flips, cue retention)
 """
 
 from typing import Dict, Any, Optional
@@ -16,6 +17,8 @@ from .lexical_complexity import compute_lexical_complexity
 from .quality import compute_sari, compute_rouge_scores, compute_bertscore
 from .meaning_preservation import compute_sbert_cosine_similarity
 from .clinical_jargon import compute_clinical_jargon_metrics
+from .factuality import compute_alignscore
+from .negation import compute_negation_metrics
 
 def evaluate_generation(
     source_text: str,
@@ -52,6 +55,11 @@ def evaluate_generation(
             "jargon_reduction_pct": 0.0,
             "compression_ratio_chars": 0.0,
             "compression_ratio_words": 0.0,
+            "alignscore": 0.0,
+            "negation_dropped": 0,
+            "negation_added": 0,
+            "negation_shared_terms": 0,
+            "negation_cue_retention": 0.0,
         }
 
     # 1. Readability
@@ -80,5 +88,9 @@ def evaluate_generation(
     # 4. Clinical Domain & Jargon
     jargon_scores = compute_clinical_jargon_metrics(source_text, generated_text)
     scores.update(jargon_scores)
+
+    # 5. Factuality & Negation (always against the source: facts live there, not in the lay reference)
+    scores["alignscore"] = compute_alignscore(source_text, generated_text)
+    scores.update(compute_negation_metrics(source_text, generated_text))
 
     return scores

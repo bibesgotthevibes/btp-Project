@@ -3,10 +3,10 @@ analysis/providers/router.py
 ────────────────────────────
 Model routing and dispatch engine.
 Routes experiment model strings to appropriate providers with graceful fallback:
-- 'gemini/3.8flash'  -> GeminiProvider with 'gemini-3.8-flash'
-- 'gemini/3.1pro'    -> GeminiProvider with 'gemini-3.1-pro-preview'
-- 'cerebras/gptoss'  -> CerebrasProvider with 'gpt-oss' (falls back to Groq 'openai/gpt-oss-20b')
-- 'cerebras/qwen3.8' -> CerebrasProvider with 'qwen-3.8' (falls back to Groq 'qwen/qwen3.6-27b')
+- 'gemini/*'   -> GeminiProvider (with fallback_models from config)
+- 'cerebras/*' -> CerebrasProvider, falling back to Groq
+- 'ollama/*'   -> OllamaProvider (local)
+See MODEL_ENDPOINTS in config.py for the exact model IDs.
 """
 
 from typing import Dict, Any, Optional
@@ -14,6 +14,7 @@ from .base import GenerationResult
 from .gemini_provider import GeminiProvider
 from .cerebras_provider import CerebrasProvider
 from .groq_provider import GroqProvider
+from .ollama_provider import OllamaProvider
 from ..config import (
     MODEL_ENDPOINTS,
     GEMINI_API_KEY,
@@ -31,6 +32,7 @@ class ModelRouter:
         self.gemini_provider = GeminiProvider(gemini_key or GEMINI_API_KEY)
         self.cerebras_provider = CerebrasProvider(cerebras_key or CEREBRAS_API_KEY)
         self.groq_provider = GroqProvider(groq_key or GROQ_API_KEY)
+        self.ollama_provider = OllamaProvider()
 
     def generate(
         self,
@@ -139,7 +141,17 @@ class ModelRouter:
                 model=model_id,
             )
 
-        # ── 3. Unknown model fallback ─────────────────────────────────────────
+        # ── 3. Local Ollama Models ────────────────────────────────────────────
+        if provider_type == "ollama":
+            return self.ollama_provider.generate(
+                model_id=model_id,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+
+        # ── 4. Unknown model fallback ─────────────────────────────────────────
         return GenerationResult(
             status="error",
             error=f"Unrecognized model configuration for '{model_key}'",

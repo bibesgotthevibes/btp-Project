@@ -3,32 +3,21 @@ analysis/metrics/lexical_complexity.py
 ──────────────────────────────────────
 Lexical complexity and diversity metrics:
 - Average word length
-- Average word frequency (Zipf-scale log frequency)
+- Average word frequency (Zipf-scale log frequency, via wordfreq)
 - Type-Token Ratio (TTR)
 - Measure of Textual Lexical Diversity (MTLD)
-- Proportion of difficult / complex words
+- Proportion of difficult words (Zipf < 3)
 """
 
 import re
 import math
-from typing import Dict, List, Set
+from typing import Dict, List
 from collections import Counter
-from .readability import tokenize_words, count_syllables_word
+from .readability import tokenize_words
 
-# A curated core list of common English words (approx Dale-Chall / Oxford 3000 subset)
-CORE_COMMON_WORDS: Set[str] = {
-    "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
-    "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her",
-    "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up",
-    "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time",
-    "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could",
-    "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think",
-    "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even",
-    "new", "want", "because", "any", "these", "give", "day", "most", "us", "water", "long", "find",
-    "here", "patient", "blood", "doctor", "test", "care", "home", "pain", "hospital", "body", "food",
-    "normal", "high", "low", "heart", "help", "small", "large", "medicine", "pill", "sugar", "pressure",
-    "lung", "kidney", "chest", "fever", "breath", "infection", "safe", "room", "nurse", "family",
-}
+# Words rarer than ~1 per million (Zipf < 3) count as difficult, e.g. "pneumothorax" 2.4, "lungs" 4.0.
+DIFFICULT_ZIPF_THRESHOLD = 3.0
+
 
 def compute_ttr(words: List[str]) -> float:
     """Type-Token Ratio: unique words / total words."""
@@ -73,23 +62,10 @@ def compute_mtld(words: List[str], ttr_threshold: float = 0.72) -> float:
     return round(mtld, 2)
 
 def compute_zipf_frequency(word: str) -> float:
-    """
-    Approximate Zipf log frequency for a word (range 1.0 to 7.0).
-    Higher score = more common word.
-    """
-    w = word.lower()
-    if w in CORE_COMMON_WORDS:
-        return 6.0
-    length = len(w)
-    # Shorter words are generally much more frequent
-    if length <= 3:
-        return 5.5
-    elif length <= 5:
-        return 4.5
-    elif length <= 8:
-        return 3.5
-    else:
-        return 2.5
+    """Zipf log frequency of an English word (0 = unseen, ~7 = 'the'), via wordfreq."""
+    from wordfreq import zipf_frequency  # fail loudly if missing
+    return zipf_frequency(word.lower(), "en")
+
 
 def compute_lexical_complexity(text: str) -> Dict[str, float]:
     """
@@ -98,7 +74,7 @@ def compute_lexical_complexity(text: str) -> Dict[str, float]:
     - average_word_frequency (Zipf score)
     - ttr (Type-Token Ratio)
     - mtld (Measure of Textual Lexical Diversity)
-    - proportion_difficult_words (ratio of complex / non-core words)
+    - proportion_difficult_words (ratio of words with Zipf < 3)
     """
     words = tokenize_words(text)
     if not words:
@@ -124,11 +100,8 @@ def compute_lexical_complexity(text: str) -> Dict[str, float]:
     # 4. MTLD
     mtld = compute_mtld(words)
 
-    # 5. Proportion of difficult / rare words (polysyllabic or non-core)
-    difficult_count = sum(
-        1 for w in words
-        if count_syllables_word(w) >= 3 or w.lower() not in CORE_COMMON_WORDS
-    )
+    # 5. Proportion of difficult / rare words
+    difficult_count = sum(1 for f in freq_scores if f < DIFFICULT_ZIPF_THRESHOLD)
     prop_difficult = difficult_count / len(words)
 
     return {

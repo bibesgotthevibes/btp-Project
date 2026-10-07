@@ -26,6 +26,8 @@ from .radiology_prompts import (
     RADIOLOGY_SIMPLIFY_FEW_SHOT_EXAMPLES,
     RADIOLOGY_SUMMARIZE_SYSTEM_PROMPT,
     RADIOLOGY_SUMMARIZE_FEW_SHOT_EXAMPLES,
+    RADIOLOGY_CXR_SIMPLIFY_SYSTEM_PROMPT,
+    RADIOLOGY_CXR_SIMPLIFY_FEW_SHOT_EXAMPLES,
 )
 
 PROMPT_REGISTRY = {
@@ -53,6 +55,12 @@ PROMPT_REGISTRY = {
         "system": RADIOLOGY_SIMPLIFY_SYSTEM_PROMPT,
         "few_shot": RADIOLOGY_SIMPLIFY_FEW_SHOT_EXAMPLES,
         "task_label": "simplify the following radiology report into plain English for the patient and family",
+    },
+    # Chest X-ray variant for the Open-i reference benchmark (run_openi.py --prompt cxr)
+    ("radiology_cxr", "simplification"): {
+        "system": RADIOLOGY_CXR_SIMPLIFY_SYSTEM_PROMPT,
+        "few_shot": RADIOLOGY_CXR_SIMPLIFY_FEW_SHOT_EXAMPLES,
+        "task_label": "rewrite the following chest X-ray report in plain English for the patient",
     },
     ("radiology", "summarization"): {
         "system": RADIOLOGY_SUMMARIZE_SYSTEM_PROMPT,

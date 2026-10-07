@@ -4,10 +4,11 @@ analysis/metrics/quality.py
 Text generation quality and overlap metrics:
 - SARI (Xu et al. 2016) for text simplification (Add, Keep, Delete F1)
 - ROUGE-1, ROUGE-2, ROUGE-L (via rouge_score)
-- BERTScore (with graceful fallback if torch/bert_score is unavailable)
+- BERTScore (via bert_score)
 """
 
 import math
+from functools import lru_cache
 from typing import Dict, List, Set, Tuple
 from collections import Counter
 from .readability import tokenize_words
@@ -103,84 +104,31 @@ def compute_sari(
 
 def compute_rouge_scores(reference: str, hypothesis: str) -> Dict[str, float]:
     """Compute ROUGE-1, ROUGE-2, ROUGE-L F1 scores."""
-    try:
-        from rouge_score import rouge_scorer
-        scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
-        scores = scorer.score(reference, hypothesis)
-        return {
-            "rouge1_f1": round(scores["rouge1"].fmeasure * 100.0, 2),
-            "rouge2_f1": round(scores["rouge2"].fmeasure * 100.0, 2),
-            "rougeL_f1": round(scores["rougeL"].fmeasure * 100.0, 2),
-        }
-    except Exception:
-        # Lightweight token-overlap fallback
-        ref_tokens = set(tokenize_words(reference.lower()))
-        hyp_tokens = set(tokenize_words(hypothesis.lower()))
-        if not ref_tokens or not hyp_tokens:
-            return {"rouge1_f1": 0.0, "rouge2_f1": 0.0, "rougeL_f1": 0.0}
-        overlap = len(ref_tokens & hyp_tokens)
-        p = overlap / len(hyp_tokens)
-        r = overlap / len(ref_tokens)
-        f1 = (2 * p * r) / (p + r) if (p + r) > 0 else 0.0
-        return {
-            "rouge1_f1": round(f1 * 100.0, 2),
-            "rouge2_f1": 0.0,
-            "rougeL_f1": round(f1 * 100.0, 2),
-        }
+    from rouge_score import rouge_scorer  # fail loudly if missing; no silent token-overlap proxy
+    scores = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True).score(reference, hypothesis)
+    return {
+        "rouge1_f1": round(scores["rouge1"].fmeasure * 100.0, 2),
+        "rouge2_f1": round(scores["rouge2"].fmeasure * 100.0, 2),
+        "rougeL_f1": round(scores["rougeL"].fmeasure * 100.0, 2),
+    }
 
 
-# ── 3. BERTScore (with graceful embedding / semantic fallback) ────────────────
+# ── 3. BERTScore ──────────────────────────────────────────────────────────────
+
+@lru_cache(maxsize=1)
+def _bert_scorer():
+    import bert_score  # fail loudly if missing; no silent word-overlap proxy
+    return bert_score.BERTScorer(lang="en")  # roberta-large, loaded once
+
 
 def compute_bertscore(
     reference: str,
     hypothesis: str,
 ) -> Dict[str, float]:
-    """
-    Compute BERTScore (F1, Precision, Recall).
-    Attempts bert_score package if available, otherwise computes
-    token-level IDF-weighted cosine similarity fallback.
-    """
-    try:
-        import bert_score
-        P, R, F1 = bert_score.score(
-            [hypothesis],
-            [reference],
-            lang="en",
-            verbose=False,
-        )
-        return {
-            "bertscore_precision": round(float(P[0]) * 100.0, 2),
-            "bertscore_recall": round(float(R[0]) * 100.0, 2),
-            "bertscore_f1": round(float(F1[0]) * 100.0, 2),
-        }
-    except Exception:
-        # Lightweight character/word n-gram cosine similarity proxy
-        ref_tokens = tokenize_words(reference.lower())
-        hyp_tokens = tokenize_words(hypothesis.lower())
-        if not ref_tokens or not hyp_tokens:
-            return {"bertscore_precision": 0.0, "bertscore_recall": 0.0, "bertscore_f1": 0.0}
-
-        ref_counter = Counter(ref_tokens)
-        hyp_counter = Counter(hyp_tokens)
-
-        # Dot product
-        intersection = set(ref_counter.keys()) & set(hyp_counter.keys())
-        dot_product = sum(ref_counter[t] * hyp_counter[t] for t in intersection)
-
-        mag_ref = math.sqrt(sum(c * c for c in ref_counter.values()))
-        mag_hyp = math.sqrt(sum(c * c for c in hyp_counter.values()))
-
-        if mag_ref == 0 or mag_hyp == 0:
-            sim = 0.0
-        else:
-            sim = dot_product / (mag_ref * mag_hyp)
-
-        p = min(1.0, len(intersection) / max(1, len(hyp_tokens)))
-        r = min(1.0, len(intersection) / max(1, len(ref_tokens)))
-        f1 = sim * 100.0
-
-        return {
-            "bertscore_precision": round(p * 100.0, 2),
-            "bertscore_recall": round(r * 100.0, 2),
-            "bertscore_f1": round(f1, 2),
-        }
+    """Compute BERTScore (F1, Precision, Recall) on a 0-100 scale."""
+    P, R, F1 = _bert_scorer().score([hypothesis], [reference])
+    return {
+        "bertscore_precision": round(float(P[0]) * 100.0, 2),
+        "bertscore_recall": round(float(R[0]) * 100.0, 2),
+        "bertscore_f1": round(float(F1[0]) * 100.0, 2),
+    }

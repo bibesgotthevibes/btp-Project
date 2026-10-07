@@ -1,0 +1,21 @@
+# Setup (Python 3.11):
+#   uv venv --python 3.11 .venv && uv pip install --python .venv/bin/python -r analysis/requirements.txt
+#   uv pip install --python .venv/bin/python --no-deps "alignscore @ git+https://github.com/yuh-zha/AlignScore"
+#   (alignscore pins torch==1.12, which has no py3.11 wheels, hence --no-deps)
+pandas
+pyarrow
+requests
+python-dotenv
+rouge-score
+bert-score
+sentence-transformers
+wordfreq
+# alignscore runtime deps
+pytorch-lightning==1.9.5
+setuptools<70
+nltk
+spacy
+json-lines
+scikit-learn
+datasets
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
