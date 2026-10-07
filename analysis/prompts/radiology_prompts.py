@@ -131,3 +131,10 @@ RADIOLOGY_CXR_SIMPLIFY_FEW_SHOT_EXAMPLES = [
         "output": "The chest tube on the left side was removed. There's a small amount of air leakage around the lung on the left side, which has gotten a little bigger since the last check, now about 0.9 cm from the top of the chest. The heart and middle part of the chest look the same as before. There's no sign of a specific lung infection. No fluid is seen around the lungs. There are no urgent heart or lung issues.",
     },
 ]
+
+# NER-guided variant of the chest X-ray prompt: identical rules plus the Stage 1 entity
+# block and a retention rule, so a direct-vs-NER comparison changes only the entities.
+RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT = RADIOLOGY_CXR_SIMPLIFY_SYSTEM_PROMPT.replace(
+    "\n\nRules:", "\n\n{ner_retention_block}\n\nRules:", 1
+) + """
+8. Every finding in the extracted entities block above must appear in your rewrite with the same meaning, including every negative ('no ...') finding."""

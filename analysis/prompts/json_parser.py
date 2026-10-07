@@ -66,6 +66,25 @@ def parse_json_from_llm_response(raw_text: str) -> Optional[dict]:
     return None
 
 
+# Schema defaults the extractor fills in when the report says nothing. Left in, the
+# "MUST retain" rule makes the model state them ("The reason for the test was not mentioned").
+_PLACEHOLDERS = {"", "no", "none", "null", "n/a", "na", "unknown", "not mentioned", "not specified",
+                 "not stated", "not applicable", "not available", "not reported", "not provided"}
+
+
+def _drop_placeholders(value):
+    """Recursively remove placeholder strings and the empty containers they leave behind."""
+    if isinstance(value, dict):
+        cleaned = {k: _drop_placeholders(v) for k, v in value.items()}
+        return {k: v for k, v in cleaned.items() if v not in (None, "", [], {})}
+    if isinstance(value, list):
+        cleaned = [_drop_placeholders(v) for v in value]
+        return [v for v in cleaned if v not in (None, "", [], {})]
+    if isinstance(value, str) and value.strip().lower().rstrip(".") in _PLACEHOLDERS:
+        return None
+    return value
+
+
 def ner_json_to_retention_block(ner_data: dict, datatype: str) -> str:
     """
     Convert extracted NER JSON into a human-readable retention constraint block
@@ -74,6 +93,7 @@ def ner_json_to_retention_block(ner_data: dict, datatype: str) -> str:
     This gives the model a clear, structured list of all entities it MUST
     mention in its simplified output.
     """
+    ner_data = _drop_placeholders(ner_data) or {}
     lines = ["=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ==="]
 
     if datatype == "discharge":
@@ -274,3 +294,13 @@ def _format_radiology_retention(data: dict, lines: list) -> None:
             urgency = f" [{r.get('urgency','').upper()}]" if r.get("urgency") else ""
             reason = f" — {r['reason']}" if r.get("reason") else ""
             lines.append(f"  → {r.get('action','')}{urgency}{reason}")
+
+
+if __name__ == "__main__":
+    raw = {"exam_info": {"modality": "Chest X-ray", "contrast_used": "no", "clinical_indication": "Not mentioned",
+                         "sequences_used": [""]},
+           "normal_findings": ["No pneumothorax", "Unknown"], "impression": "None"}
+    assert _drop_placeholders(raw) == {"exam_info": {"modality": "Chest X-ray"}, "normal_findings": ["No pneumothorax"]}
+    block = ner_json_to_retention_block(raw, "radiology")
+    assert "not mentioned" not in block.lower() and "Contrast" not in block and "No pneumothorax" in block, block
+    print("json_parser self-check passed")

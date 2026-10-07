@@ -6,6 +6,8 @@ paired with LaymanRRG lay references
 (datasets/lay_reference_datasets/radiology/openi_lay_pairs.csv).
 
 Uses the chest X-ray prompt variant (RADIOLOGY_CXR_SIMPLIFY_* in prompts/radiology_prompts.py).
+Strategies: zero-shot, few-shot (direct) and ner-guided (entity extraction, then the same
+chest X-ray prompt with the extracted entities as retention constraints).
 Unlike runner.py (curated samples, scored against the source), every output here
 is scored against a lay-language ground truth, so SARI / ROUGE / BERTScore are
 meaningful. A "reference" row scores the gold lay text itself as a readability
@@ -30,8 +32,10 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from analysis.config import MODELS, STRATEGIES, RESULTS_DIR, DATASETS_DIR
-from analysis.prompts import build_prompt
-from analysis.providers import ModelRouter
+from analysis.prompts import build_prompt, build_ner_extraction_prompt
+from analysis.prompts.json_parser import parse_json_from_llm_response, ner_json_to_retention_block
+from analysis.prompts.radiology_prompts import RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT
+from analysis.providers import ModelRouter, GenerationResult
 from analysis.metrics import evaluate_generation
 
 PAIRS_CSV = DATASETS_DIR / "lay_reference_datasets" / "radiology" / "openi_lay_pairs.csv"
@@ -54,6 +58,32 @@ def save_results(records):
     tmp.replace(OUT_JSON)
     flat = [{**{k: v for k, v in r.items() if k != "metrics"}, **(r.get("metrics") or {})} for r in records]
     pd.DataFrame(flat).to_csv(OUT_CSV, index=False)
+
+
+def generate(router, model, strategy, src):
+    """Returns (GenerationResult, ner_json). ner-guided = teammate's Stage 1 entity extraction,
+    then the chest X-ray prompt with the entity block injected (same rules as the direct run)."""
+    if strategy != "ner-guided":
+        system_prompt, user_prompt, _ = build_prompt("simplification", "radiology_cxr", strategy, src)
+        return router.generate(model, system_prompt, user_prompt), None
+
+    ner_sys, ner_user, _ = build_ner_extraction_prompt("radiology", src)
+    ner_res = router.generate(model, ner_sys, ner_user, temperature=0.1)
+    ner_json = parse_json_from_llm_response(ner_res.text) if ner_res.status == "success" else None
+    if not ner_json:
+        # No silent zero-shot fallback: a failed extraction is recorded as a failed trial.
+        why = ner_res.error if ner_res.status != "success" else "could not parse entity JSON"
+        return GenerationResult(status="error", error=f"NER stage: {why}", provider=ner_res.provider,
+                                model=ner_res.model, latency_seconds=ner_res.latency_seconds), None
+
+    # exam_info left out: the scan is known to be a chest X-ray and the prompt doesn't explain it;
+    # small extractors mislabel it ("Chest CT"), which the retention rule would then force in.
+    block = ner_json_to_retention_block({k: v for k, v in ner_json.items() if k != "exam_info"}, "radiology")
+    system_prompt = RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT.replace("{ner_retention_block}", block)
+    _, user_prompt, _ = build_prompt("simplification", "radiology_cxr", "zero-shot", src)
+    res = router.generate(model, system_prompt, user_prompt)
+    res.latency_seconds += ner_res.latency_seconds  # report end-to-end latency for both stages
+    return res, ner_json
 
 
 def _key(r):
@@ -92,7 +122,7 @@ def main():
     pairs = pairs.sample(n=min(args.n, len(pairs)), random_state=args.seed)
     done = {_key(r) for r in records if r["status"] == "success"}
     records = [r for r in records if _key(r) in done]  # drop failed, retry them
-    router = ModelRouter()
+    router = ModelRouter(allow_substitute=False)  # never relabel another model's output
 
     for _, p in pairs.iterrows():
         sid, src, ref = p.nlmcxr_file, p.radiology_report, p.layman_report
@@ -105,11 +135,11 @@ def main():
         for model, strategy in itertools.product(args.models, args.strategies):
             if (sid, model, strategy) in done:
                 continue
-            system_prompt, user_prompt, _ = build_prompt("simplification", "radiology_cxr", strategy, src)
-            res = router.generate(model, system_prompt, user_prompt)
+            res, ner_json = generate(router, model, strategy, src)
             rec = {"sample_id": sid, "model": model, "strategy": strategy, "status": res.status,
                    "error": res.error, "provider": res.provider, "actual_model": res.model, "latency_seconds": round(res.latency_seconds, 2),
-                   "source_text": src, "reference_text": ref, "output_text": res.text, "metrics": None}
+                   "source_text": src, "reference_text": ref, "output_text": res.text, "metrics": None,
+                   "ner_json": ner_json}
             if res.status == "success":
                 rec["metrics"] = evaluate_generation(src, res.text, reference_text=ref)
                 print(f"✓ {sid} {model} {strategy} ({res.latency_seconds:.1f}s) "
@@ -121,6 +151,9 @@ def main():
 
     save_results(records)
     print_summary(records)
+    ner_failed = sum(1 for r in records if (r.get("error") or "").startswith("NER stage"))
+    if ner_failed:
+        print(f"\nNER stage failed on {ner_failed} trials (not scored; rerun to retry)")
     print(f"\nSaved: {OUT_JSON}\n       {OUT_CSV}")
 
 
