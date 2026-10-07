@@ -20,7 +20,27 @@ from ..config import (
     GEMINI_API_KEY,
     CEREBRAS_API_KEY,
     GROQ_API_KEY,
+    GEMINI_API_KEY_FALLBACK,
+    GROQ_API_KEY_FALLBACK,
 )
+
+
+def _add_key_fallback(provider, fallback_key: str) -> None:
+    """On a quota error (HTTP 429), switch the provider to fallback_key for good and retry once."""
+    if not fallback_key:
+        return
+    primary_generate = provider.generate
+
+    def generate(*args, **kwargs):
+        res = primary_generate(*args, **kwargs)
+        if res.status == "error" and (res.error or "").startswith("HTTP 429") and provider.api_key != fallback_key:
+            print(f"\n  [{type(provider).__name__}] quota hit on primary key, switching to fallback key")
+            provider.api_key = fallback_key
+            res = primary_generate(*args, **kwargs)
+        return res
+
+    provider.generate = generate
+
 
 class ModelRouter:
     def __init__(
@@ -37,6 +57,8 @@ class ModelRouter:
         self.cerebras_provider = CerebrasProvider(cerebras_key or CEREBRAS_API_KEY)
         self.groq_provider = GroqProvider(groq_key or GROQ_API_KEY)
         self.ollama_provider = OllamaProvider()
+        _add_key_fallback(self.gemini_provider, GEMINI_API_KEY_FALLBACK)
+        _add_key_fallback(self.groq_provider, GROQ_API_KEY_FALLBACK)
 
     def generate(
         self,

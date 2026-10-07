@@ -50,6 +50,9 @@ def clean_api_key(val: str) -> str:
 GEMINI_API_KEY = clean_api_key(os.getenv("GEMINI_API_KEY", ""))
 CEREBRAS_API_KEY = clean_api_key(os.getenv("CEREBRAS_API_KEY", ""))
 GROQ_API_KEY = clean_api_key(os.getenv("GROQ_API_KEY", ""))
+# Used once the primary key hits its quota (HTTP 429); see ModelRouter.
+GEMINI_API_KEY_FALLBACK = clean_api_key(os.getenv("GEMINI_API_KEY_FALLBACK", ""))
+GROQ_API_KEY_FALLBACK = clean_api_key(os.getenv("GROQ_API_KEY_FALLBACK", ""))
 
 # ── Default Model IDs & Endpoints ─────────────────────────────────────────────
 # Verified 2026-10-08 against the Gemini/Groq /models endpoints (free tier):
