@@ -1,0 +1,158 @@
+{
+  "trial_id": "simplification_discharge_DS-01_gemini_31pro_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-01",
+  "sample_title": "Discharge Summary (Row 0)",
+  "model": "gemini/3.1pro",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "gemini",
+  "prompt_tokens": 2426,
+  "completion_tokens": 1503,
+  "total_tokens": 9014,
+  "latency_seconds": 35.962,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPatient: male | Age: 42\nPrimary Diagnosis: Abdominal Sepsis\n  Secondary: Crohn's Disease\n  Secondary: Acute on Chronic Kidney Disease\nSymptoms at admission: Hypotension; Fever; Fainting\nAnomalies/Findings:\n  [ABNORMAL] Hypotension (normal: around 120/80 mmHg)\n  [ABNORMAL] Fever (normal: around 98.6°F (37°C))\n  [BORDERLINE] Borderline Blood Pressure (normal: around 120/80 mmHg)\nMedications:\n  • Vancomycin — A strong medicine to fight serious bacterial infections.\n  • Meropenem — A strong medicine to fight serious bacterial infections.\n  • KCL 6% orally — Medicine to give potassium, an important salt, by mouth.\n  • Loperamide — Medicine to stop loose motions (diarrhea). | Dosage: continuous\n  • Calcium Carbonate — Medicine to give calcium, which is good for bones, and can also help with acidity. | Dosage: continuous\n  • Cholestyramine — Medicine to lower cholesterol and help with diarrhea caused by bile acids. | Dosage: continuous\n  • Muciloid — Medicine to help with bowel movements, often for constipation or to make stools softer. | Dosage: continuous\nFollow-up appointment: Hospitalization on 01/22\nOngoing treatment: Loperamide\nOngoing treatment: Calcium Carbonate\nOngoing treatment: Cholestyramine\nOngoing treatment: Muciloid\nOngoing treatment: KCL 6% orally\nHospital stay duration: 23 h\nOutcome: alive\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\nmale, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associated with acute on chronic kidney disease. [person] with crohn's disease, recently underwent a surgical procedure with ileocolectomy and creation of a new anastomosis after acute perforative abdomen. admitted today to a monitored bed in the red room with hypotension, fever and fainting for 1 day. [person] was recently admitted to [organization] for treatment of intra-abdominal collection, increased urinary output via ileostomy and worsening of renal function, being discharged on 11/15 with a schedule of ertapenem 1 g/day, intramuscularly, for 4 weeks. [person] presents with borderline blood pressure, eupneic on room air. at the time of evaluation, he denies any complaints. he reports maintaining physiological diuresis, without complaints. reports good ostomy function. antibiotic therapy with vancomycin meropenem was started, and [person] was transferred to the intensive care unit of [organization], under the care of the proctology team accepted by [person] from the intensive care unit, {omitted}. meropenem vancomycin replacement of kcl 6% orally continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid. 12/27/2021. follow-up appointment. [person] is discharged on leave to follow-up appointment for hospitalization on 01/22.\n\nOutput:\n",
+  "source_text": "male, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associated with acute on chronic kidney disease. [person] with crohn's disease, recently underwent a surgical procedure with ileocolectomy and creation of a new anastomosis after acute perforative abdomen. admitted today to a monitored bed in the red room with hypotension, fever and fainting for 1 day. [person] was recently admitted to [organization] for treatment of intra-abdominal collection, increased urinary output via ileostomy and worsening of renal function, being discharged on 11/15 with a schedule of ertapenem 1 g/day, intramuscularly, for 4 weeks. [person] presents with borderline blood pressure, eupneic on room air. at the time of evaluation, he denies any complaints. he reports maintaining physiological diuresis, without complaints. reports good ostomy function. antibiotic therapy with vancomycin meropenem was started, and [person] was transferred to the intensive care unit of [organization], under the care of the proctology team accepted by [person] from the intensive care unit, {omitted}. meropenem vancomycin replacement of kcl 6% orally continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid. 12/27/2021. follow-up appointment. [person] is discharged on leave to follow-up appointment for hospitalization on 01/22.",
+  "output_text": "You, [person], are a 42-year-old male. You were admitted to {organization} on 26/12/2021 because of abdominal sepsis (a very serious infection in your tummy) linked to your Crohn's Disease (a long-term condition that causes inflammation in your digestive system) and acute on chronic kidney disease (meaning your kidneys, which filter waste from your blood, have a long-standing problem that suddenly got worse).\n\nBefore this admission, you, [person], who has Crohn's Disease, recently had a surgery called an ileocolectomy (where part of your small and large intestine was removed) and a new anastomosis (where the remaining parts were joined together) because of a perforative abdomen (a hole in your tummy). You were also recently admitted to [organization] for treatment of an intra-abdominal collection (fluid build-up inside your tummy), increased urinary output via your ileostomy (the opening created during your surgery), and worsening of your renal function (your kidney's ability to work). You were discharged on 11/15 with a schedule of ertapenem 1 g/day, intramuscularly, for 4 weeks.\n\nWhen you came to the hospital this time, you were admitted to a monitored bed in the red room because you had hypotension (low BP, which should normally be around 120/80 mmHg, but yours was low), fever (high temperature, which should normally be around 98.6°F or 37°C, but yours was high), and you were fainting for one day. At the time of evaluation, your blood pressure was borderline (meaning it was close to the normal range of around 120/80 mmHg). You were breathing normally (eupneic on room air), passing urine normally (maintaining physiological diuresis), and your ostomy (ileostomy) was working well.\n\nDuring your 23-hour hospital stay, antibiotic therapy was started with Vancomycin and Meropenem (both are strong medicines to fight serious bacterial infections). You were also given KCL 6% orally (medicine to give you potassium, an important salt, by mouth). You, [person], were transferred to the intensive care unit of {organization}, under the care of the proctology team accepted by [person] from the intensive care unit, {omitted}.\n\nYou are being discharged on 27/12/2021. You will continue to take the following medications: Loperamide (medicine to stop loose motions or diarrhea), Calcium Carbonate (medicine to give you calcium, which is good for bones, and can also help with acidity), Cholestyramine (medicine to lower cholesterol and help with diarrhea caused by bile acids), Muciloid (medicine to help with bowel movements, often for constipation or to make stools softer), and KCL 6% orally (medicine to give you potassium, an important salt, by mouth). You have a follow-up appointment for hospitalization on 01/22.",
+  "extra": {
+    "fallback_used": true,
+    "requested_model": "gemini-3.1-pro-preview"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": "male",
+      "age": 42
+    },
+    "diagnoses": {
+      "primary": "Abdominal Sepsis",
+      "primary_lay_explanation": "A very serious infection in the tummy area that can make a person very sick.",
+      "secondary": [
+        "Crohn's Disease",
+        "Acute on Chronic Kidney Disease"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "Hypotension",
+      "Fever",
+      "Fainting"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Clinical Finding",
+        "finding": "Hypotension",
+        "value": null,
+        "normal_range": "around 120/80 mmHg",
+        "lay_explanation": "Blood pressure that is lower than normal.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Fever",
+        "value": null,
+        "normal_range": "around 98.6°F (37°C)",
+        "lay_explanation": "Body temperature that is higher than normal.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Borderline Blood Pressure",
+        "value": null,
+        "normal_range": "around 120/80 mmHg",
+        "lay_explanation": "Blood pressure that is slightly low or high, not quite normal.",
+        "severity": "borderline"
+      }
+    ],
+    "procedures_performed": [],
+    "medications": [
+      {
+        "name": "Vancomycin",
+        "purpose_lay": "A strong medicine to fight serious bacterial infections.",
+        "timing_dosage": null
+      },
+      {
+        "name": "Meropenem",
+        "purpose_lay": "A strong medicine to fight serious bacterial infections.",
+        "timing_dosage": null
+      },
+      {
+        "name": "KCL 6% orally",
+        "purpose_lay": "Medicine to give potassium, an important salt, by mouth.",
+        "timing_dosage": null
+      },
+      {
+        "name": "Loperamide",
+        "purpose_lay": "Medicine to stop loose motions (diarrhea).",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Calcium Carbonate",
+        "purpose_lay": "Medicine to give calcium, which is good for bones, and can also help with acidity.",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Cholestyramine",
+        "purpose_lay": "Medicine to lower cholesterol and help with diarrhea caused by bile acids.",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Muciloid",
+        "purpose_lay": "Medicine to help with bowel movements, often for constipation or to make stools softer.",
+        "timing_dosage": "continuous"
+      }
+    ],
+    "warning_signs_red_flags": [],
+    "follow_up_care": {
+      "appointments": [
+        "Hospitalization on 01/22"
+      ],
+      "ongoing_treatments": [
+        "Loperamide",
+        "Calcium Carbonate",
+        "Cholestyramine",
+        "Muciloid",
+        "KCL 6% orally"
+      ],
+      "lifestyle_diet_advice": []
+    },
+    "stay_duration": "23 h",
+    "outcome": "alive"
+  },
+  "ner_extraction_latency_seconds": 16.214,
+  "ner_extraction_tokens": 4097,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 36.49,
+    "flesch_kincaid_grade_level": 15.91,
+    "smog_index": 17.45,
+    "gunning_fog": 20.53,
+    "coleman_liau": 12.6,
+    "num_words": 436,
+    "num_sentences": 14,
+    "num_syllables": 715,
+    "average_word_length": 5.02,
+    "average_word_frequency": 4.81,
+    "ttr": 0.5367,
+    "mtld": 96.43,
+    "proportion_difficult_words": 0.5734,
+    "rouge1_f1": 57.84,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 57.84,
+    "bertscore_precision": 24.54,
+    "bertscore_recall": 51.44,
+    "bertscore_f1": 60.31,
+    "sari": 20.26,
+    "sbert_cosine_similarity": 64.06,
+    "parenthetical_explanation_count": 18,
+    "parenthetical_explanation_rate": 4.13,
+    "jargon_source_count": 7,
+    "jargon_generated_count": 7,
+    "jargon_reduction_pct": 0.0,
+    "compression_ratio_chars": 1.874,
+    "compression_ratio_words": 2.096
+  }
+}

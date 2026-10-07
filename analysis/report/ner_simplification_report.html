@@ -1,0 +1,410 @@
+<title>NER-Guided Simplification Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* Layout: a single-column research memo with a sticky contents rail on wide screens; tables and charts sit in the reading column. */
+:root {
+  --bg: #f3f6f7;
+  --paper: #ffffff;
+  --ink: #16212a;
+  --muted: #56656f;
+  --rule: #d6dee3;
+  --accent: #1d5c73;
+  --accent-soft: #e2eef2;
+  --good: #0ca30c;
+  --warn: #fab219;
+  --crit: #d03b3b;
+  --serious: #ec835a;
+  --s1: #2a78d6;
+  --s2: #eb6834;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --font-doc: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1519; --paper: #162027; --ink: #e3eaee; --muted: #97a6b0; --rule: #2a3741;
+    --accent: #7fc1d8; --accent-soft: #1c3440; --s1: #3987e5; --s2: #d95926; --grid: #2c2c2a; --axis: #383835;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1519; --paper: #162027; --ink: #e3eaee; --muted: #97a6b0; --rule: #2a3741;
+  --accent: #7fc1d8; --accent-soft: #1c3440; --s1: #3987e5; --s2: #d95926; --grid: #2c2c2a; --axis: #383835;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 17px/1.62 var(--font-doc); }
+.shell { padding-inline: 16px; padding-block: 28px 64px; max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 40px; }
+aside.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font: 14px/1.45 var(--font-ui); display: grid; gap: 4px; }
+aside.toc .lbl { font: 600 11px var(--font-ui); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+aside.toc a { color: var(--muted); text-decoration: none; padding: 2px 0; }
+aside.toc a:hover { color: var(--accent); }
+article { min-width: 0; max-width: 780px; display: grid; gap: 0; }
+.kicker { font: 600 12px var(--font-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
+h1 { font: 600 2.35rem/1.12 var(--font-doc); margin: 0 0 12px; text-wrap: balance; letter-spacing: -.01em; }
+.lede { font-size: 1.12rem; color: var(--muted); margin: 0 0 20px; max-width: 64ch; }
+.byline { font: 13px var(--font-ui); color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 18px; padding-bottom: 22px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
+h2 { font: 600 1.55rem/1.2 var(--font-doc); margin: 46px 0 12px; text-wrap: balance; scroll-margin-top: 16px; }
+h2 .num { font: 500 .95rem var(--font-data); color: var(--accent); margin-right: 10px; vertical-align: 2px; }
+h3 { font: 600 1.12rem/1.3 var(--font-ui); margin: 28px 0 8px; }
+p { margin: 0 0 14px; max-width: 68ch; }
+ul, ol { margin: 0 0 16px; padding-left: 1.3em; max-width: 68ch; }
+li { margin-bottom: 7px; }
+strong { font-weight: 600; }
+a { color: var(--accent); }
+code, .mono { font: .86em var(--font-data); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+
+.findings { list-style: none; padding: 0; display: grid; gap: 10px; max-width: none; }
+.findings li { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; margin: 0; display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; font-size: 16px; }
+.tag { font: 600 11px/1.9 var(--font-ui); text-align: center; border-radius: 5px; height: 21px; }
+.tag.pos { background: color-mix(in srgb, var(--good) 20%, transparent); color: var(--ink); }
+.tag.neg { background: color-mix(in srgb, var(--crit) 20%, transparent); color: var(--ink); }
+.tag.mix { background: color-mix(in srgb, var(--warn) 30%, transparent); color: var(--ink); }
+
+.callout { background: var(--paper); border: 1px solid var(--rule); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 16px; margin: 6px 0 18px; font-size: 16px; }
+.callout.warn { border-left-color: var(--crit); }
+.callout p:last-child { margin-bottom: 0; }
+
+.tablewrap { overflow-x: auto; margin: 6px 0 20px; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); }
+table { border-collapse: collapse; width: 100%; font: 13.5px/1.4 var(--font-ui); font-variant-numeric: tabular-nums; }
+th, td { padding: 8px 11px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; font-size: 12px; color: var(--muted); letter-spacing: .02em; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+td.n { text-align: right; font-family: var(--font-data); font-size: 12.5px; white-space: nowrap; }
+th.n { text-align: right; }
+caption { caption-side: top; text-align: left; padding: 10px 11px 0; font: 12px var(--font-ui); color: var(--muted); }
+.better { font-weight: 600; }
+
+.fig { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px 14px; margin: 6px 0 20px; font-family: var(--font-ui); }
+.fig h4 { margin: 0 0 4px; font: 600 14px var(--font-ui); }
+.fig .note { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px; vertical-align: -1px; margin-right: 5px; }
+.stack-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 36px; gap: 10px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+.stack-row .who { color: var(--ink); }
+.stack-row .tot { font: 12px var(--font-data); color: var(--muted); text-align: right; }
+.stack { display: flex; gap: 2px; height: 22px; }
+.seg { height: 100%; display: flex; align-items: center; justify-content: center; font: 600 11.5px var(--font-data); color: #111; min-width: 0; }
+.seg:first-child { border-radius: 4px 0 0 4px; } .seg:last-child { border-radius: 0 4px 4px 0; } .seg:only-child { border-radius: 4px; }
+.seg.ok { background: var(--good); } .seg.cut { background: var(--warn); } .seg.leak { background: var(--crit); color: #fff; }
+.seg.miss { background: transparent; box-shadow: inset 0 0 0 1.5px var(--axis); color: var(--muted); }
+.seg:hover { filter: brightness(1.08); }
+.multiples { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; }
+.panel { border-top: 1px solid var(--rule); padding-top: 10px; }
+.panel .t { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.panel .d { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; min-height: 2.6em; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) 46px; align-items: center; gap: 6px; margin-bottom: 6px; }
+.track { height: 16px; border-left: 1px solid var(--axis); display: flex; align-items: center; }
+.bar { height: 14px; border-radius: 0 4px 4px 0; }
+.bar.s1 { background: var(--s1); } .bar.s2 { background: var(--s2); }
+.hbar .v { font: 12px var(--font-data); color: var(--ink); text-align: right; }
+
+.errgrid { display: grid; gap: 12px; margin: 8px 0 18px; }
+.err { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 16px; }
+.err h4 { margin: 0 0 6px; font: 600 15px var(--font-ui); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.err h4 .cnt { font: 500 12px var(--font-data); color: var(--muted); }
+.err p { font-size: 15.5px; margin-bottom: 8px; }
+.err blockquote { margin: 6px 0 4px; padding: 6px 12px; border-left: 3px solid var(--rule); color: var(--muted); font-style: italic; font-size: 15px; }
+.status { font: 600 11px var(--font-ui); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.status.fixed { background: color-mix(in srgb, var(--good) 22%, transparent); }
+.status.open { background: color-mix(in srgb, var(--crit) 18%, transparent); }
+.status.partial { background: color-mix(in srgb, var(--warn) 30%, transparent); }
+details { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; margin: 6px 0 20px; }
+details summary { cursor: pointer; padding: 12px 16px; font: 600 14px var(--font-ui); }
+details .tablewrap { border: 0; border-top: 1px solid var(--rule); border-radius: 0; margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  aside.toc { display: none; }
+  h1 { font-size: 1.85rem; }
+  .stack-row { grid-template-columns: 96px minmax(0, 1fr) 30px; }
+}
+</style>
+<div class="shell">
+  <aside class="toc" aria-label="Contents">
+    <div class="lbl">Contents</div>
+    <a href="#summary">Key findings</a>
+    <a href="#setup">What was run</a>
+    <a href="#validity">Which outputs are usable</a>
+    <a href="#metrics">Reading the metrics</a>
+    <a href="#ner-vs">NER vs without NER</a>
+    <a href="#models">Model comparison</a>
+    <a href="#quality">Clinical quality review</a>
+    <a href="#pipeline">Pipeline issues</a>
+    <a href="#next">Recommendations</a>
+    <a href="#limits">Limitations</a>
+    <a href="#appendix">Appendix</a>
+  </aside>
+
+  <article>
+    <p class="kicker">BTP · Medical report simplification · Results review</p>
+    <h1>NER-guided simplification: what the results show</h1>
+    <p class="lede">An analysis of the two-stage pipeline that first extracts clinical entities from a report and then asks the model to simplify it while keeping every extracted entity. It covers 15 reports (discharge summaries, prostate pathology, brain MRI) and a same-model, same-report comparison against the plain zero-shot prompt on 14 of them.</p>
+    <div class="byline">
+      <span>Data: <code>analysis/results/</code> (evaluations.json, content_retention.json)</span>
+      <span>Side-by-side outputs: <a href="https://claude.ai/artifact/KLvu9gjgTZ5ug7hXJe1KER">Simplification Reader</a></span>
+    </div>
+
+    <h2 id="summary"><span class="num">01</span>Key findings</h2>
+    <ul class="findings">
+      <li><span class="tag pos">+</span><span><strong>NER guidance makes simplifications more complete.</strong> In 14 paired reports (same model, same report), the NER-guided version kept more of the report's clinical entities in all 14 (91% vs 66% on average) and more of its numbers (61% vs 37%). The gain is largest in radiology and pathology, where findings, sizes, grades and margins are enumerable.</span></li>
+      <li><span class="tag neg">−</span><span><strong>NER guidance also turns inferences into stated facts.</strong> The extraction step is asked to infer normal ranges and list warning signs; the simplification step must mention every listed item. NER-guided outputs therefore contained invented warning-sign lists, a creatinine range for a patient with no creatinine test, a "son" who is never mentioned, invented dates and severity labels. Zero-shot outputs never produced these.</span></li>
+      <li><span class="tag mix">±</span><span><strong>Zero-shot is easier to read, but has its own failure mode.</strong> Zero-shot versions were simpler in 11 of 14 pairs (grade 9.9 vs 11.0; reading ease 59.8 vs 53.9). Their errors are vaguer: added reassurance ("not new or dangerous", "no new or urgent problems"), rounded measurements ("the size of a small grape"), softened recommendations, and one invented lymph-node result.</span></li>
+      <li><span class="tag neg">−</span><span><strong>The extraction schema narrows what the model reports.</strong> The pathology schema has no field for stage or lymph nodes. Zero-shot Qwen mentioned lymph-node status in all 5 pathology reports; NER-guided Qwen in only 2. Whatever the schema omits, the guided output tends to omit too.</span></li>
+      <li><span class="tag neg">−</span><span><strong>No output reached the 6th-grade target.</strong> Across 50 usable outputs the mean grade is 11.4 (lowest 8.1), roughly unchanged from the originals, though reading ease rose to 53. The rule "keep the medical term and explain it in brackets" lengthens sentences and works against the grade target.</span></li>
+      <li><span class="tag neg">−</span><span><strong>The first run's outputs were partly invalid, and the metrics did not notice.</strong> Before the fixes, 11 GPT-OSS "simplifications" were the model's internal reasoning and 8 Gemini/Qwen outputs were cut off, all recorded as successes. The reasoning traces scored better than real simplifications on SARI and grade level. After fixing the pipeline and re-running, 50 of 59 generated simplifications are usable.</span></li>
+      <li><span class="tag pos">+</span><span><strong>Core facts were reliable.</strong> Gleason score, ISUP group and margin status were correct in every usable pathology output; the deceased patient was consistently described in the third person; the normal MRI was never given an invented abnormality.</span></li>
+      <li><span class="tag mix">±</span><span><strong>This is mainly a Qwen study.</strong> Gemini 3.1 Pro has zero free quota and Gemini 3.8 Flash hit its daily cap, so every usable "Gemini" output came from gemini-2.5-flash (4 outputs). Qwen has complete data; GPT-OSS has 13 of 15 NER-guided outputs; Qwen was easier to read and more complete than GPT-OSS on the same reports.</span></li>
+    </ul>
+
+    <h2 id="setup"><span class="num">02</span>What was run</h2>
+    <p><strong>Pipeline.</strong> Stage 1 sends the report with a domain-specific extraction prompt that returns JSON: diagnoses, anomalies with values and normal ranges, procedures, medications, follow-up and warning signs for discharge summaries; specimen, grading, invasion, margins and IHC markers for pathology; exam details, normal and abnormal findings, measurements and impression for radiology. Stage 2 inserts that JSON as a "YOU MUST RETAIN ALL OF THESE" block into the simplification prompt. If stage 1 fails to parse, stage 2 uses the plain zero-shot prompt, which is identical apart from the entity block and the retention rule. The zero-shot baseline uses that same prompt.</p>
+    <p><strong>Data.</strong> 15 curated reports: 5 discharge summaries (Brazilian hospital data, 201–1,370 words), 5 prostatectomy pathology reports (TCGA-PRAD, 159–493 words), 5 brain MRI reports (MR-RATE, 113–329 words). The target reader is a patient or family member in India, at a 6th-grade reading level.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Model slots and what actually ran</caption>
+        <thead><tr><th>Label in results</th><th>Requested</th><th>Actually produced the outputs</th><th>Why</th></tr></thead>
+        <tbody>
+          <tr><td>cerebras/qwen3.8</td><td>qwen-3.8-27b on Cerebras</td><td>qwen/qwen3.8-27b on Groq</td><td>Cerebras account returns 402 (payment required)</td></tr>
+          <tr><td>cerebras/gptoss</td><td>gpt-oss-120b on Cerebras</td><td>openai/gpt-oss-20b on Groq (120b when 20b failed)</td><td>Same 402</td></tr>
+          <tr><td>gemini/3.1pro</td><td>gemini-3.1-pro-preview</td><td>gemini-2.5-flash (every output)</td><td>Free-tier quota for 3.1 Pro is 0; the router substituted silently</td></tr>
+          <tr><td>gemini/3.8flash</td><td>gemini-3.8-flash</td><td>gemini-2.5-flash, except one truncated DS-02 output</td><td>503 overload and a 20-requests/day cap, then substitution</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Grid: 60 NER-guided trials (15 reports × 4 slots) and 18 zero-shot trials (all 15 reports for Qwen, plus DS-01 for the other three slots).</p>
+
+    <h2 id="validity"><span class="num">03</span>Which outputs are usable</h2>
+    <p>Every output was checked for four failure modes before any metric was read: <strong>reasoning leak</strong> (the text is the model's scratch reasoning), <strong>cut off</strong> (ends mid-sentence), <strong>incomplete</strong> (under a quarter of the source length), and <strong>prompt echo</strong> (the entity block copied back with labels such as "[MILD]" and "MUST explain" instead of prose). The pipeline bugs behind the first two were fixed and the affected Groq trials re-run (section 08).</p>
+
+    <div class="fig" role="figure" aria-label="NER-guided outputs by model slot and validity, after re-runs">
+      <h4>NER-guided trials by model slot, after the fixes and re-runs</h4>
+      <p class="note">15 trials per slot. Hover a segment for its meaning.</p>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--good)"></span>usable</span>
+        <span><span class="sw" style="background:var(--warn)"></span>cut off / incomplete</span>
+        <span><span class="sw" style="background:var(--crit)"></span>not a simplification (reasoning or copied prompt)</span>
+        <span><span class="sw" style="box-shadow:inset 0 0 0 1.5px var(--axis)"></span>no output (quota)</span>
+      </div>
+      <div class="stack-row"><span class="who">Qwen 3.8</span><div class="stack"><div class="seg ok" style="flex:15" title="15 usable">15</div></div><span class="tot">15</span></div>
+      <div class="stack-row"><span class="who">GPT-OSS</span><div class="stack"><div class="seg ok" style="flex:13" title="13 usable">13</div><div class="seg leak" style="flex:2" title="DS-05 reasoning trace (extraction ran out of budget); RAD-02 copied the entity block">2</div></div><span class="tot">15</span></div>
+      <div class="stack-row"><span class="who">"Gemini 3.1 Pro"</span><div class="stack"><div class="seg ok" style="flex:3" title="3 usable (all gemini-2.5-flash)">3</div><div class="seg cut" style="flex:3" title="3 cut off or incomplete">3</div><div class="seg miss" style="flex:9" title="9 no output (quota)">9</div></div><span class="tot">15</span></div>
+      <div class="stack-row"><span class="who">"Gemini 3.8 Flash"</span><div class="stack"><div class="seg ok" style="flex:2" title="2 usable (gemini-2.5-flash)">2</div><div class="seg cut" style="flex:4" title="4 cut off">4</div><div class="seg miss" style="flex:9" title="9 no output (quota)">9</div></div><span class="tot">15</span></div>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <caption>All 78 simplification trials, after re-runs</caption>
+        <thead><tr><th>Outcome</th><th class="n">Count</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Usable</td><td class="n">50</td><td>33 NER-guided (29 used the entity list, 4 fell back to zero-shot) + 17 zero-shot</td></tr>
+          <tr><td>Cut off or incomplete</td><td class="n">7</td><td>All gemini-2.5-flash: "thinking" consumed the 4,096-token output budget. Not re-run (Gemini quota).</td></tr>
+          <tr><td>Not a simplification</td><td class="n">2</td><td>GPT-OSS DS-05: extraction ran out of budget on the 1,370-word report; the old reasoning trace remains. GPT-OSS RAD-02: copied the entity block.</td></tr>
+          <tr><td>No output</td><td class="n">19</td><td>18 Gemini trials (quota); Qwen zero-shot DS-05 (needs more than Groq's free-tier output limit)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Stage 1 (entity extraction) produced parseable JSON in 31 of the 42 NER-guided trials that returned anything: Qwen 15 of 15, GPT-OSS 11 of 15, the Gemini slots 5 of 12. Failed extractions silently fall back to the zero-shot prompt while keeping the "ner-guided" label, which is why the analysis separates "entity list used" from the strategy label.</p>
+
+    <h2 id="metrics"><span class="num">04</span>How to read the automatic metrics</h2>
+    <p>There are no gold-standard simplified versions, so every quality metric compares the output with the <em>original report</em>:</p>
+    <ul>
+      <li><strong>SARI</strong> uses the source as its only reference. Its ADD and DELETE parts are then always zero, so the score is one third of the n-gram KEEP F1: a measure of copying, not of simplification.</li>
+      <li><strong>ROUGE, BERTScore and SBERT</strong> measure closeness to the original. BERTScore (roberta-large, no rescaling) sits between 76 and 88 for every output and does not separate conditions.</li>
+      <li><strong>Flesch-Kincaid grade</strong> depends on sentence length. The sources are telegraphic fragments, so rewriting them as full sentences raises the grade even when words get simpler. Reading ease (FRE) moves in the expected direction.</li>
+      <li><strong>Jargon reduction</strong> counts clinical terms. The prompt requires keeping each term and explaining it, so compliant outputs score 0% or negative.</li>
+    </ul>
+    <p>Two reference-free checks were added: <strong>numbers kept</strong> (share of the source's numbers, dates and measurements found in the output) and <strong>entities kept</strong> (share of the report's reference entity list found in the output; the list is the union of all successful extractions for that report, so every output is scored against the same list). Both use automatic matching and under-count paraphrases. In radiology, "numbers" also include sequence names such as T1 and T2.</p>
+
+    <div class="fig" role="figure" aria-label="Metric scores for usable outputs versus reasoning traces, first run">
+      <h4>First run: metrics could not tell a reasoning trace from a simplification</h4>
+      <p class="note">Mean scores before the fixes: 27 usable outputs vs 11 GPT-OSS reasoning traces. Each panel has its own scale from zero.</p>
+      <div class="legend"><span><span class="sw" style="background:var(--s1)"></span>usable simplification</span><span><span class="sw" style="background:var(--s2)"></span>reasoning trace</span></div>
+      <div class="multiples">
+        <div class="panel"><div class="t">SARI</div><div class="d">higher reads as better</div>
+          <div class="hbar"><div class="track"><div class="bar s1" style="width:62.9%" title="Usable: 12.6"></div></div><span class="v">12.6</span></div>
+          <div class="hbar"><div class="track"><div class="bar s2" style="width:95.9%" title="Reasoning trace: 19.2"></div></div><span class="v">19.2</span></div></div>
+        <div class="panel"><div class="t">Grade level (FKGL)</div><div class="d">lower reads as simpler</div>
+          <div class="hbar"><div class="track"><div class="bar s1" style="width:77.1%" title="Usable: 11.6"></div></div><span class="v">11.6</span></div>
+          <div class="hbar"><div class="track"><div class="bar s2" style="width:55.1%" title="Reasoning trace: 8.3"></div></div><span class="v">8.3</span></div></div>
+        <div class="panel"><div class="t">BERTScore F1</div><div class="d">similarity to the source</div>
+          <div class="hbar"><div class="track"><div class="bar s1" style="width:83.8%" title="Usable: 83.8"></div></div><span class="v">83.8</span></div>
+          <div class="hbar"><div class="track"><div class="bar s2" style="width:83.4%" title="Reasoning trace: 83.4"></div></div><span class="v">83.4</span></div></div>
+        <div class="panel"><div class="t">Own entities kept</div><div class="d">share of extracted entities found</div>
+          <div class="hbar"><div class="track"><div class="bar s1" style="width:94%" title="Usable: 94%"></div></div><span class="v">94%</span></div>
+          <div class="hbar"><div class="track"><div class="bar s2" style="width:100%" title="Reasoning trace: 100%"></div></div><span class="v">100%</span></div></div>
+      </div>
+    </div>
+    <p>The traces restate the entity list while planning ("Must include all entities: specimen weight, dimensions…"), so they copy source wording, use short planning sentences and mention every entity. Any evaluation that relies on these metrics alone would have picked them as the best outputs. A validity check and human review are required.</p>
+
+    <h2 id="ner-vs"><span class="num">05</span>With the entity list vs without</h2>
+    <p>Qwen now has a usable NER-guided and a usable zero-shot version for 14 reports (DS-05's zero-shot output exceeded the free-tier output limit). All 14 NER-guided versions used a successfully extracted entity list, so this is a clean same-model, same-report comparison of the NER step alone.</p>
+    <div class="tablewrap">
+      <table>
+        <caption>Qwen 3.8, 14 paired reports: mean values and how often the NER-guided version was better</caption>
+        <thead><tr><th>Measure</th><th class="n">NER-guided</th><th class="n">Zero-shot</th><th class="n">NER better in</th><th>Reading</th></tr></thead>
+        <tbody>
+          <tr><td>Reference entities kept</td><td class="n better">91%</td><td class="n">66%</td><td class="n">14 / 14</td><td>Consistently more complete</td></tr>
+          <tr><td>Numbers kept</td><td class="n better">61%</td><td class="n">37%</td><td class="n">9 / 14</td><td>Better in radiology and pathology; worse in discharge</td></tr>
+          <tr><td>Grade level ↓</td><td class="n">11.0</td><td class="n better">9.9</td><td class="n">3 / 14</td><td>Zero-shot simpler</td></tr>
+          <tr><td>Reading ease ↑</td><td class="n">53.9</td><td class="n better">59.8</td><td class="n">3 / 14</td><td>Zero-shot easier</td></tr>
+          <tr><td>Term explanations per 100 words</td><td class="n better">3.2</td><td class="n">2.2</td><td class="n">11 / 14</td><td>NER-guided explains more terms in brackets</td></tr>
+          <tr><td>Length vs source</td><td class="n">1.9×</td><td class="n">1.8×</td><td class="n">–</td><td>Similar</td></tr>
+          <tr><td>Similarity to source (SBERT)</td><td class="n">65.0</td><td class="n">69.2</td><td class="n">–</td><td>NER-guided reorganises the text more</td></tr>
+          <tr><td>Outputs with invented specific facts*</td><td class="n">9</td><td class="n">6</td><td class="n">–</td><td>Different kinds: see below</td></tr>
+          <tr><td>Speaks to the reader as "you" (discharge, 3 living patients)</td><td class="n better">3</td><td class="n">0</td><td class="n">–</td><td>NER-guided addressed the patient once and the family twice; zero-shot wrote "the patient" throughout, against rule 7</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:14px;color:var(--muted)">* From the read-through in section 07. NER-guided: warning signs, reference ranges, relationships, dates, severity labels. Zero-shot: reassurance, speculation about treatment, one invented lymph-node result.</p>
+
+    <div class="tablewrap">
+      <table>
+        <caption>Paired results by report type (Qwen)</caption>
+        <thead><tr><th>Type</th><th class="n">Pairs</th><th class="n">Entities kept NER / ZS</th><th class="n">Numbers kept NER / ZS</th><th class="n">Grade NER / ZS</th><th class="n">Words NER / ZS</th></tr></thead>
+        <tbody>
+          <tr><td>Discharge</td><td class="n">4</td><td class="n">85% / 81%</td><td class="n">56% / 76%</td><td class="n">11.5 / 11.0</td><td class="n">526 / 680</td></tr>
+          <tr><td>Pathology</td><td class="n">5</td><td class="n">91% / 66%</td><td class="n">48% / 37%</td><td class="n">9.8 / 8.8</td><td class="n">416 / 400</td></tr>
+          <tr><td>Radiology</td><td class="n">5</td><td class="n">97% / 56%</td><td class="n">79% / 5%</td><td class="n">11.9 / 10.1</td><td class="n">558 / 445</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>What this means</h3>
+    <ul>
+      <li><strong>Radiology benefits most.</strong> With the list, every finding, size and sequence stayed in; without it, Qwen summarised ("one is about the size of a small grape, another is smaller") and dropped hedges such as "underlying cavernoma cannot be excluded".</li>
+      <li><strong>Pathology benefits, with one blind spot.</strong> The list kept margins, percentages and IHC markers, but its schema has no TNM or lymph-node field, and the guided outputs dropped node status that zero-shot Qwen included unprompted.</li>
+      <li><strong>Discharge summaries gain little.</strong> Entity coverage is similar (85% vs 81%) and zero-shot kept more dates, because the schema groups events by type rather than time. This is also where the guided outputs invented the most (warning signs, instructions, a relationship, a date).</li>
+      <li><strong>Readability costs about one grade level.</strong> Keeping more entities and explaining each one makes longer, denser sentences.</li>
+    </ul>
+    <p><strong>Pooled view.</strong> Across all models, the 29 usable outputs that used an entity list kept 86% of entities and 55% of numbers; the 21 without an entity list kept 69% and 39%. The direction matches the paired result, but the pooled groups mix models and reports.</p>
+
+    <h2 id="models"><span class="num">06</span>Model comparison</h2>
+    <div class="tablewrap">
+      <table>
+        <caption>Usable NER-guided outputs that used an entity list</caption>
+        <thead><tr><th>Model (actual)</th><th class="n">n</th><th class="n">Grade ↓</th><th class="n">Reading ease ↑</th><th class="n">Entities kept</th><th class="n">Numbers kept</th><th class="n">Own list kept</th><th class="n">Time / trial</th></tr></thead>
+        <tbody>
+          <tr><td>Qwen 3.8</td><td class="n">15</td><td class="n better">11.0</td><td class="n better">54.2</td><td class="n better">91%</td><td class="n better">58%</td><td class="n">94%</td><td class="n better">4.2 s</td></tr>
+          <tr><td>GPT-OSS</td><td class="n">10</td><td class="n">12.6</td><td class="n">49.7</td><td class="n">82%</td><td class="n">50%</td><td class="n">93%</td><td class="n">5.7 s</td></tr>
+          <tr><td>Gemini 2.5 Flash</td><td class="n">4</td><td class="n">12.1</td><td class="n">48.8</td><td class="n">83%</td><td class="n">56%</td><td class="n">93%</td><td class="n">29 s</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>On the 10 reports where both Qwen and GPT-OSS used an entity list, Qwen was easier to read (grade 10.7 vs 12.6), kept more entities (90% vs 82%) and was faster (3.7 s vs 5.7 s). GPT-OSS tends to mirror the schema: its discharge outputs read as catalogues ("The patient received the following medicines: …"), and it leaked schema labels into the text ("(MILD)", "Contrast: not mentioned", "The warning signs that were noted were cardiorespiratory arrest…"), in one case copying the whole block. The Gemini numbers come from 4 outputs on 2 reports and should not be read as a ranking.</p>
+
+    <h2 id="quality"><span class="num">07</span>Clinical quality review</h2>
+    <p>Every usable output was read against its source. This is an automated read-through by Claude, not a clinician's judgement; the clinician review pack is meant to confirm or correct it.</p>
+
+    <h3>What went well</h3>
+    <ul>
+      <li><strong>Grading and margins were right.</strong> Every pathology output gave the correct Gleason score, ISUP group and R0/R1 status. Qwen's PATH-05 explanation of the R1 margin, with its 19 mm extent, is close to what a clinician would say.</li>
+      <li><strong>Death was handled correctly.</strong> All usable DS-04 outputs used third person and past tense, factually and respectfully.</li>
+      <li><strong>Normal findings stayed normal.</strong> RAD-01 was explained structure by structure in every version, with the one physiological variant called harmless.</li>
+      <li><strong>Medications and plans were preserved.</strong> Drug names came with a plain purpose, and schedules such as vancomycin 0.5 g after each dialysis until 01/09/2021 were kept.</li>
+      <li><strong>NER-guided outputs were better organised</strong> (diagnosis, course, procedures with dates, medications, follow-up), and consistently spoke to the patient or family as instructed.</li>
+    </ul>
+
+    <h3>What went wrong</h3>
+    <div class="errgrid">
+      <div class="err">
+        <h4>Inferences stated as facts (NER-guided) <span class="cnt">9 of 14 Qwen NER outputs; also GPT-OSS</span></h4>
+        <p>The extraction prompt asks for normal ranges "if inferable from medical knowledge", a warning-sign list and severity labels; stage 2 must mention every item.</p>
+        <blockquote>"Please return to the hospital immediately if… his ostomy output changes significantly." (DS-01; not in the source)</blockquote>
+        <blockquote>"His kidneys were critically affected, indicated by abnormal creatinine levels, which are normally around 0.6 to 1.2 mg/dL." (DS-01; no creatinine value exists)</blockquote>
+        <p>Also: warning-sign lists on DS-02 and DS-03 (Qwen) and DS-03 (GPT-OSS), "Your son" (DS-02), intubation and CPR given invented dates (DS-04, both models), "moderate" otitis and "confirms acute (new)" abscesses (severity fields restated as findings), "more urgently" added to a routine recommendation (RAD-02).</p>
+      </div>
+      <div class="err">
+        <h4>Reassurance and speculation (zero-shot) <span class="cnt">6 of 14 Qwen zero-shot outputs</span></h4>
+        <p>Without the list, Qwen smoothed rather than enumerated. It added comfort the report does not give and guessed at next steps.</p>
+        <blockquote>"This is a chronic finding… not a new emergency… No new or urgent problems were found." (RAD-05; the report makes no comparison)</blockquote>
+        <p>Also: "not new or dangerous" (RAD-04), "likely involving strong antibiotics" (RAD-03), malignancy work-up softened to "conditions that might affect the bone marrow" (RAD-02), and "has not spread to lymph nodes" on PATH-03, whose report gives no lymph-node result.</p>
+      </div>
+      <div class="err">
+        <h4>Events moved in time <span class="cnt">3 outputs</span></h4>
+        <p>The discharge schema has a "symptoms at admission" slot. Qwen filled it with the final half-hour before death ("Upon admission, the patient showed… bradycardia, QRS widening, and worsening shock", DS-04), and GPT-OSS wrote "When the patient was admitted, the main symptoms were heart failure and an abscess". Qwen NER also had a pleurostomy "closed on the same day" (DS-03), which the source does not say.</p>
+      </div>
+      <div class="err">
+        <h4>Misread clinical shorthand <span class="cnt">both strategies</span></h4>
+        <p>"E. coli multi S" (multi-sensitive) became "grown in multiple places" or "resistant to many antibiotics"; "heart failure profile C" became "a check-up of the heart" in two outputs (zero-shot Qwen got it right); "meropenem vancomycin replacement of KCl 6%" became "the antibiotics were replaced with KCl" (GPT-OSS, twice); muciloid (psyllium fibre) was called a stomach-lining protector; "01/22" (January 2022) was read as a day of the month; "the body was released" became "released to the family".</p>
+      </div>
+      <div class="err">
+        <h4>Lay-anatomy slips <span class="cnt">about 6 outputs</span></h4>
+        <p>Several pathology outputs called the prostate apex the "top edge" and the base the "bottom edge", which is the reverse. GPT-OSS called a 5% tertiary pattern 3 "the most aggressive pattern" (PATH-04) and said the tumour extended "19 mm into the margin" (it runs along it). Lay explanations are unchecked model knowledge.</p>
+      </div>
+      <div class="err">
+        <h4>Schema gaps become omissions <span class="cnt">pathology</span></h4>
+        <p>The pathology schema has no TNM or lymph-node field, so "pN0 (0/12): none of the 12 lymph nodes had cancer", arguably the most reassuring line for a prostate cancer patient, was dropped by most NER-guided outputs, while zero-shot Qwen stated it every time.</p>
+      </div>
+    </div>
+
+    <h2 id="pipeline"><span class="num">08</span>Pipeline issues found</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Issue</th><th>Effect</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Groq calls capped at 2,048 tokens; on empty content the provider returned the model's <code>reasoning</code> field</td><td>11 GPT-OSS reasoning traces stored as simplifications</td><td><span class="status fixed">Fixed and re-run</span> full budget for GPT-OSS, reasoning never returned; 10 of 11 now valid</td></tr>
+          <tr><td>Groq free tier caps Qwen at 1,000 output tokens per minute and at times rejects any request budgeting more</td><td>Zero-shot runs rejected as "request too large"</td><td><span class="status fixed">Handled</span> Qwen stays at 2,048 and retries at 1,000; answers cut off at the limit become errors, not text</td></tr>
+          <tr><td>Gemini <code>finishReason</code> ignored; thinking tokens share the output budget</td><td>7 truncated outputs saved as success; likely cause of Gemini parse failures</td><td><span class="status partial">Detection fixed</span> needs quota to re-run</td></tr>
+          <tr><td>Router silently substituted gemini-2.5-flash for Gemini 3.x</td><td>Wrong model labels</td><td><span class="status fixed">Fixed</span> <code>--strict-models</code>; actual model saved as <code>model_used</code></td></tr>
+          <tr><td>Extraction prompt asks to infer normal ranges and warning signs; stage 2 must retain all</td><td>Main source of invented content in NER-guided outputs</td><td><span class="status open">Open</span> design change</td></tr>
+          <tr><td>Pathology schema lacks TNM / lymph nodes; discharge schema lacks a timeline</td><td>Node status dropped; events moved to "admission"</td><td><span class="status open">Open</span></td></tr>
+          <tr><td>One-shot extraction example is built but never sent</td><td>Extraction ran zero-shot. The example is 91% the DS-01 test report and itself invents warning signs, so enabling it as-is would leak test data and teach fabrication</td><td><span class="status open">Open</span> replace before enabling</td></tr>
+          <tr><td>Raw extraction output not saved</td><td>Parse failures could not be diagnosed</td><td><span class="status fixed">Fixed</span> <code>ner_raw_text</code>; <code>--reuse-ner</code> re-runs stage 2 without repeating stage 1</td></tr>
+          <tr><td>ROUGE, BERTScore, SBERT libraries missing; code fell back silently to word-overlap proxies</td><td>ROUGE-2 always 0; "BERTScore" was a bag-of-words cosine</td><td><span class="status fixed">Fixed</span> installed, re-scored, fallback now warns</td></tr>
+          <tr><td>SARI uses the source as reference; jargon metric counts explained terms</td><td>Metrics reward copying and penalise the prompt's own rule</td><td><span class="status open">Open</span> needs references or new metrics</td></tr>
+          <tr><td>Filtered runs overwrote <code>generations.json</code>; a locked CSV crashed the run</td><td>Lost zero-shot records; aborted runs</td><td><span class="status fixed">Fixed</span> runs merge; locked CSV is skipped with a warning</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="next"><span class="num">09</span>Recommendations</h2>
+    <ol>
+      <li><strong>Ground the extraction in the source.</strong> Drop "infer normal ranges" and the warning-sign list, or put them in a separate "general information" block that stage 2 may use but must not present as the patient's own findings. Keep severity labels out of the retention block. This targets the main cost of NER guidance while keeping its completeness gain.</li>
+      <li><strong>Fix the schemas:</strong> TNM and lymph nodes for pathology; an event timeline (event plus date) for discharge summaries.</li>
+      <li><strong>Resolve the readability conflict.</strong> Allow dropping a term when a common word exists, ask for short sentences, measure readability with bracketed glosses excluded, and retry when the grade is above target.</li>
+      <li><strong>Use the clinician review.</strong> The review pack pairs Qwen's NER-guided and zero-shot versions for every report, blinded, so the doctor's ratings give a direct human answer to the NER question.</li>
+      <li><strong>Check faithfulness automatically.</strong> A sentence-level "is this supported by the source?" check would catch invented warning signs and reassurance at scale.</li>
+      <li><strong>Decide on Gemini.</strong> Either enable billing for Gemini 3.x or drop those slots from the study.</li>
+    </ol>
+
+    <h2 id="limits"><span class="num">10</span>Limitations</h2>
+    <ul>
+      <li>Small samples: one run per condition, 14 paired reports for the main comparison, fewer for the other models. Run-to-run variance (visible on DS-01, where two identical Gemini runs differed by 44 points on numbers kept) is not measured.</li>
+      <li>The quality review is an AI read-through, not a clinical assessment.</li>
+      <li>Entity and number matching is automatic and under-counts paraphrases; the reference entity list is itself model-extracted, which favours outputs guided by similar lists.</li>
+      <li>Source reports are translations with idiosyncratic wording, which affects both models and readability scores.</li>
+    </ul>
+
+    <h2 id="appendix"><span class="num">11</span>Appendix: paired notes by report (Qwen)</h2>
+    <details>
+      <summary>14 paired reports plus DS-05 (click to expand)</summary>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Report</th><th>NER-guided</th><th>Zero-shot</th></tr></thead>
+          <tbody>
+            <tr><td>DS-01</td><td>96% entities. Invented creatinine range, 4 warning signs and an antibiotic instruction; muciloid purpose wrong.</td><td>91% entities, all numbers. Faithful; third person; muciloid purpose wrong.</td></tr>
+            <tr><td>DS-02</td><td>Well structured, correct dialysis and vancomycin plan. Invented "son" and warning signs; missed appointment omitted.</td><td>Faithful and complete follow-up list; third person.</td></tr>
+            <tr><td>DS-03</td><td>Detailed timeline. Pleurostomy "closed same day" invented; specific warning signs invented; TB regimen history omitted.</td><td>Very complete (4-minute arrest, 2-month prescription, RI); third person.</td></tr>
+            <tr><td>DS-04</td><td>Third person. Final events placed "upon admission"; invented 12/16 date.</td><td>Third person, chronological; "profile C" explained correctly; "multi S" read as resistant.</td></tr>
+            <tr><td>DS-05</td><td>Usable after re-run (709 words).</td><td>No output: exceeded the free-tier output limit.</td></tr>
+            <tr><td>PATH-01</td><td>Accurate; apex/base inverted; lymph nodes omitted.</td><td>Accurate; pN0 and pT2c included; "not spread to distant parts" overstates.</td></tr>
+            <tr><td>PATH-02</td><td>IHC well explained; "invasive malignant phenotype" added; nodes omitted.</td><td>Accurate, includes pN0/L0/V0 and pT2c.</td></tr>
+            <tr><td>PATH-03</td><td>Tertiary grade 5 and right-sided extension kept; stage omitted.</td><td>Tertiary grade 5 kept; states "not spread to lymph nodes", which the report does not give.</td></tr>
+            <tr><td>PATH-04</td><td>Gleason 8, frozen section, 0/19 nodes; pT2b imprecise; apex inverted.</td><td>Accurate incl. pN0 and Pn0; tertiary grade and frozen section omitted.</td></tr>
+            <tr><td>PATH-05</td><td>Best pathology output: R1 with 19 mm, pT3b, 0/9 nodes, IHC.</td><td>Accurate R1, pT3b, pN0; apex inverted.</td></tr>
+            <tr><td>RAD-01</td><td>Accurate; "without contrast" and "age-related" added.</td><td>Accurate, no additions.</td></tr>
+            <tr><td>RAD-02</td><td>Bell's palsy and CT advice clear; "more urgently" and "mild swelling" added.</td><td>Clear; "mild swelling" added; malignancy work-up softened; periosteal reaction omitted.</td></tr>
+            <tr><td>RAD-03</td><td>Complete with all sizes and ventriculitis; "confirms acute" and "indeterminate" labels added.</td><td>Ventriculitis kept; sizes rounded to "a small grape"; treatment speculation.</td></tr>
+            <tr><td>RAD-04</td><td>Complete; "moderate" and "mild" severity invented.</td><td>Accurate; adds "not new or dangerous".</td></tr>
+            <tr><td>RAD-05</td><td>Complete incl. "cannot be excluded"; precentral gyrus mislocated.</td><td>Precentral gyrus correct; adds "no new or urgent problems"; uncertainty statement omitted.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </article>
+</div>

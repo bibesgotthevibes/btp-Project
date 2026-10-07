@@ -1,0 +1,131 @@
+{
+  "trial_id": "simplification_pathology_PATH-01_gemini_31pro_ner-guided",
+  "task": "simplification",
+  "datatype": "pathology",
+  "sample_id": "PATH-01",
+  "sample_title": "Pathology Report (ID1_1)",
+  "model": "gemini/3.1pro",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "gemini",
+  "prompt_tokens": 3267,
+  "completion_tokens": 1181,
+  "total_tokens": 8550,
+  "latency_seconds": 26.918,
+  "system_prompt": "You are a medical pathology simplification assistant. Convert the following surgical pathology diagnostic report into simple, plain English that a patient and their family can understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nSpecimen: Prostate; Radical prostatectomy; weight 50.0g; dimensions 5.1 x 4.3 x 3.2 cm cm\n  Associated structure: bilateral dorsally attached seminal vesicles\n  Associated structure: ductus deferentes\nHistologic diagnosis: Acinar adenocarcinoma (bilateral)\n  ICD-O-3: 8140/3\nGleason Score: 4 + 3 = 7 (7b) | ISUP Grade Group: 3 | High-grade pattern: 60%\nInvasion status: Perineural invasion: present; Lymphovascular invasion: absent; Extracapsular extension: absent; Seminal vesicle invasion: absent\nResection status: R0\n  Margin — apical margin, right: negative\n  Margin — apical margin, left: negative\n  Margin — basal margin, right: negative\n  Margin — basal margin, left: negative\n  Margin — vas deferens, right: negative\n  Margin — vas deferens, left: negative\nAdditional finding: Residual prostate with adenomyomatosis\nAdditional finding: Additional examinations for verification will be carried out\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain what tissue or organ was examined (e.g. prostate specimen removed during surgery).\n2. Keep essential medical terms but immediately explain each in parentheses on first use, e.g. 'adenocarcinoma (a cancer that starts in the gland cells of an organ)'.\n3. Explain the cancer type, whether it is localized or spreading, and the grade in plain words:\n   - Explain Gleason score simply: e.g. 'Gleason score 7 (a grading system from 6 to 10 that shows how abnormal the cells look; 7 means moderately aggressive cells)'.\n   - Explain surgical margins simply: e.g. 'resection margins (the outer cut edge of the tissue removed by the surgeon; clear/R0 margins mean no cancer cells were touching the edge)'.\n   - Explain IHC stains simply: e.g. 'immunohistochemistry (special chemical dye tests that identify specific proteins in cancer cells)'.\n4. Preserve all measurements (weights, dimensions in cm or mm, percentages) accurately. Never fabricate or omit numbers.\n5. Write as continuous plain prose paragraphs without bullet points or headers.\n6. Maintain a calm, objective, and supportive tone. Do not provide speculative prognoses or medical advice beyond what is written in the report.\n7. Output only the simplified text, nothing else.\n8. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including specimen weight, dimensions, Gleason score primary + secondary + total + ISUP Grade Group, percentage of high-grade pattern, every margin location and its status, every IHC marker and its result, and invasion findings. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following surgical pathology report into plain English that a patient can understand:\n\nOriginal Medical Report:\nMaterial submitted: Prostate.\nClinical data: Known prostate carcinoma.\n\n\nPathological-anatomical report:\n\nMacroscopic:\nA prostatectomy specimen weighing 50 g and measuring 5.1 x 4.3 x 3.2 cm with bds. dorsally attached seminal vesicles and ductus deferentes. Seminal vesicle on the right measuring up to 3.5 cm, on the left up to 2.5 cm. Ductus deferens on the right up to 6 cm, ductus deferens on the left up to 5.5 cm.  Color marking of the prostate ventrally blue and dorsally black.\n1st apical margin, right in (A, B), left in (C, D). (4 Bl, kR).\n2. base of vesicle, right (A, B), left (C, D) (4 Bl, kR).\n3. sedimentation margins of vas deferens, right (A), left (B). (2 Bl, kR).\n4. lamellation of the prostate. The cut surface, grayish-beige, firm-elastic, fibrous, partially cystic. Embedding in toto, right half of prostate from apical to basal in (A - U ), left half from apical to basal in (V-Z19) ( 45 Bl, kR).\n5. embedding of the seminal vesicles: Transition of the prostate into the right seminal vesicle in (A+B), seminal vesicle right lamellar in (C-F).  Transition of the prostate into the left seminal vesicle in (G+H), seminal vesicle lamellated in (I-L) (12 Bl, kR).\n\nMicroscopically:\n1. fibromuscular tissue with localized prostate glands. No inflammatory infiltrates. In the right-sided area a microfocal area of abnormally positioned glands with partly prominent nucleoli. Basal cell layer not recognizable.\n2. fibromuscular tissue with localized prostate glands (more on the left than on the right). No cytomorphologic atypia.\n3. wall parts of the ductus deferentes with locotypical structure. No inflammation or atypia.\n\n - b.w. -\n\n\n4. infiltrates of the tumor described above are visible on both sides of the prostate (more on the right than on the left). In addition to a single-gland structure, confluent growth patterns are also visible. There is an ingrowth into perineural sheaths. The ink-marked margins of the specimen are not reached. No overgrowth of the prostate tissue or infiltration into the seminal vesicle is visible. Residual prostate with an implied nodular structure. No inflammatory infiltrates.\n5. seminal vesicles on both sides with locotypical structure. No inflammation or atypia.\n\nTumor blocks for extra examinations: 4A, 4C, 4Z2.\n\nAssessment:\n1st-5th prostatectomy specimen with bilateral infiltrates of acinar adenocarcinoma, perineural sheath infiltration. Tumor-free apical and basal sedimentation lines. Tumor-free seminal vesicles on both sides. Tumor-free ductus deferens deposits on both sides. Residual prostate with adenomyomatosis.\n\nTNM classification (Prostate 2017, 8th edition): pT2c, pN0 (0/12 taking into account parallel submission), L0, V0, Pn1, R0;\n\nGleason score: 4 + 3 = 7b (60%4 proportion, 40%3 proportion).\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 X\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. X\n8020/3 Undifferentiated carcinoma n.a.\n\nWe will carry out additional examinations for verification and report back.\n\nOutput:\n",
+  "source_text": "Material submitted: Prostate.\nClinical data: Known prostate carcinoma.\n\n\nPathological-anatomical report:\n\nMacroscopic:\nA prostatectomy specimen weighing 50 g and measuring 5.1 x 4.3 x 3.2 cm with bds. dorsally attached seminal vesicles and ductus deferentes. Seminal vesicle on the right measuring up to 3.5 cm, on the left up to 2.5 cm. Ductus deferens on the right up to 6 cm, ductus deferens on the left up to 5.5 cm.  Color marking of the prostate ventrally blue and dorsally black.\n1st apical margin, right in (A, B), left in (C, D). (4 Bl, kR).\n2. base of vesicle, right (A, B), left (C, D) (4 Bl, kR).\n3. sedimentation margins of vas deferens, right (A), left (B). (2 Bl, kR).\n4. lamellation of the prostate. The cut surface, grayish-beige, firm-elastic, fibrous, partially cystic. Embedding in toto, right half of prostate from apical to basal in (A - U ), left half from apical to basal in (V-Z19) ( 45 Bl, kR).\n5. embedding of the seminal vesicles: Transition of the prostate into the right seminal vesicle in (A+B), seminal vesicle right lamellar in (C-F).  Transition of the prostate into the left seminal vesicle in (G+H), seminal vesicle lamellated in (I-L) (12 Bl, kR).\n\nMicroscopically:\n1. fibromuscular tissue with localized prostate glands. No inflammatory infiltrates. In the right-sided area a microfocal area of abnormally positioned glands with partly prominent nucleoli. Basal cell layer not recognizable.\n2. fibromuscular tissue with localized prostate glands (more on the left than on the right). No cytomorphologic atypia.\n3. wall parts of the ductus deferentes with locotypical structure. No inflammation or atypia.\n\n - b.w. -\n\n\n4. infiltrates of the tumor described above are visible on both sides of the prostate (more on the right than on the left). In addition to a single-gland structure, confluent growth patterns are also visible. There is an ingrowth into perineural sheaths. The ink-marked margins of the specimen are not reached. No overgrowth of the prostate tissue or infiltration into the seminal vesicle is visible. Residual prostate with an implied nodular structure. No inflammatory infiltrates.\n5. seminal vesicles on both sides with locotypical structure. No inflammation or atypia.\n\nTumor blocks for extra examinations: 4A, 4C, 4Z2.\n\nAssessment:\n1st-5th prostatectomy specimen with bilateral infiltrates of acinar adenocarcinoma, perineural sheath infiltration. Tumor-free apical and basal sedimentation lines. Tumor-free seminal vesicles on both sides. Tumor-free ductus deferens deposits on both sides. Residual prostate with adenomyomatosis.\n\nTNM classification (Prostate 2017, 8th edition): pT2c, pN0 (0/12 taking into account parallel submission), L0, V0, Pn1, R0;\n\nGleason score: 4 + 3 = 7b (60%4 proportion, 40%3 proportion).\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 X\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. X\n8020/3 Undifferentiated carcinoma n.a.\n\nWe will carry out additional examinations for verification and report back.",
+  "output_text": "Your doctor removed your prostate gland (a small gland in men that helps make semen) during a surgery called a radical prostatectomy (which means the entire prostate gland was removed). The prostate weighed 50.0 grams and measured 5.1 by 4.3 by 3.2 centimeters. Also removed were the seminal vesicles (two small glands behind the prostate that help produce fluid for semen) which were attached to the back of the prostate on both sides, and the ductus deferentes (also called vas deferens, tubes that carry sperm from the testicles) were also removed.\n\nThe main diagnosis from looking at the tissue under the microscope is acinar adenocarcinoma (a type of cancer that starts in the gland cells) found on both sides of your prostate. This specific type of cancer is identified by the code 8140/3.\n\nThe cancer was graded using a system called the Gleason Score, which looks at how abnormal the cancer cells appear under a microscope. Your Gleason Score is 4 + 3 = 7 (also known as 7b). A score of 7 means the cancer cells are moderately aggressive. This score places your cancer in ISUP Grade Group 3. About 60% of the cancer showed the higher-grade pattern (Gleason pattern 4).\n\nWe also found perineural invasion (which means cancer cells were seen growing along the nerves within the prostate). However, there was no lymphovascular invasion (meaning cancer cells were not seen growing into small blood vessels or lymph vessels). There was no extracapsular extension (meaning the cancer did not grow outside the prostate capsule, which is the outer covering of the prostate). And there was no seminal vesicle invasion (meaning the cancer did not spread into the seminal vesicles).\n\nThe surgery achieved an R0 resection status, which means the surgeon was able to remove all visible cancer, and the edges of the removed tissue (called margins) were clear of cancer cells. Specifically, the apical margins (the top edges of the prostate where it was cut), both on the right and left sides, were negative for cancer. The basal margins (the bottom edges of the prostate), both on the right and left sides, were also negative for cancer. And the margins of the vas deferens (the tubes carrying sperm), both on the right and left sides, were also negative for cancer. This means no cancer cells were found at the very edges of the tissue that was removed, which is a good sign.\n\nIn the remaining prostate tissue, we also found something called adenomyomatosis (a non-cancerous condition where there is an overgrowth of glands and muscle tissue). Please note that additional examinations will be carried out to verify these findings, and we will report back with any updates.",
+  "extra": {
+    "fallback_used": true,
+    "requested_model": "gemini-3.1-pro-preview"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "specimen_info": {
+      "organ": "Prostate",
+      "procedure_type": "Radical prostatectomy",
+      "weight_grams": 50.0,
+      "dimensions_cm": "5.1 x 4.3 x 3.2 cm",
+      "associated_structures": [
+        "bilateral dorsally attached seminal vesicles",
+        "ductus deferentes"
+      ]
+    },
+    "histologic_diagnosis": {
+      "tumor_type": "Acinar adenocarcinoma",
+      "tumor_type_lay": null,
+      "histologic_subtype": "acinar",
+      "distribution": "bilateral",
+      "icd_o3_code": "8140/3"
+    },
+    "grading": {
+      "gleason_score_primary": 4,
+      "gleason_score_secondary": 3,
+      "gleason_total": 7,
+      "gleason_variant": "7b",
+      "isup_grade_group": 3,
+      "percent_high_grade_pattern": "60%"
+    },
+    "invasion_status": {
+      "perineural_invasion": "present",
+      "lymphovascular_invasion": "absent",
+      "extracapsular_extension": "absent",
+      "seminal_vesicle_invasion": "absent"
+    },
+    "margin_status": {
+      "resection_status": "R0",
+      "margin_details": [
+        {
+          "location": "apical margin, right",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "apical margin, left",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "basal margin, right",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "basal margin, left",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "vas deferens, right",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "vas deferens, left",
+          "status": "negative",
+          "extent_mm": null
+        }
+      ]
+    },
+    "ihc_markers": [],
+    "additional_findings": [
+      "Residual prostate with adenomyomatosis",
+      "Additional examinations for verification will be carried out"
+    ]
+  },
+  "ner_extraction_latency_seconds": 10.828,
+  "ner_extraction_tokens": 3886,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 58.42,
+    "flesch_kincaid_grade_level": 10.45,
+    "smog_index": 12.2,
+    "gunning_fog": 13.29,
+    "coleman_liau": 10.66,
+    "num_words": 451,
+    "num_sentences": 21,
+    "num_syllables": 675,
+    "average_word_length": 4.74,
+    "average_word_frequency": 4.79,
+    "ttr": 0.4146,
+    "mtld": 54.74,
+    "proportion_difficult_words": 0.6142,
+    "rouge1_f1": 35.99,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 35.99,
+    "bertscore_precision": 15.52,
+    "bertscore_recall": 14.2,
+    "bertscore_f1": 62.44,
+    "sari": 6.5,
+    "sbert_cosine_similarity": 63.7,
+    "parenthetical_explanation_count": 12,
+    "parenthetical_explanation_rate": 2.66,
+    "jargon_source_count": 12,
+    "jargon_generated_count": 7,
+    "jargon_reduction_pct": 41.67,
+    "compression_ratio_chars": 0.863,
+    "compression_ratio_words": 0.915
+  }
+}

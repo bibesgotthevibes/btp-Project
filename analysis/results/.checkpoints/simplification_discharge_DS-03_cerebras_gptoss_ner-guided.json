@@ -1,0 +1,266 @@
+{
+  "trial_id": "simplification_discharge_DS-03_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-03",
+  "sample_title": "Discharge Summary (Row 2)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 4262,
+  "completion_tokens": 5174,
+  "total_tokens": 9436,
+  "latency_seconds": 8.928,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPatient: male | Age: None\nPrimary Diagnosis: Pulmonary tuberculosis (sensitive to isoniazid and rifampin)\n  Secondary: Spontaneous pneumothorax (air in the chest cavity)\n  Secondary: Lung collapse\n  Secondary: Pleural effusion (fluid in the chest cavity)\n  Secondary: Right pneumonectomy (removal of right lung)\n  Secondary: Surgical wound infection\n  Secondary: Multidrug‑resistant Acinetobacter baumannii infection\n  Secondary: Hypovolemic shock (low blood volume)\n  Secondary: Cardiopulmonary arrest (heart stopped)\n  Secondary: Bleeding in tuberculous cavities\nSymptoms at admission: persistent dry cough for 4 weeks; night sweats; fever (not measured); dyspnea (shortness of breath); sudden right chest pain radiating to right neck; progressive worsening of breathing; weight loss of about 8 kg\nAnomalies/Findings:\n  [NORMAL] Heart rate = 85 beats per minute (normal: 60-100 bpm)\n  [NORMAL] Oxygen saturation = 98% (normal: 95-100%)\n  [BORDERLINE] Procalcitonin = 0.09 ng/mL (normal: <0.05 ng/mL)\n  [ABNORMAL] Acid‑fast bacilli count = 10 to 99 per 100 fields (normal: 0 per 100 fields)\n  [CRITICAL] Hypovolemic shock\n  [CRITICAL] Cardiopulmonary arrest\n  [ABNORMAL] Spontaneous pneumothorax\n  [ABNORMAL] Lung collapse\n  [ABNORMAL] Pleural effusion\n  [ABNORMAL] Surgical wound infection\n  [ABNORMAL] Multidrug‑resistant Acinetobacter baumannii infection\n  [ABNORMAL] Bleeding in tuberculous cavities = significant oozing\nProcedures performed:\n  • Right chest drainage on 02/03/2020\n  • Pleurostomy on 03/03/2020\n  • Pleurostomy closure\n  • Heimlich valve insertion on 03/10/2020\n  • Removal of Heimlich valve on 03/27/2020\n  • New pleurotomy on 03/31/2020\n  • Exploratory thoracotomy on 04/07/2020\n  • Packing of cavity with compresses on 04/07/2020\n  • Right pneumonectomy by lateral thoracotomy on 04/11/2020\n  • Tracheostomy on 04/11/2020\n  • Chest drain removal on 06/06/2020\n  • Tracheostomy removal on 06/06/2020\nMedications:\n  • Vancomycin — kills bacteria that are hard to treat\n  • Meropenem — kills a wide range of bacteria\n  • Amikacin — kills bacteria that are resistant to other drugs\n  • Oral iron replacement — helps make healthy blood cells\nWarning signs to mention:\n  ⚠ Sudden chest pain or worsening breathing\n  ⚠ Fever or chills\n  ⚠ Bleeding or blood in sputum\n  ⚠ Sudden collapse or fainting\n  ⚠ Shortness of breath that gets worse\n  ⚠ Any signs of infection at the surgical wound\nFollow-up appointment: Follow‑up at thoracic surgery team (date not specified)\nFollow-up appointment: Follow‑up at [organization] (date not specified)\nOngoing treatment: Oral iron replacement\nOngoing treatment: Antibiotic therapy stopped after 02/04\nHospital stay duration: 3 months 6 days 7 hours\nOutcome: alive\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\n1sensitive pulmonary tuberculosis. diagnosis 2019, ripe 07/02/2020 ri 07/04 2 pulmonary complications secondary to tuberculosis: spontaneous pneumothorax on the right chest drainage on the right on 03/02/2020 pleurostomy 03/03/2020 closure of pleurostomy lung collapse, pleural drainage, heimlich valve on 10/03 removal of the heimlich valve from the drain, keeping the drain open for ostomy on 27/03 new pleurotomy 31/03 exploratory thoracotomy on an emergency basis 07/04 due to bleeding in tuberculous caverns significant oozing bleeding 07/04 packing of the cavity with compresses postoperatively 11/04/2020 right pneumonectomy by lateral thoracotomy tracheostomy, without complications chest drain and Tracheostomy removed on 06/06. 3 surgical wound infections. Multidrug-resistant Acinetobacter baumannii treated with vancomycin meropenem amikacin antibiotic therapy suspended on 02/04 after clinical improvement and procalcitonin of 0.09 4 hypovolemic shock due to surgical wound bleeding pleurostomy requiring urgent surgical approach 07/04 5 cardiopulmonary arrest 10/04 in asystole / 4 min secondary to hypoxia. admission: 03/02/2020, discharge: 09/05/2020, stay: 03 m 06 d 07 h, ward bed, payer: sus. [person] referred with a persistent cough for 4 weeks, dry, without expectoration, associated with night sweats. He also reports that 3 days ago he had a fever, not measured, associated with dyspnea, and also reports 1 day ago, sudden pain in the right hemithorax, radiating to the right cervical region, associated with significant and progressive worsening of dyspnea. He denies bloody expectoration or sputum. He reports being in prison for approximately 3 years, for 6 years, and has been asymptomatic since then. He also reports weight loss of approximately 8 kg, not quantified, 1 month ago. He denies urinary or intestinal changes. regular general condition, pale 1/4, hydrated, acyanotic, anicteric, conscious and oriented cardiac auscultation: normal rhythmic sounds, normal S1 and S2, no murmurs, heart rate 85 beats per minute respiratory auscultation vesicular breath sounds present in the left hemithorax, abolished in the right hemithorax, with asymmetry of expansion, no adventitious sounds, saturation 98%. abdomen: flat, bowel sounds, flaccid, no peritonism. extremities: no edema, no signs of deep vein thrombosis, maintained peripheral perfusion. surgical wound in good condition and dry, presence of suture without dehiscence. sensitivity test for mycobacterium tuberculosis material: sputum collection: 02/03/2020 available: 28/02/2020 released: 28/02/2020 method: dna hybridization geno type mtbdr plus rifampin element. sensitive isoniazid. sensitive mycobacteria bacilloscopy tuberculosis material: sputum collection: 02/03/2020 available: 02/07/2020 released: 02/07/2020 method: ziehlnelsen element result. positive: 10 to 99 baar were found in 100 observed fields. right chest drainage on 02/03/2020 pleurostomy 03/03/2020 pleurostomy closure lung collapse pleural drainage Heimlich valve on 03/10 removal of the Heimlich valve from the drain, keeping the drain open for ostomy on 03/27 new pleurotomy 03/31 emergency exploratory thoracotomy 04/07 due to bleeding in tuberculous cavernosal bleeding significant oozing 04/07 packing of the cavity with compresses postoperatively 04/11/2020 right pneumonectomy by lateral thoracotomy tracheostomy, uneventful chest drain and tracheostomy removed on 06/06. only exams for follow-up appointment. I continue treatment with RI. I provide 2 months of prescriptions. I continue oral iron replacement. We hold a meeting with [person], together with the thoracic surgery team, and we clarify any doubts regarding the condition and treatment. [person] understands the guidelines and appreciates the care of the team. I request exams for a follow-up appointment. We schedule a follow-up appointment at [organization] and at the thoracic surgery team. We advise [person] of warning signs and instructed to call with concerns. We provide a report and contact [organization] for assisted treatment. Infectious diseases and thoracic surgery. Good general condition, no complaints.\n\nOutput:\n",
+  "source_text": "1sensitive pulmonary tuberculosis. diagnosis 2019, ripe 07/02/2020 ri 07/04 2 pulmonary complications secondary to tuberculosis: spontaneous pneumothorax on the right chest drainage on the right on 03/02/2020 pleurostomy 03/03/2020 closure of pleurostomy lung collapse, pleural drainage, heimlich valve on 10/03 removal of the heimlich valve from the drain, keeping the drain open for ostomy on 27/03 new pleurotomy 31/03 exploratory thoracotomy on an emergency basis 07/04 due to bleeding in tuberculous caverns significant oozing bleeding 07/04 packing of the cavity with compresses postoperatively 11/04/2020 right pneumonectomy by lateral thoracotomy tracheostomy, without complications chest drain and Tracheostomy removed on 06/06. 3 surgical wound infections. Multidrug-resistant Acinetobacter baumannii treated with vancomycin meropenem amikacin antibiotic therapy suspended on 02/04 after clinical improvement and procalcitonin of 0.09 4 hypovolemic shock due to surgical wound bleeding pleurostomy requiring urgent surgical approach 07/04 5 cardiopulmonary arrest 10/04 in asystole / 4 min secondary to hypoxia. admission: 03/02/2020, discharge: 09/05/2020, stay: 03 m 06 d 07 h, ward bed, payer: sus. [person] referred with a persistent cough for 4 weeks, dry, without expectoration, associated with night sweats. He also reports that 3 days ago he had a fever, not measured, associated with dyspnea, and also reports 1 day ago, sudden pain in the right hemithorax, radiating to the right cervical region, associated with significant and progressive worsening of dyspnea. He denies bloody expectoration or sputum. He reports being in prison for approximately 3 years, for 6 years, and has been asymptomatic since then. He also reports weight loss of approximately 8 kg, not quantified, 1 month ago. He denies urinary or intestinal changes. regular general condition, pale 1/4, hydrated, acyanotic, anicteric, conscious and oriented cardiac auscultation: normal rhythmic sounds, normal S1 and S2, no murmurs, heart rate 85 beats per minute respiratory auscultation vesicular breath sounds present in the left hemithorax, abolished in the right hemithorax, with asymmetry of expansion, no adventitious sounds, saturation 98%. abdomen: flat, bowel sounds, flaccid, no peritonism. extremities: no edema, no signs of deep vein thrombosis, maintained peripheral perfusion. surgical wound in good condition and dry, presence of suture without dehiscence. sensitivity test for mycobacterium tuberculosis material: sputum collection: 02/03/2020 available: 28/02/2020 released: 28/02/2020 method: dna hybridization geno type mtbdr plus rifampin element. sensitive isoniazid. sensitive mycobacteria bacilloscopy tuberculosis material: sputum collection: 02/03/2020 available: 02/07/2020 released: 02/07/2020 method: ziehlnelsen element result. positive: 10 to 99 baar were found in 100 observed fields. right chest drainage on 02/03/2020 pleurostomy 03/03/2020 pleurostomy closure lung collapse pleural drainage Heimlich valve on 03/10 removal of the Heimlich valve from the drain, keeping the drain open for ostomy on 03/27 new pleurotomy 03/31 emergency exploratory thoracotomy 04/07 due to bleeding in tuberculous cavernosal bleeding significant oozing 04/07 packing of the cavity with compresses postoperatively 04/11/2020 right pneumonectomy by lateral thoracotomy tracheostomy, uneventful chest drain and tracheostomy removed on 06/06. only exams for follow-up appointment. I continue treatment with RI. I provide 2 months of prescriptions. I continue oral iron replacement. We hold a meeting with [person], together with the thoracic surgery team, and we clarify any doubts regarding the condition and treatment. [person] understands the guidelines and appreciates the care of the team. I request exams for a follow-up appointment. We schedule a follow-up appointment at [organization] and at the thoracic surgery team. We advise [person] of warning signs and instructed to call with concerns. We provide a report and contact [organization] for assisted treatment. Infectious diseases and thoracic surgery. Good general condition, no complaints.",
+  "output_text": "You have pulmonary tuberculosis (a lung infection caused by TB germs) that is sensitive to isoniazid and rifampin (the medicines that can kill these germs). In addition, you have several other problems caused by the TB: a spontaneous pneumothorax (air that has entered the space around the right lung), lung collapse (the right lung has fallen down), pleural effusion (fluid that has collected in the chest cavity), a right pneumonectomy (surgical removal of the whole right lung), a surgical wound infection (infection where the chest was cut), a multidrug‑resistant Acinetobacter baumannii infection (a very tough bacteria that does not respond to many antibiotics), hypovolemic shock (very low blood volume because of bleeding), cardiopulmonary arrest (your heart stopped for a short time), and bleeding in tuberculous cavities (significant oozing from the infected areas in the lung).\n\nWhen you came to the hospital you had a dry cough that had lasted for four weeks, night sweats, a fever that you did not measure, shortness of breath (dyspnea), a sudden sharp pain in the right side of the chest that spread to the right side of the neck, and the breathing got worse step by step. You also lost about eight kilograms (about 17‑18 pounds) in the last month. You did not cough up blood or any sputum.\n\nYour heart was beating at 85 beats per minute; the normal range is 60‑100, so this was normal. Your oxygen saturation was 98 %; the normal range is 95‑100, also normal. The procalcitonin level was 0.09 ng/mL; the normal is less than 0.05, so this was a little higher than normal (borderline). The acid‑fast bacilli count in your sputum was 10‑99 per 100 fields; normally it should be zero, so this was abnormal and showed TB bacteria present. You also had critical problems of hypovolemic shock and cardiopulmonary arrest, and abnormal findings of spontaneous pneumothorax, lung collapse, pleural effusion, surgical wound infection, multidrug‑resistant Acinetobacter baumannii infection, and bleeding in tuberculous cavities (significant oozing).\n\nSeveral procedures were done to treat these problems. On 02/03/2020 a right chest drainage (a tube placed to remove air or fluid from the chest) was performed. On 03/03/2020 a pleurostomy (a surgical opening made in the chest wall to let air and fluid out) was done, and later the pleurostomy was closed. On 03/10/2020 a Heimlich valve (a one‑way valve that lets air escape from the chest) was inserted, and on 03/27/2020 that valve was removed while keeping the drain open for the pleurostomy. On 03/31/2020 a new pleurotomy (another opening in the chest) was created. Because of heavy bleeding from the TB cavities, an emergency exploratory thoracotomy (opening the chest to look inside) was performed on 04/07/2020, and the bleeding cavity was packed with compresses (gauze pieces) on the same day. On 04/11/2020 a right pneumonectomy by lateral thoracotomy (removal of the whole right lung through a side opening in the chest) was carried out, and at the same time a tracheostomy (a hole made in the windpipe to help breathing) was done. The chest drain and the tracheostomy tube were both taken out on 06/06/2020.\n\nFor the tough bacterial infection you were given vancomycin (a medicine that kills bacteria that are hard to treat), meropenem (a medicine that kills a wide range of bacteria), and amikacin (a medicine that kills bacteria that are resistant to other drugs). You also received oral iron replacement (iron tablets that help your body make healthy blood cells). The antibiotic therapy was stopped after 02/04 because you improved clinically and your procalcitonin level fell to 0.09 ng/mL.\n\nYou were warned to call the hospital immediately if you notice any of the following warning signs: sudden chest pain or worsening breathing, fever or chills, bleeding or blood in the sputum, sudden collapse or fainting, shortness of breath that gets worse, or any signs of infection at the surgical wound (such as redness, swelling, or pus).\n\nYou need to follow up with the thoracic surgery team (date not given) and also with [organization] (date not given). You should continue taking oral iron replacement as prescribed. The antibiotic medicines have already been stopped after 02/04.\n\nYou were admitted on 03/02/2020 and discharged on 09/05/2020, staying in the hospital for three months, six days, and seven hours. You are alive and in good general condition at the time of discharge.",
+  "model_used": "openai/gpt-oss-120b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": "male",
+      "age": null
+    },
+    "diagnoses": {
+      "primary": "Pulmonary tuberculosis (sensitive to isoniazid and rifampin)",
+      "primary_lay_explanation": "lung infection caused by a bacteria that is easy to treat with medicine",
+      "secondary": [
+        "Spontaneous pneumothorax (air in the chest cavity)",
+        "Lung collapse",
+        "Pleural effusion (fluid in the chest cavity)",
+        "Right pneumonectomy (removal of right lung)",
+        "Surgical wound infection",
+        "Multidrug‑resistant Acinetobacter baumannii infection",
+        "Hypovolemic shock (low blood volume)",
+        "Cardiopulmonary arrest (heart stopped)",
+        "Bleeding in tuberculous cavities"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "persistent dry cough for 4 weeks",
+      "night sweats",
+      "fever (not measured)",
+      "dyspnea (shortness of breath)",
+      "sudden right chest pain radiating to right neck",
+      "progressive worsening of breathing",
+      "weight loss of about 8 kg"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Vital Sign",
+        "finding": "Heart rate",
+        "value": "85 beats per minute",
+        "normal_range": "60-100 bpm",
+        "lay_explanation": "normal heart speed",
+        "severity": "normal"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Oxygen saturation",
+        "value": "98%",
+        "normal_range": "95-100%",
+        "lay_explanation": "normal blood oxygen level",
+        "severity": "normal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Procalcitonin",
+        "value": "0.09 ng/mL",
+        "normal_range": "<0.05 ng/mL",
+        "lay_explanation": "marker of infection, slightly high",
+        "severity": "borderline"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Acid‑fast bacilli count",
+        "value": "10 to 99 per 100 fields",
+        "normal_range": "0 per 100 fields",
+        "lay_explanation": "bacteria seen in sputum, abnormal",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Hypovolemic shock",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "low blood volume causing shock",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Cardiopulmonary arrest",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "heart stopped beating",
+        "severity": "critical"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Spontaneous pneumothorax",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "air in chest cavity causing lung collapse",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Lung collapse",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "part of lung not working",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Pleural effusion",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "fluid in chest cavity",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Surgical wound infection",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "infection at the surgical site",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Multidrug‑resistant Acinetobacter baumannii infection",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "hard‑to‑treat bacterial infection",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Bleeding in tuberculous cavities",
+        "value": "significant oozing",
+        "normal_range": null,
+        "lay_explanation": "blood leaking from lung cavities",
+        "severity": "abnormal"
+      }
+    ],
+    "procedures_performed": [
+      {
+        "name": "Right chest drainage",
+        "lay_explanation": "tube inserted to remove air or fluid from chest",
+        "date": "02/03/2020"
+      },
+      {
+        "name": "Pleurostomy",
+        "lay_explanation": "surgical opening of the pleural space",
+        "date": "03/03/2020"
+      },
+      {
+        "name": "Pleurostomy closure",
+        "lay_explanation": "closing the surgical opening",
+        "date": null
+      },
+      {
+        "name": "Heimlich valve insertion",
+        "lay_explanation": "valve to allow air out of chest but not back in",
+        "date": "03/10/2020"
+      },
+      {
+        "name": "Removal of Heimlich valve",
+        "lay_explanation": "taking out the valve",
+        "date": "03/27/2020"
+      },
+      {
+        "name": "New pleurotomy",
+        "lay_explanation": "new surgical opening in pleural space",
+        "date": "03/31/2020"
+      },
+      {
+        "name": "Exploratory thoracotomy",
+        "lay_explanation": "opening chest to look inside",
+        "date": "04/07/2020"
+      },
+      {
+        "name": "Packing of cavity with compresses",
+        "lay_explanation": "using gauze to stop bleeding",
+        "date": "04/07/2020"
+      },
+      {
+        "name": "Right pneumonectomy by lateral thoracotomy",
+        "lay_explanation": "removal of the right lung",
+        "date": "04/11/2020"
+      },
+      {
+        "name": "Tracheostomy",
+        "lay_explanation": "opening in windpipe for breathing",
+        "date": "04/11/2020"
+      },
+      {
+        "name": "Chest drain removal",
+        "lay_explanation": "taking out the chest tube",
+        "date": "06/06/2020"
+      },
+      {
+        "name": "Tracheostomy removal",
+        "lay_explanation": "closing the windpipe opening",
+        "date": "06/06/2020"
+      }
+    ],
+    "medications": [
+      {
+        "name": "Vancomycin",
+        "purpose_lay": "kills bacteria that are hard to treat",
+        "timing_dosage": null
+      },
+      {
+        "name": "Meropenem",
+        "purpose_lay": "kills a wide range of bacteria",
+        "timing_dosage": null
+      },
+      {
+        "name": "Amikacin",
+        "purpose_lay": "kills bacteria that are resistant to other drugs",
+        "timing_dosage": null
+      },
+      {
+        "name": "Oral iron replacement",
+        "purpose_lay": "helps make healthy blood cells",
+        "timing_dosage": null
+      }
+    ],
+    "warning_signs_red_flags": [
+      "Sudden chest pain or worsening breathing",
+      "Fever or chills",
+      "Bleeding or blood in sputum",
+      "Sudden collapse or fainting",
+      "Shortness of breath that gets worse",
+      "Any signs of infection at the surgical wound"
+    ],
+    "follow_up_care": {
+      "appointments": [
+        "Follow‑up at thoracic surgery team (date not specified)",
+        "Follow‑up at [organization] (date not specified)"
+      ],
+      "ongoing_treatments": [
+        "Oral iron replacement",
+        "Antibiotic therapy stopped after 02/04"
+      ],
+      "lifestyle_diet_advice": []
+    },
+    "stay_duration": "3 months 6 days 7 hours",
+    "outcome": "alive"
+  },
+  "ner_model_used": "openai/gpt-oss-20b",
+  "ner_reused": false,
+  "ner_raw_text": "{\n  \"patient_demographics\": {\n    \"gender\": \"male\",\n    \"age\": null\n  },\n  \"diagnoses\": {\n    \"primary\": \"Pulmonary tuberculosis (sensitive to isoniazid and rifampin)\",\n    \"primary_lay_explanation\": \"lung infection caused by a bacteria that is easy to treat with medicine\",\n    \"secondary\": [\n      \"Spontaneous pneumothorax (air in the chest cavity)\",\n      \"Lung collapse\",\n      \"Pleural effusion (fluid in the chest cavity)\",\n      \"Right pneumonectomy (removal of right lung)\",\n      \"Surgical wound infection\",\n      \"Multidrug‑resistant Acinetobacter baumannii infection\",\n      \"Hypovolemic shock (low blood volume)\",\n      \"Cardiopulmonary arrest (heart stopped)\",\n      \"Bleeding in tuberculous cavities\"\n    ],\n    \"icd_codes_mentioned\": []\n  },\n  \"symptoms_at_admission\": [\n    \"persistent dry cough for 4 weeks\",\n    \"night sweats\",\n    \"fever (not measured)\",\n    \"dyspnea (shortness of breath)\",\n    \"sudden right chest pain radiating to right neck\",\n    \"progressive worsening of breathing\",\n    \"weight loss of about 8 kg\"\n  ],\n  \"anomalies_detected\": [\n    {\n      \"type\": \"Vital Sign\",\n      \"finding\": \"Heart rate\",\n      \"value\": \"85 beats per minute\",\n      \"normal_range\": \"60-100 bpm\",\n      \"lay_explanation\": \"normal heart speed\",\n      \"severity\": \"normal\"\n    },\n    {\n      \"type\": \"Vital Sign\",\n      \"finding\": \"Oxygen saturation\",\n      \"value\": \"98%\",\n      \"normal_range\": \"95-100%\",\n      \"lay_explanation\": \"normal blood oxygen level\",\n      \"severity\": \"normal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Procalcitonin\",\n      \"value\": \"0.09 ng/mL\",\n      \"normal_range\": \"<0.05 ng/mL\",\n      \"lay_explanation\": \"marker of infection, slightly high\",\n      \"severity\": \"borderline\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Acid‑fast bacilli count\",\n      \"value\": \"10 to 99 per 100 fields\",\n      \"normal_range\": \"0 per 100 fields\",\n      \"lay_explanation\": \"bacteria seen in sputum, abnormal\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Hypovolemic shock\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"low blood volume causing shock\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Cardiopulmonary arrest\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"heart stopped beating\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Imaging Finding\",\n      \"finding\": \"Spontaneous pneumothorax\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"air in chest cavity causing lung collapse\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Imaging Finding\",\n      \"finding\": \"Lung collapse\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"part of lung not working\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Imaging Finding\",\n      \"finding\": \"Pleural effusion\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"fluid in chest cavity\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Surgical wound infection\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"infection at the surgical site\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Multidrug‑resistant Acinetobacter baumannii infection\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"hard‑to‑treat bacterial infection\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Bleeding in tuberculous cavities\",\n      \"value\": \"significant oozing\",\n      \"normal_range\": null,\n      \"lay_explanation\": \"blood leaking from lung cavities\",\n      \"severity\": \"abnormal\"\n    }\n  ],\n  \"procedures_performed\": [\n    {\n      \"name\": \"Right chest drainage\",\n      \"lay_explanation\": \"tube inserted to remove air or fluid from chest\",\n      \"date\": \"02/03/2020\"\n    },\n    {\n      \"name\": \"Pleurostomy\",\n      \"lay_explanation\": \"surgical opening of the pleural space\",\n      \"date\": \"03/03/2020\"\n    },\n    {\n      \"name\": \"Pleurostomy closure\",\n      \"lay_explanation\": \"closing the surgical opening\",\n      \"date\": null\n    },\n    {\n      \"name\": \"Heimlich valve insertion\",\n      \"lay_explanation\": \"valve to allow air out of chest but not back in\",\n      \"date\": \"03/10/2020\"\n    },\n    {\n      \"name\": \"Removal of Heimlich valve\",\n      \"lay_explanation\": \"taking out the valve\",\n      \"date\": \"03/27/2020\"\n    },\n    {\n      \"name\": \"New pleurotomy\",\n      \"lay_explanation\": \"new surgical opening in pleural space\",\n      \"date\": \"03/31/2020\"\n    },\n    {\n      \"name\": \"Exploratory thoracotomy\",\n      \"lay_explanation\": \"opening chest to look inside\",\n      \"date\": \"04/07/2020\"\n    },\n    {\n      \"name\": \"Packing of cavity with compresses\",\n      \"lay_explanation\": \"using gauze to stop bleeding\",\n      \"date\": \"04/07/2020\"\n    },\n    {\n      \"name\": \"Right pneumonectomy by lateral thoracotomy\",\n      \"lay_explanation\": \"removal of the right lung\",\n      \"date\": \"04/11/2020\"\n    },\n    {\n      \"name\": \"Tracheostomy\",\n      \"lay_explanation\": \"opening in windpipe for breathing\",\n      \"date\": \"04/11/2020\"\n    },\n    {\n      \"name\": \"Chest drain removal\",\n      \"lay_explanation\": \"taking out the chest tube\",\n      \"date\": \"06/06/2020\"\n    },\n    {\n      \"name\": \"Tracheostomy removal\",\n      \"lay_explanation\": \"closing the windpipe opening\",\n      \"date\": \"06/06/2020\"\n    }\n  ],\n  \"medications\": [\n    {\n      \"name\": \"Vancomycin\",\n      \"purpose_lay\": \"kills bacteria that are hard to treat\",\n      \"timing_dosage\": null\n    },\n    {\n      \"name\": \"Meropenem\",\n      \"purpose_lay\": \"kills a wide range of bacteria\",\n      \"timing_dosage\": null\n    },\n    {\n      \"name\": \"Amikacin\",\n      \"purpose_lay\": \"kills bacteria that are resistant to other drugs\",\n      \"timing_dosage\": null\n    },\n    {\n      \"name\": \"Oral iron replacement\",\n      \"purpose_lay\": \"helps make healthy blood cells\",\n      \"timing_dosage\": null\n    }\n  ],\n  \"warning_signs_red_flags\": [\n    \"Sudden chest pain or worsening breathing\",\n    \"Fever or chills\",\n    \"Bleeding or blood in sputum\",\n    \"Sudden collapse or fainting\",\n    \"Shortness of breath that gets worse\",\n    \"Any signs of infection at the surgical wound\"\n  ],\n  \"follow_up_care\": {\n    \"appointments\": [\n      \"Follow‑up at thoracic surgery team (date not specified)\",\n      \"Follow‑up at [organization] (date not specified)\"\n    ],\n    \"ongoing_treatments\": [\n      \"Oral iron replacement\",\n      \"Antibiotic therapy stopped after 02/04\"\n    ],\n    \"lifestyle_diet_advice\": []\n  },\n  \"stay_duration\": \"3 months 6 days 7 hours\",\n  \"outcome\": \"alive\"\n}",
+  "ner_extraction_latency_seconds": 3.491,
+  "ner_extraction_tokens": 4746,
+  "ner_fallback_used": false
+}

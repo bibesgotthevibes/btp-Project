@@ -28,7 +28,11 @@ class ModelRouter:
         gemini_key: Optional[str] = None,
         cerebras_key: Optional[str] = None,
         groq_key: Optional[str] = None,
+        allow_substitute: bool = True,
     ):
+        # When False, never swap in a different model (e.g. gemini-2.5-flash for
+        # gemini-3.8-flash) — return the error so results stay correctly labelled.
+        self.allow_substitute = allow_substitute
         self.gemini_provider = GeminiProvider(gemini_key or GEMINI_API_KEY)
         self.cerebras_provider = CerebrasProvider(cerebras_key or CEREBRAS_API_KEY)
         self.groq_provider = GroqProvider(groq_key or GROQ_API_KEY)
@@ -66,7 +70,7 @@ class ModelRouter:
                 max_tokens=max_tokens,
             )
             # If model encountered error (503 high demand, 429 quota, 404) and fallback models exist, try fallback
-            if res.status == "error" and cfg.get("fallback_models"):
+            if res.status == "error" and self.allow_substitute and cfg.get("fallback_models"):
                 for fb_model in cfg.get("fallback_models", []):
                     fb_res = self.gemini_provider.generate(
                         model_id=fb_model,
@@ -99,6 +103,7 @@ class ModelRouter:
                 if self.groq_provider.api_key:
                     groq_model = cfg.get("groq_model_id") or model_id
                     groq_candidates = [groq_model] + [m for m in cfg.get("fallback_models", []) if m != groq_model]
+                    groq_errors = []
                     for alt_model in groq_candidates:
                         groq_res = self.groq_provider.generate(
                             model_id=alt_model,
@@ -112,6 +117,9 @@ class ModelRouter:
                             groq_res.extra["fallback_provider"] = "groq"
                             groq_res.extra["requested_model"] = model_id
                             return groq_res
+                        groq_errors.append(f"{alt_model}: {(groq_res.error or 'empty response')[:300]}")
+                    # Surface the Groq failures too, not just the Cerebras one
+                    res.error = f"{res.error} | groq: " + " || ".join(groq_errors)
 
                 return res
 

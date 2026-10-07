@@ -1,0 +1,127 @@
+{
+  "trial_id": "simplification_pathology_PATH-02_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "pathology",
+  "sample_id": "PATH-02",
+  "sample_title": "Pathology Report (ID1_2)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 2224,
+  "completion_tokens": 1141,
+  "total_tokens": 3365,
+  "latency_seconds": 2.811,
+  "system_prompt": "You are a medical pathology simplification assistant. Convert the following surgical pathology diagnostic report into simple, plain English that a patient and their family can understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nSpecimen: Prostate; Prostatectomy\n  Associated structure: bilateral seminal vesicles\n  Associated structure: bilateral ductus deferens\nHistologic diagnosis: Acinar adenocarcinoma (bilateral)\n  ICD-O-3: 8140/3\nGleason Score: 4 + 3 = 7 (7b) | ISUP Grade Group: 3 | High-grade pattern: 60%\nInvasion status: Perineural invasion: present; Lymphovascular invasion: absent; Extracapsular extension: absent; Seminal vesicle invasion: absent\nResection status: R0\n  Margin — apical: negative\n  Margin — basal: negative\nIHC markers:\n  • AMACR: strongly positive — confirms invasive malignant phenotype\n  • MA903: loss of basal cells — confirms invasive malignant phenotype\n  • p63: loss of basal cells — confirms invasive malignant phenotype\nAdditional finding: Residual prostate with adenomyomatosis\nAdditional finding: Tumor-free ductus deferens deposits on both sides\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain what tissue or organ was examined (e.g. prostate specimen removed during surgery).\n2. Keep essential medical terms but immediately explain each in parentheses on first use, e.g. 'adenocarcinoma (a cancer that starts in the gland cells of an organ)'.\n3. Explain the cancer type, whether it is localized or spreading, and the grade in plain words:\n   - Explain Gleason score simply: e.g. 'Gleason score 7 (a grading system from 6 to 10 that shows how abnormal the cells look; 7 means moderately aggressive cells)'.\n   - Explain surgical margins simply: e.g. 'resection margins (the outer cut edge of the tissue removed by the surgeon; clear/R0 margins mean no cancer cells were touching the edge)'.\n   - Explain IHC stains simply: e.g. 'immunohistochemistry (special chemical dye tests that identify specific proteins in cancer cells)'.\n4. Preserve all measurements (weights, dimensions in cm or mm, percentages) accurately. Never fabricate or omit numbers.\n5. Write as continuous plain prose paragraphs without bullet points or headers.\n6. Maintain a calm, objective, and supportive tone. Do not provide speculative prognoses or medical advice beyond what is written in the report.\n7. Output only the simplified text, nothing else.\n8. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including specimen weight, dimensions, Gleason score primary + secondary + total + ISUP Grade Group, percentage of high-grade pattern, every margin location and its status, every IHC marker and its result, and invasion findings. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following surgical pathology report into plain English that a patient can understand:\n\nOriginal Medical Report:\n1st supplementary report dated March 14, 2020:\n\nPathological-anatomical report:\n\nSupplementary immunohistochemical findings (3x IHC):\nAd 4: The tumor strongly expresses AMACR with simultaneous loss of basal cells, detected by MA903 and p63.\n\nAssessment:\nAd 1 - 5. Prostatectomy specimen with bilateral infiltrates of acinar adenocarcinoma, perineural sheath infiltration. Tumor-free apical and basal sedimentation lines. Tumor-free seminal vesicles on both sides. Tumor-free ductus deferens deposits on both sides. Residual prostate with adenomyomatosis.\n\nTNM classification (Prostate 2017, 8th edition): pT2c, pN0 (0/12 taking into account parallel submission), L0, V0, Pn1, R0; Gleason score: 4 + 3 = 7b (60 % proportion of 4s, 40 % proportion of 3s).\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 X\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. X\n8020/3 Undifferentiated carcinoma n.d.\n\nOutput:\n",
+  "source_text": "1st supplementary report dated March 14, 2020:\n\nPathological-anatomical report:\n\nSupplementary immunohistochemical findings (3x IHC):\nAd 4: The tumor strongly expresses AMACR with simultaneous loss of basal cells, detected by MA903 and p63.\n\nAssessment:\nAd 1 - 5. Prostatectomy specimen with bilateral infiltrates of acinar adenocarcinoma, perineural sheath infiltration. Tumor-free apical and basal sedimentation lines. Tumor-free seminal vesicles on both sides. Tumor-free ductus deferens deposits on both sides. Residual prostate with adenomyomatosis.\n\nTNM classification (Prostate 2017, 8th edition): pT2c, pN0 (0/12 taking into account parallel submission), L0, V0, Pn1, R0; Gleason score: 4 + 3 = 7b (60 % proportion of 4s, 40 % proportion of 3s).\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 X\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. X\n8020/3 Undifferentiated carcinoma n.d.",
+  "output_text": "This report is about the prostate (the gland that makes fluid for sperm) that was removed during a surgery called a prostatectomy. The pathologist also examined the bilateral seminal vesicles (the sacs on both sides that store semen) and the bilateral ductus deferens (the tubes on both sides that carry sperm). The main finding is a type of cancer called acinar adenocarcinoma (a cancer that starts in the gland cells of an organ), which was found on both sides of the prostate. This specific cancer type is identified by the code ICD-O-3: 8140/3.\n\nTo understand how aggressive the cancer is, doctors use a Gleason score, which is a grading system from 6 to 10 that shows how abnormal the cells look under a microscope. Your score is 4 + 3 = 7 (specifically 7b), which places the cancer in ISUP Grade Group 3. This means the cells are moderately aggressive. The report notes that 60% of the cancer cells are of the higher-grade pattern (pattern 4), while the remaining 40% are of the lower-grade pattern (pattern 3).\n\nThe report checks if the cancer has spread to nearby structures. It shows perineural invasion (cancer cells growing along the nerves), which is present. However, there is no lymphovascular invasion (cancer cells in the lymph or blood vessels), no extracapsular extension (cancer growing outside the prostate capsule), and no seminal vesicle invasion (cancer growing into the seminal vesicles). The seminal vesicles on both sides were free of tumor. Additionally, the tumor-free ductus deferens deposits on both sides were examined and found to be clear of cancer.\n\nThe surgeon removed the tissue with clear edges, known as resection margins (the outer cut edge of the tissue removed by the surgeon; clear/R0 margins mean no cancer cells were touching the edge). The status is R0, meaning the cancer was completely removed. Specifically, the apical margin (the top edge) was negative (no cancer), and the basal margin (the bottom edge) was negative (no cancer).\n\nTo confirm the diagnosis, the lab used immunohistochemistry (special chemical dye tests that identify specific proteins in cancer cells). The results showed that AMACR was strongly positive, which confirms the invasive malignant phenotype (the aggressive nature of the cancer). The tests for MA903 and p63 showed a loss of basal cells (the normal support cells that are usually present in healthy tissue), which also confirms the invasive malignant phenotype. Finally, the remaining healthy prostate tissue showed a condition called adenomyomatosis (a benign thickening of the gland and muscle layers), but this is not cancer.",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "specimen_info": {
+      "organ": "Prostate",
+      "procedure_type": "Prostatectomy",
+      "weight_grams": null,
+      "dimensions_cm": null,
+      "associated_structures": [
+        "bilateral seminal vesicles",
+        "bilateral ductus deferens"
+      ]
+    },
+    "histologic_diagnosis": {
+      "tumor_type": "Acinar adenocarcinoma",
+      "tumor_type_lay": "cancer that starts in the gland cells of the prostate",
+      "histologic_subtype": "acinar",
+      "distribution": "bilateral",
+      "icd_o3_code": "8140/3"
+    },
+    "grading": {
+      "gleason_score_primary": 4,
+      "gleason_score_secondary": 3,
+      "gleason_total": 7,
+      "gleason_variant": "7b",
+      "isup_grade_group": 3,
+      "percent_high_grade_pattern": "60%"
+    },
+    "invasion_status": {
+      "perineural_invasion": "present",
+      "lymphovascular_invasion": "absent",
+      "extracapsular_extension": "absent",
+      "seminal_vesicle_invasion": "absent"
+    },
+    "margin_status": {
+      "resection_status": "R0",
+      "margin_details": [
+        {
+          "location": "apical",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "basal",
+          "status": "negative",
+          "extent_mm": null
+        }
+      ]
+    },
+    "ihc_markers": [
+      {
+        "marker": "AMACR",
+        "result": "strongly positive",
+        "interpretation": "confirms invasive malignant phenotype"
+      },
+      {
+        "marker": "MA903",
+        "result": "loss of basal cells",
+        "interpretation": "confirms invasive malignant phenotype"
+      },
+      {
+        "marker": "p63",
+        "result": "loss of basal cells",
+        "interpretation": "confirms invasive malignant phenotype"
+      }
+    ],
+    "additional_findings": [
+      "Residual prostate with adenomyomatosis",
+      "Tumor-free ductus deferens deposits on both sides"
+    ]
+  },
+  "ner_extraction_latency_seconds": 1.385,
+  "ner_extraction_tokens": 1702,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 48.7,
+    "flesch_kincaid_grade_level": 11.71,
+    "smog_index": 13.66,
+    "gunning_fog": 14.89,
+    "coleman_liau": 11.92,
+    "num_words": 422,
+    "num_sentences": 20,
+    "num_syllables": 682,
+    "average_word_length": 4.96,
+    "average_word_frequency": 4.65,
+    "ttr": 0.4502,
+    "mtld": 44.69,
+    "proportion_difficult_words": 0.654,
+    "rouge1_f1": 31.4,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 31.4,
+    "bertscore_precision": 10.9,
+    "bertscore_recall": 30.67,
+    "bertscore_f1": 21.96,
+    "sari": 8.61,
+    "sbert_cosine_similarity": 36.6,
+    "parenthetical_explanation_count": 18,
+    "parenthetical_explanation_rate": 4.27,
+    "jargon_source_count": 10,
+    "jargon_generated_count": 8,
+    "jargon_reduction_pct": 20.0,
+    "compression_ratio_chars": 2.644,
+    "compression_ratio_words": 2.813
+  }
+}

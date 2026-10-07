@@ -1,0 +1,268 @@
+{
+  "trial_id": "simplification_discharge_DS-04_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-04",
+  "sample_title": "Discharge Summary (Row 3)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 3015,
+  "completion_tokens": 5025,
+  "total_tokens": 8040,
+  "latency_seconds": 6.658,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPrimary Diagnosis: septic shock\n  Secondary: heart failure\n  Secondary: abscess in the left thigh\n  Secondary: osteomyelitis in the pubis\n  Secondary: Fournier's syndrome\n  Secondary: chronic kidney disease\n  Secondary: acute dialysis\n  Secondary: cardiorespiratory arrest\n  Secondary: hyperkalemia\n  Secondary: bradycardia\n  Secondary: QRS widening\n  Secondary: refractory shock\nSymptoms at admission: heart failure; abscess in the left thigh\nAnomalies/Findings:\n  [ABNORMAL] Norepinephrine infusion = 1.5 mcg/kg/min\n  [ABNORMAL] Hyperkalemia (normal: 3.5-5.0 mmol/L)\n  [CRITICAL] Cardiorespiratory arrest\n  [CRITICAL] Asystole\n  [ABNORMAL] Bradycardia\n  [ABNORMAL] QRS widening\n  [CRITICAL] Refractory shock\n  [ABNORMAL] Purulent secretion\n  [CRITICAL] Fixed mydriasis\n  [CRITICAL] Absence of heart sounds\n  [CRITICAL] Absence of brainstem reflexes\n  [ABNORMAL] Respiratory rate increased\nProcedures performed:\n  • Drainage of abscess in left thigh with ultrasound on 12/03\n  • Drain placement on 12/15\n  • Incision in ICU on 12/17\n  • Effective electrical cardioversion on 12/17\n  • Dialysis via fistula on 12/16\n  • Drainage of Fournier's gangrene on 12/03\n  • Intubation on 12/17\n  • Cardiopulmonary resuscitation on 12/17\n  • Ventilator support on 12/17\nMedications:\n  • Dobutamine — helps heart pump better | Dosage: 12/07 and 12/08\n  • Ceftriaxone — antibiotic to kill bacteria | Dosage: guided by culture of abscess\n  • Polymyxin D — antibiotic for resistant bacteria | Dosage: 12/15\n  • Amikacin — antibiotic for bacteria | Dosage: 12/17\n  • Vancomycin — antibiotic for resistant bacteria | Dosage: 12/17\n  • Calcium gluconate — lowes high potassium | Dosage: 2 ampoules\n  • Bicarbonate — helps reduce potassium level | Dosage: 100 ml\n  • Atropine — stops heart slowing | Dosage: 2 ampoules\n  • Norepinephrine — raises blood pressure | Dosage: 1.5 mcg/kg/min\nWarning signs to mention:\n  ⚠ cardiorespiratory arrest\n  ⚠ asystole\n  ⚠ absence of central pulses\n  ⚠ fixed mydriasis\n  ⚠ absence of heart sounds\n  ⚠ absence of brainstem reflexes\n  ⚠ refractory shock\nHospital stay duration: 14 d 11 h\nOutcome: death\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\nadmission: 12/06, discharge: 12/21, stay: 14 d 11 h, location: ward, payer: sus. 1. heart failure profile c dobutamine on 12/07 and 12/08, 2. abscess in the left thigh, osteomyelitis in the pubis, fournier's syndrome, drainage on 12/03 with ultrasound and drain placement on 12/15, treatment with ceftriaxone guided by culture of abscess escherichia coli multi s colonized antibiotic therapy after shock, incision in intensive care unit on 12/17 with abundant purulent secretion, {omitted}. 3. septic shock from cutaneous urinary focus on 12/16 polymyxin d0 12/15 amikacin and vancomycin on 12/17, 4. chronic kidney disease acute dialysis by fistula on 12/16 5. cardiorespiratory arrest with pulseless electrical activity, 10 minutes after intubation report of previous bradycardia, follow-up appointment after 1 minute of cardiopulmonary resuscitation, 6. vt with pulse after cardiorespiratory arrest, effective electrical cardioversion with a shock. [person] presenting with instability in the last half hour, requiring norepinephrine elevation up to 1.5 mcg/kg/min. progresses with bradycardia, QRS widening, and worsening shock. Given the hyperkalemia even after hemodialysis, 2 ampoules of calcium gluconate and 100 ml of bicarbonate were administered, and the respiratory rate was increased on the ventilator in order to reduce pco2 and consequently k. 2 ampoules of atropine were administered without benefit. [person] progressed to asystolic cardiorespiratory arrest, {omitted} in refractory shock. I declare {omitted} dead, due to absence of central pulses, pupils in fixed mydriasis, absence of heart sounds and asytole on the monitor, as well as absence of brainstem reflexes. The body was released. I request contact with the family. I await the death certificate to be completed. Death. Drainage of Fournier's gangrene. Death.\n\nOutput:\n",
+  "source_text": "admission: 12/06, discharge: 12/21, stay: 14 d 11 h, location: ward, payer: sus. 1. heart failure profile c dobutamine on 12/07 and 12/08, 2. abscess in the left thigh, osteomyelitis in the pubis, fournier's syndrome, drainage on 12/03 with ultrasound and drain placement on 12/15, treatment with ceftriaxone guided by culture of abscess escherichia coli multi s colonized antibiotic therapy after shock, incision in intensive care unit on 12/17 with abundant purulent secretion, {omitted}. 3. septic shock from cutaneous urinary focus on 12/16 polymyxin d0 12/15 amikacin and vancomycin on 12/17, 4. chronic kidney disease acute dialysis by fistula on 12/16 5. cardiorespiratory arrest with pulseless electrical activity, 10 minutes after intubation report of previous bradycardia, follow-up appointment after 1 minute of cardiopulmonary resuscitation, 6. vt with pulse after cardiorespiratory arrest, effective electrical cardioversion with a shock. [person] presenting with instability in the last half hour, requiring norepinephrine elevation up to 1.5 mcg/kg/min. progresses with bradycardia, QRS widening, and worsening shock. Given the hyperkalemia even after hemodialysis, 2 ampoules of calcium gluconate and 100 ml of bicarbonate were administered, and the respiratory rate was increased on the ventilator in order to reduce pco2 and consequently k. 2 ampoules of atropine were administered without benefit. [person] progressed to asystolic cardiorespiratory arrest, {omitted} in refractory shock. I declare {omitted} dead, due to absence of central pulses, pupils in fixed mydriasis, absence of heart sounds and asytole on the monitor, as well as absence of brainstem reflexes. The body was released. I request contact with the family. I await the death certificate to be completed. Death. Drainage of Fournier's gangrene. Death.",
+  "output_text": "The patient was admitted on 12/06 and discharged on 12/21 after a stay of 14 days 11 hours in the ward, paid by SUS. The main diagnosis was septic shock (a severe infection that lowers blood pressure and can stop the heart). Secondary diagnoses were heart failure (the heart could not pump enough blood), an abscess in the left thigh (a pocket of pus), osteomyelitis in the pubis (bone infection), Fournier's syndrome (a serious infection of the genital area), chronic kidney disease (long‑term kidney damage), acute dialysis (a temporary kidney replacement), cardiorespiratory arrest (heart and breathing stopped), hyperkalemia (high potassium in the blood), bradycardia (slow heart rate), QRS widening (an abnormal heart rhythm on the ECG), and refractory shock (shock that did not improve with treatment).\n\nWhen the patient was admitted, the main symptoms were heart failure and an abscess in the left thigh.\n\nThe following procedures were carried out: the abscess in the left thigh was drained with ultrasound guidance on 12/03, a drain was placed on 12/15, an incision was made in the intensive care unit (ICU) on 12/17, effective electrical cardioversion (a shock to restore normal rhythm) was performed on 12/17, dialysis was done through a fistula on 12/16, drainage of Fournier's gangrene (the genital infection) was done on 12/03, the patient was intubated (a tube was put into the airway) on 12/17, cardiopulmonary resuscitation (CPR) was performed on 12/17, and ventilator support (a machine to help breathing) was started on 12/17.\n\nThe patient received the following medicines: Dobutamine – helps the heart pump better – given on 12/07 and 12/08; Ceftriaxone – an antibiotic to kill bacteria – given as directed by the culture of the abscess; Polymyxin D – an antibiotic for resistant bacteria – given on 12/15; Amikacin – an antibiotic for bacteria – given on 12/17; Vancomycin – an antibiotic for resistant bacteria – given on 12/17; Calcium gluconate – lowers high potassium – 2 ampoules; Bicarbonate – helps reduce potassium level – 100 ml; Atropine – stops heart slowing – 2 ampoules; Norepinephrine – raises blood pressure – 1.5 mcg/kg/min.\n\nThe patient had several abnormal findings: Norepinephrine infusion was 1.5 mcg/kg/min; hyperkalemia (high potassium) was noted, with a normal range of 3.5‑5.0 mmol/L; cardiorespiratory arrest and asystole (no heart activity) were recorded; bradycardia (slow heart rate) and QRS widening (abnormal ECG pattern) were seen; refractory shock (shock that did not improve) was present; purulent secretion (pus) was found; fixed mydriasis (pupils that do not change size) was observed; there were no heart sounds; there were no brainstem reflexes; and the respiratory rate was increased on the ventilator to lower CO₂ and potassium.\n\nThe warning signs that were noted were cardiorespiratory arrest, asystole, absence of central pulses, fixed mydriasis, absence of heart sounds, absence of brainstem reflexes, and refractory shock.\n\nThe patient died. The death was confirmed by the absence of central pulses, pupils in fixed mydriasis, absence of heart sounds, asystole on the monitor, and absence of brainstem reflexes. The body was released and a death certificate is awaited.",
+  "model_used": "openai/gpt-oss-20b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": null,
+      "age": null
+    },
+    "diagnoses": {
+      "primary": "septic shock",
+      "primary_lay_explanation": "severe infection that lowers blood pressure",
+      "secondary": [
+        "heart failure",
+        "abscess in the left thigh",
+        "osteomyelitis in the pubis",
+        "Fournier's syndrome",
+        "chronic kidney disease",
+        "acute dialysis",
+        "cardiorespiratory arrest",
+        "hyperkalemia",
+        "bradycardia",
+        "QRS widening",
+        "refractory shock"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "heart failure",
+      "abscess in the left thigh"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Vital Sign",
+        "finding": "Norepinephrine infusion",
+        "value": "1.5 mcg/kg/min",
+        "normal_range": null,
+        "lay_explanation": "medication to raise blood pressure",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Hyperkalemia",
+        "value": null,
+        "normal_range": "3.5-5.0 mmol/L",
+        "lay_explanation": "high potassium in blood",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Cardiorespiratory arrest",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "no heartbeat and breathing",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Asystole",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "heart stopped beating",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Bradycardia",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "slow heart rate",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "QRS widening",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "abnormal heart rhythm pattern",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Refractory shock",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "blood pressure remains low despite treatment",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Purulent secretion",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "pus from infection",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Fixed mydriasis",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "pupil stays wide and does not react",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Absence of heart sounds",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "no heart beats heard",
+        "severity": "critical"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Absence of brainstem reflexes",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "brainstem functions not working",
+        "severity": "critical"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Respiratory rate increased",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "breathing faster to reduce carbon dioxide",
+        "severity": "abnormal"
+      }
+    ],
+    "procedures_performed": [
+      {
+        "name": "Drainage of abscess in left thigh with ultrasound",
+        "lay_explanation": "removed pus from thigh using imaging",
+        "date": "12/03"
+      },
+      {
+        "name": "Drain placement",
+        "lay_explanation": "inserted tube to drain fluid",
+        "date": "12/15"
+      },
+      {
+        "name": "Incision in ICU",
+        "lay_explanation": "cut made to access infection",
+        "date": "12/17"
+      },
+      {
+        "name": "Effective electrical cardioversion",
+        "lay_explanation": "shock to restore normal heart rhythm",
+        "date": "12/17"
+      },
+      {
+        "name": "Dialysis via fistula",
+        "lay_explanation": "cleaned blood using machine",
+        "date": "12/16"
+      },
+      {
+        "name": "Drainage of Fournier's gangrene",
+        "lay_explanation": "removed infected tissue from genital area",
+        "date": "12/03"
+      },
+      {
+        "name": "Intubation",
+        "lay_explanation": "tube placed in airway for breathing support",
+        "date": "12/17"
+      },
+      {
+        "name": "Cardiopulmonary resuscitation",
+        "lay_explanation": "manual chest compressions to restart heart",
+        "date": "12/17"
+      },
+      {
+        "name": "Ventilator support",
+        "lay_explanation": "machine helped patient breathe",
+        "date": "12/17"
+      }
+    ],
+    "medications": [
+      {
+        "name": "Dobutamine",
+        "purpose_lay": "helps heart pump better",
+        "timing_dosage": "12/07 and 12/08"
+      },
+      {
+        "name": "Ceftriaxone",
+        "purpose_lay": "antibiotic to kill bacteria",
+        "timing_dosage": "guided by culture of abscess"
+      },
+      {
+        "name": "Polymyxin D",
+        "purpose_lay": "antibiotic for resistant bacteria",
+        "timing_dosage": "12/15"
+      },
+      {
+        "name": "Amikacin",
+        "purpose_lay": "antibiotic for bacteria",
+        "timing_dosage": "12/17"
+      },
+      {
+        "name": "Vancomycin",
+        "purpose_lay": "antibiotic for resistant bacteria",
+        "timing_dosage": "12/17"
+      },
+      {
+        "name": "Calcium gluconate",
+        "purpose_lay": "lowes high potassium",
+        "timing_dosage": "2 ampoules"
+      },
+      {
+        "name": "Bicarbonate",
+        "purpose_lay": "helps reduce potassium level",
+        "timing_dosage": "100 ml"
+      },
+      {
+        "name": "Atropine",
+        "purpose_lay": "stops heart slowing",
+        "timing_dosage": "2 ampoules"
+      },
+      {
+        "name": "Norepinephrine",
+        "purpose_lay": "raises blood pressure",
+        "timing_dosage": "1.5 mcg/kg/min"
+      }
+    ],
+    "warning_signs_red_flags": [
+      "cardiorespiratory arrest",
+      "asystole",
+      "absence of central pulses",
+      "fixed mydriasis",
+      "absence of heart sounds",
+      "absence of brainstem reflexes",
+      "refractory shock"
+    ],
+    "follow_up_care": {
+      "appointments": [],
+      "ongoing_treatments": [],
+      "lifestyle_diet_advice": []
+    },
+    "stay_duration": "14 d 11 h",
+    "outcome": "death"
+  },
+  "ner_model_used": "openai/gpt-oss-20b",
+  "ner_reused": false,
+  "ner_raw_text": "{\n  \"patient_demographics\": {\n    \"gender\": null,\n    \"age\": null\n  },\n  \"diagnoses\": {\n    \"primary\": \"septic shock\",\n    \"primary_lay_explanation\": \"severe infection that lowers blood pressure\",\n    \"secondary\": [\n      \"heart failure\",\n      \"abscess in the left thigh\",\n      \"osteomyelitis in the pubis\",\n      \"Fournier's syndrome\",\n      \"chronic kidney disease\",\n      \"acute dialysis\",\n      \"cardiorespiratory arrest\",\n      \"hyperkalemia\",\n      \"bradycardia\",\n      \"QRS widening\",\n      \"refractory shock\"\n    ],\n    \"icd_codes_mentioned\": []\n  },\n  \"symptoms_at_admission\": [\n    \"heart failure\",\n    \"abscess in the left thigh\"\n  ],\n  \"anomalies_detected\": [\n    {\n      \"type\": \"Vital Sign\",\n      \"finding\": \"Norepinephrine infusion\",\n      \"value\": \"1.5 mcg/kg/min\",\n      \"normal_range\": null,\n      \"lay_explanation\": \"medication to raise blood pressure\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Hyperkalemia\",\n      \"value\": null,\n      \"normal_range\": \"3.5-5.0 mmol/L\",\n      \"lay_explanation\": \"high potassium in blood\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Cardiorespiratory arrest\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"no heartbeat and breathing\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Asystole\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"heart stopped beating\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Bradycardia\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"slow heart rate\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"QRS widening\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"abnormal heart rhythm pattern\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Refractory shock\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"blood pressure remains low despite treatment\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Purulent secretion\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"pus from infection\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Fixed mydriasis\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"pupil stays wide and does not react\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Absence of heart sounds\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"no heart beats heard\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Absence of brainstem reflexes\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"brainstem functions not working\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Vital Sign\",\n      \"finding\": \"Respiratory rate increased\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"breathing faster to reduce carbon dioxide\",\n      \"severity\": \"abnormal\"\n    }\n  ],\n  \"procedures_performed\": [\n    {\n      \"name\": \"Drainage of abscess in left thigh with ultrasound\",\n      \"lay_explanation\": \"removed pus from thigh using imaging\",\n      \"date\": \"12/03\"\n    },\n    {\n      \"name\": \"Drain placement\",\n      \"lay_explanation\": \"inserted tube to drain fluid\",\n      \"date\": \"12/15\"\n    },\n    {\n      \"name\": \"Incision in ICU\",\n      \"lay_explanation\": \"cut made to access infection\",\n      \"date\": \"12/17\"\n    },\n    {\n      \"name\": \"Effective electrical cardioversion\",\n      \"lay_explanation\": \"shock to restore normal heart rhythm\",\n      \"date\": \"12/17\"\n    },\n    {\n      \"name\": \"Dialysis via fistula\",\n      \"lay_explanation\": \"cleaned blood using machine\",\n      \"date\": \"12/16\"\n    },\n    {\n      \"name\": \"Drainage of Fournier's gangrene\",\n      \"lay_explanation\": \"removed infected tissue from genital area\",\n      \"date\": \"12/03\"\n    },\n    {\n      \"name\": \"Intubation\",\n      \"lay_explanation\": \"tube placed in airway for breathing support\",\n      \"date\": \"12/17\"\n    },\n    {\n      \"name\": \"Cardiopulmonary resuscitation\",\n      \"lay_explanation\": \"manual chest compressions to restart heart\",\n      \"date\": \"12/17\"\n    },\n    {\n      \"name\": \"Ventilator support\",\n      \"lay_explanation\": \"machine helped patient breathe\",\n      \"date\": \"12/17\"\n    }\n  ],\n  \"medications\": [\n    {\n      \"name\": \"Dobutamine\",\n      \"purpose_lay\": \"helps heart pump better\",\n      \"timing_dosage\": \"12/07 and 12/08\"\n    },\n    {\n      \"name\": \"Ceftriaxone\",\n      \"purpose_lay\": \"antibiotic to kill bacteria\",\n      \"timing_dosage\": \"guided by culture of abscess\"\n    },\n    {\n      \"name\": \"Polymyxin D\",\n      \"purpose_lay\": \"antibiotic for resistant bacteria\",\n      \"timing_dosage\": \"12/15\"\n    },\n    {\n      \"name\": \"Amikacin\",\n      \"purpose_lay\": \"antibiotic for bacteria\",\n      \"timing_dosage\": \"12/17\"\n    },\n    {\n      \"name\": \"Vancomycin\",\n      \"purpose_lay\": \"antibiotic for resistant bacteria\",\n      \"timing_dosage\": \"12/17\"\n    },\n    {\n      \"name\": \"Calcium gluconate\",\n      \"purpose_lay\": \"lowes high potassium\",\n      \"timing_dosage\": \"2 ampoules\"\n    },\n    {\n      \"name\": \"Bicarbonate\",\n      \"purpose_lay\": \"helps reduce potassium level\",\n      \"timing_dosage\": \"100 ml\"\n    },\n    {\n      \"name\": \"Atropine\",\n      \"purpose_lay\": \"stops heart slowing\",\n      \"timing_dosage\": \"2 ampoules\"\n    },\n    {\n      \"name\": \"Norepinephrine\",\n      \"purpose_lay\": \"raises blood pressure\",\n      \"timing_dosage\": \"1.5 mcg/kg/min\"\n    }\n  ],\n  \"warning_signs_red_flags\": [\n    \"cardiorespiratory arrest\",\n    \"asystole\",\n    \"absence of central pulses\",\n    \"fixed mydriasis\",\n    \"absence of heart sounds\",\n    \"absence of brainstem reflexes\",\n    \"refractory shock\"\n  ],\n  \"follow_up_care\": {\n    \"appointments\": [],\n    \"ongoing_treatments\": [],\n    \"lifestyle_diet_advice\": []\n  },\n  \"stay_duration\": \"14 d 11 h\",\n  \"outcome\": \"death\"\n}",
+  "ner_extraction_latency_seconds": 4.356,
+  "ner_extraction_tokens": 4629,
+  "ner_fallback_used": false
+}

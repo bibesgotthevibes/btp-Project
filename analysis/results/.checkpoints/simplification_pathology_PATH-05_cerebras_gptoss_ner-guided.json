@@ -1,0 +1,108 @@
+{
+  "trial_id": "simplification_pathology_PATH-05_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "pathology",
+  "sample_id": "PATH-05",
+  "sample_title": "Pathology Report (ID114_2)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 1234,
+  "completion_tokens": 2701,
+  "total_tokens": 6662,
+  "latency_seconds": 6.215,
+  "system_prompt": "You are a medical pathology simplification assistant. Convert the following surgical pathology diagnostic report into simple, plain English that a patient and their family can understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nSpecimen: Prostate; Prostatectomy specimen\n  Associated structure: seminal vesicles\n  Associated structure: ductus deferentes\nHistologic diagnosis: Acinar adenocarcinoma of the prostate (bilateral)\n  ICD-O-3: 8140/3\nGleason Score: 4 + 3 = 7 (7b) | ISUP Grade Group: 3 | High-grade pattern: 70%\nInvasion status: Perineural invasion: present; Lymphovascular invasion: absent; Extracapsular extension: present; Seminal vesicle invasion: present\nResection status: R1\n  Margin — basal (ventral and dorsal) right and left: positive (19 mm)\n  Margin — apical: negative\n  Margin — ductus deferentes: negative\nIHC markers:\n  • CK AE1/3: positive — marks tumor cells\n  • AMACR: focal overexpression — confirms invasive malignant phenotype\n  • MA903: negative — no expression\n  • p63: negative — no expression\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain what tissue or organ was examined (e.g. prostate specimen removed during surgery).\n2. Keep essential medical terms but immediately explain each in parentheses on first use, e.g. 'adenocarcinoma (a cancer that starts in the gland cells of an organ)'.\n3. Explain the cancer type, whether it is localized or spreading, and the grade in plain words:\n   - Explain Gleason score simply: e.g. 'Gleason score 7 (a grading system from 6 to 10 that shows how abnormal the cells look; 7 means moderately aggressive cells)'.\n   - Explain surgical margins simply: e.g. 'resection margins (the outer cut edge of the tissue removed by the surgeon; clear/R0 margins mean no cancer cells were touching the edge)'.\n   - Explain IHC stains simply: e.g. 'immunohistochemistry (special chemical dye tests that identify specific proteins in cancer cells)'.\n4. Preserve all measurements (weights, dimensions in cm or mm, percentages) accurately. Never fabricate or omit numbers.\n5. Write as continuous plain prose paragraphs without bullet points or headers.\n6. Maintain a calm, objective, and supportive tone. Do not provide speculative prognoses or medical advice beyond what is written in the report.\n7. Output only the simplified text, nothing else.\n8. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including specimen weight, dimensions, Gleason score primary + secondary + total + ISUP Grade Group, percentage of high-grade pattern, every margin location and its status, every IHC marker and its result, and invasion findings. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following surgical pathology report into plain English that a patient can understand:\n\nOriginal Medical Report:\n1st supplementary report dated 28.10.2020:\n\nPathological-anatomical report:\n\nIn the meantime, we have carried out immunohistochemical examinations (5 x IHC).\n\nCK AE1/3 marks the tumor cells described above. The tumor infiltrates show a focal overexpression of AMACR. No expression of MA903 or p63. The immunohistochemical staining was not performed in the border area for technical reasons. The tumor infiltrates are border-forming over a distance of 19 mm basally.\n\nAssessment:\nProstatectomy specimen with infiltration of both prostate lobes by an acinar adenocarcinoma of the prostate, Gleason score 4 + 3 = 7b (tertiary grade 5). Infiltration of the seminal vesicles on both sides as well as extraprostatic infiltration.\n\nTumor-free apical margin and tumor-free ductus deferentes on both sides.\n\nThe tumor infiltrates are dorsally and ventrally border-forming in the area of the basal deposit margin on both sides.\n\nTaking into account the parallel submission, the following TNM classification (Prostate 2017, 8th edition) results: pT3b, pN0(0/9), L0, V0, Pn1, R1;\n\nGleason score: 4 + 3 = 7b (70 % proportion of 4s, 25 % proportion of 3s); tertiary grade: 5 (5 %)\n\n\n - b.w. -\n\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 x\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nR1 situation:\nInfiltrated resection margin Gleason pattern Extent of margin infiltration (mm)\nbasal (ventral and dorsal) right and left 4 19\n\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. x\n8020/3 Undifferentiated carcinoma n.a.\n\nOutput:\n",
+  "source_text": "1st supplementary report dated 28.10.2020:\n\nPathological-anatomical report:\n\nIn the meantime, we have carried out immunohistochemical examinations (5 x IHC).\n\nCK AE1/3 marks the tumor cells described above. The tumor infiltrates show a focal overexpression of AMACR. No expression of MA903 or p63. The immunohistochemical staining was not performed in the border area for technical reasons. The tumor infiltrates are border-forming over a distance of 19 mm basally.\n\nAssessment:\nProstatectomy specimen with infiltration of both prostate lobes by an acinar adenocarcinoma of the prostate, Gleason score 4 + 3 = 7b (tertiary grade 5). Infiltration of the seminal vesicles on both sides as well as extraprostatic infiltration.\n\nTumor-free apical margin and tumor-free ductus deferentes on both sides.\n\nThe tumor infiltrates are dorsally and ventrally border-forming in the area of the basal deposit margin on both sides.\n\nTaking into account the parallel submission, the following TNM classification (Prostate 2017, 8th edition) results: pT3b, pN0(0/9), L0, V0, Pn1, R1;\n\nGleason score: 4 + 3 = 7b (70 % proportion of 4s, 25 % proportion of 3s); tertiary grade: 5 (5 %)\n\n\n - b.w. -\n\n\nGleason pattern Gleason score ISUP graduation group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3 x\n4 + 4 8 4\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nR1 situation:\nInfiltrated resection margin Gleason pattern Extent of margin infiltration (mm)\nbasal (ventral and dorsal) right and left 4 19\n\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. x\n8020/3 Undifferentiated carcinoma n.a.",
+  "output_text": "The specimen examined was a prostate that had been removed during surgery (a prostatectomy specimen). The pathologist also looked at the nearby seminal vesicles and the ductus deferentes, which are part of the male reproductive system. The tissue showed an acinar adenocarcinoma of the prostate (bilateral), which is a type of cancer that starts in the gland cells of the prostate. The cancer is coded as ICD‑O‑3 8140/3. The Gleason score, a way to grade how abnormal the cancer cells look, is 4 + 3 = 7 (7b). This score is part of ISUP Grade Group 3, meaning the cancer is moderately aggressive. Seventy percent of the cancer cells are high‑grade pattern 4, while the remaining 25 percent are pattern 3, and a small 5 percent are pattern 5. The cancer has spread beyond the prostate capsule (extracapsular extension) and has invaded the seminal vesicles on both sides. It also has invaded the nerves that run through the prostate (perineural invasion). There is no evidence that the cancer has entered the lymphatic or blood vessels (lymphovascular invasion absent). The surgical resection status is R1, meaning cancer cells are present at the edge of the removed tissue. The basal (ventral and dorsal) margins on both the right and left sides are positive for cancer, with the tumor extending 19 mm into the margin. The apical margin (the top edge of the removed tissue) is negative, meaning no cancer cells touch that edge. The margins of the ductus deferentes are also negative. Immunohistochemistry, which uses special dyes to identify proteins in the cells, showed that CK AE1/3 is positive, marking the tumor cells. AMACR shows focal overexpression, confirming the invasive malignant nature of the cancer. MA903 and p63 are negative, meaning those proteins are not present in the tumor cells. The tumor infiltrates are border‑forming, meaning the cancer cells spread along the edges of the tissue, over a distance of 19 mm at the basal margin, both dorsally and ventrally on both sides. This detailed report summarizes the type, extent, and characteristics of the prostate cancer found in the removed tissue.",
+  "model_used": "openai/gpt-oss-20b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "specimen_info": {
+      "organ": "Prostate",
+      "procedure_type": "Prostatectomy specimen",
+      "weight_grams": null,
+      "dimensions_cm": null,
+      "associated_structures": [
+        "seminal vesicles",
+        "ductus deferentes"
+      ]
+    },
+    "histologic_diagnosis": {
+      "tumor_type": "Acinar adenocarcinoma of the prostate",
+      "tumor_type_lay": "cancer that starts in the gland cells of the prostate",
+      "histologic_subtype": "acinar",
+      "distribution": "bilateral",
+      "icd_o3_code": "8140/3"
+    },
+    "grading": {
+      "gleason_score_primary": 4,
+      "gleason_score_secondary": 3,
+      "gleason_total": 7,
+      "gleason_variant": "7b",
+      "isup_grade_group": 3,
+      "percent_high_grade_pattern": "70%"
+    },
+    "invasion_status": {
+      "perineural_invasion": "present",
+      "lymphovascular_invasion": "absent",
+      "extracapsular_extension": "present",
+      "seminal_vesicle_invasion": "present"
+    },
+    "margin_status": {
+      "resection_status": "R1",
+      "margin_details": [
+        {
+          "location": "basal (ventral and dorsal) right and left",
+          "status": "positive",
+          "extent_mm": 19
+        },
+        {
+          "location": "apical",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "ductus deferentes",
+          "status": "negative",
+          "extent_mm": null
+        }
+      ]
+    },
+    "ihc_markers": [
+      {
+        "marker": "CK AE1/3",
+        "result": "positive",
+        "interpretation": "marks tumor cells"
+      },
+      {
+        "marker": "AMACR",
+        "result": "focal overexpression",
+        "interpretation": "confirms invasive malignant phenotype"
+      },
+      {
+        "marker": "MA903",
+        "result": "negative",
+        "interpretation": "no expression"
+      },
+      {
+        "marker": "p63",
+        "result": "negative",
+        "interpretation": "no expression"
+      }
+    ],
+    "additional_findings": []
+  },
+  "ner_model_used": "",
+  "ner_reused": true,
+  "ner_raw_text": "",
+  "ner_extraction_latency_seconds": 2.458,
+  "ner_extraction_tokens": 2727,
+  "ner_fallback_used": false
+}

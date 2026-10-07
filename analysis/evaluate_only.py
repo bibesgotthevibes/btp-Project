@@ -20,7 +20,7 @@ PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from analysis.config import RESULTS_DIR
+from analysis.config import RESULTS_DIR, CHECKPOINTS_DIR
 from analysis.metrics import evaluate_generation
 
 GENERATIONS_JSON = RESULTS_DIR / "generations.json"
@@ -36,6 +36,13 @@ def run_evaluation_on_saved_results() -> List[Dict[str, Any]]:
 
     with open(GENERATIONS_JSON, "r", encoding="utf-8") as f:
         records = json.load(f)
+
+    # Include completed checkpoints that a filtered run left out of generations.json
+    known = {r.get("trial_id") for r in records}
+    for ckpt in sorted(CHECKPOINTS_DIR.glob("*.json")):
+        if ckpt.stem not in known:
+            with open(ckpt, "r", encoding="utf-8") as f:
+                records.append(json.load(f))
 
     print(f"\n======================================================================")
     print(f"📊 DECOUPLED METRIC EVALUATOR")

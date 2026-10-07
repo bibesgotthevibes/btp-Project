@@ -1,0 +1,85 @@
+{
+  "trial_id": "simplification_radiology_RAD-01_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "radiology",
+  "sample_id": "RAD-01",
+  "sample_title": "Radiology MRI (LEDW5KEMKI)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 992,
+  "completion_tokens": 1818,
+  "total_tokens": 4765,
+  "latency_seconds": 7.547,
+  "system_prompt": "You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nExam: Brain MRI (Cranial) of Brain\n  Sequences: T1-weighted, FLAIR, axial T2-weighted, SWI, DWI\n  Contrast: not mentioned\n  Clinical indication: Dizziness\nNormal structures (reassure about these):\n  ✓ brainstem\n  ✓ cerebellum\n  ✓ fourth ventricle\n  ✓ posterior fossa cisterns\n  ✓ bilateral basal ganglia\n  ✓ internal capsules\n  ✓ corpus callosum\n  ✓ cerebral white matter\n  ✓ cerebral gray matter\n  ✓ third ventricle\n  ✓ lateral ventricles\n  ✓ sulci\n  ✓ major cerebral vascular structures\n  ✓ paranasal sinuses\n  ✓ middle ear aeration\n  ✓ nasopharynx\n  ✓ orbits\n  ✓ visualized bones\n  ✓ DWI images\n  ✓ SWI images\nAbnormal findings (MUST explain all of these):\n  [MILD] left parietal region: physiologic cystic perivascular enlargement | chronic | not applicable\nIncidental findings:\n  • physiologic cystic perivascular enlargement in left parietal region\nRadiologist impression: Cranial MRI findings within normal limits.\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').\n2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.\n3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.\n4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):\n   - Explain what the finding means in plain words without causing unnecessary panic.\n   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.\n   - Clarify whether the finding is new, chronic, or requires further evaluation.\n5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.\n6. Write as continuous plain prose paragraphs without bullet points or headers.\n7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.\n8. Output only the simplified text, nothing else.\n9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following radiology report into plain English for the patient and family:\n\nOriginal Medical Report:\nBRAIN MRI (CRANIAL) [date_1]:\nClinical: Dizziness.\nTechnique: Three-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI.\nFindings:\nThe brainstem and cerebellum, fourth ventricle, and posterior fossa cisterns are normal.\nThe bilateral basal ganglia, internal capsules, and corpus callosum are normal.\nExcept for physiologic cystic perivascular enlargement in the left parietal region, the cerebral white and gray matter is normal.\nNo abnormality is noted on DWI and SWI images.\nThe third and lateral ventricles and sulci are normal.\nThe major cerebral vascular structures are patent and normal.\nThe paranasal sinuses and middle ear aeration, nasopharynx, and orbits are normal.\nNo abnormality is noted in the visualized bones.\nImpression:\n•\tCranial MRI findings within normal limits.\n\nOutput:\n",
+  "source_text": "BRAIN MRI (CRANIAL) [date_1]:\nClinical: Dizziness.\nTechnique: Three-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI.\nFindings:\nThe brainstem and cerebellum, fourth ventricle, and posterior fossa cisterns are normal.\nThe bilateral basal ganglia, internal capsules, and corpus callosum are normal.\nExcept for physiologic cystic perivascular enlargement in the left parietal region, the cerebral white and gray matter is normal.\nNo abnormality is noted on DWI and SWI images.\nThe third and lateral ventricles and sulci are normal.\nThe major cerebral vascular structures are patent and normal.\nThe paranasal sinuses and middle ear aeration, nasopharynx, and orbits are normal.\nNo abnormality is noted in the visualized bones.\nImpression:\n•\tCranial MRI findings within normal limits.",
+  "output_text": "The exam was a Brain MRI (Cranial) of Brain, which is a detailed brain scan that uses magnetic fields and radio waves (no radiation). The scan was done with several different settings called sequences: T1-weighted, FLAIR, axial T2-weighted, SWI, and DWI. No contrast was used (Contrast: not mentioned). The test was ordered because of dizziness (Clinical indication: Dizziness).  \n\nAll of the major parts of the brain looked normal, which is good news. The brainstem (the lower part of the brain that connects to the spinal cord) was normal, as were the cerebellum (the part that controls balance and coordination), the fourth ventricle (a fluid‑filled space), the posterior fossa cisterns (fluid spaces at the back of the skull), the bilateral basal ganglia (deep brain areas that help control movement), the internal capsules (white‑matter pathways that carry signals), the corpus callosum (the bridge of nerve fibers that connects the two halves of the brain), the cerebral white matter (the brain’s wiring), the cerebral gray matter (the brain’s processing cells), the third ventricle and lateral ventricles (other fluid‑filled spaces), the sulci (the grooves on the brain surface), the major cerebral vascular structures (the main blood vessels), the paranasal sinuses (air‑filled spaces around the nose), the middle ear aeration (air in the middle ear), the nasopharynx (the upper part of the throat behind the nose), the orbits (the eye sockets), the visualized bones (the parts of the skull we could see), and the special scan images called DWI images (which look for recent strokes) and SWI images (which show tiny blood products or calcium).  \n\nThere was one mild (MILD) abnormal finding in the left parietal region (the upper side part of the brain). It was a physiologic cystic perivascular enlargement, which means a small, harmless fluid‑filled space around a blood vessel. This finding is chronic (it has been there for a while) and is listed as not applicable for further action, meaning no extra testing or treatment is needed. This is also noted as an incidental finding (physiologic cystic perivascular enlargement in left parietal region).  \n\nThe radiologist’s overall impression was: Cranial MRI findings within normal limits.",
+  "model_used": "openai/gpt-oss-120b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "exam_info": {
+      "modality": "Brain MRI (Cranial)",
+      "sequences_used": [
+        "T1-weighted",
+        "FLAIR",
+        "axial T2-weighted",
+        "SWI",
+        "DWI"
+      ],
+      "contrast_used": "not mentioned",
+      "body_region": "Brain",
+      "clinical_indication": "Dizziness"
+    },
+    "normal_findings": [
+      "brainstem",
+      "cerebellum",
+      "fourth ventricle",
+      "posterior fossa cisterns",
+      "bilateral basal ganglia",
+      "internal capsules",
+      "corpus callosum",
+      "cerebral white matter",
+      "cerebral gray matter",
+      "third ventricle",
+      "lateral ventricles",
+      "sulci",
+      "major cerebral vascular structures",
+      "paranasal sinuses",
+      "middle ear aeration",
+      "nasopharynx",
+      "orbits",
+      "visualized bones",
+      "DWI images",
+      "SWI images"
+    ],
+    "abnormal_findings": [
+      {
+        "location": "left parietal region",
+        "finding": "physiologic cystic perivascular enlargement",
+        "finding_lay": "a small fluid-filled area around blood vessels, a normal variant",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      }
+    ],
+    "incidental_findings": [
+      "physiologic cystic perivascular enlargement in left parietal region"
+    ],
+    "measurements": [],
+    "impression": "Cranial MRI findings within normal limits.",
+    "recommendations": []
+  },
+  "ner_model_used": "",
+  "ner_reused": true,
+  "ner_raw_text": "",
+  "ner_extraction_latency_seconds": 1.795,
+  "ner_extraction_tokens": 1955,
+  "ner_fallback_used": false
+}

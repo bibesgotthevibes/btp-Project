@@ -1,0 +1,390 @@
+<title>Simplification Reader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: case-file reader. Sample index on the left, original report and model version as facing pages. */
+:root {
+  --bg: #eef2f3;
+  --paper: #ffffff;
+  --ink: #16212a;
+  --muted: #5a6975;
+  --rule: #d5dde2;
+  --accent: #1d5c73;
+  --accent-soft: #e1eef2;
+  --ok: #2d7a4c;
+  --warn: #9a6200;
+  --bad: #b02a1f;
+  --mark: #fde9a8;
+  --mark-ink: #16212a;
+  --font-doc: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-ui: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1519; --paper: #172027; --ink: #e3eaee; --muted: #93a3ae; --rule: #2a3741;
+    --accent: #7fc1d8; --accent-soft: #1d3440; --ok: #6cc592; --warn: #e2b04a; --bad: #f08a80;
+    --mark: #6b5a17; --mark-ink: #fff6d6; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1519; --paper: #172027; --ink: #e3eaee; --muted: #93a3ae; --rule: #2a3741;
+  --accent: #7fc1d8; --accent-soft: #1d3440; --ok: #6cc592; --warn: #e2b04a; --bad: #f08a80;
+  --mark: #6b5a17; --mark-ink: #fff6d6; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+.wrap { padding-inline: 16px; padding-block: 18px 40px; max-width: 1500px; margin: 0 auto; display: grid; gap: 16px; }
+
+header { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; }
+h1 { font: 600 1.55rem/1.2 var(--font-doc); margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 4px 0 0; font-size: .9rem; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--paper); }
+.seg button { font: 500 .85rem var(--font-ui); color: var(--muted); background: none; border: 0; padding: 7px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); }
+.search { display: flex; align-items: center; gap: 6px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 4px 8px; }
+.search input { font: .9rem var(--font-ui); color: var(--ink); background: none; border: 0; outline: none; width: 13rem; max-width: 50vw; }
+.search button { font: .8rem var(--font-ui); color: var(--muted); background: none; border: 0; cursor: pointer; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .8rem; color: var(--muted); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--rule); vertical-align: 0; }
+.dot.ok { background: var(--ok); } .dot.leak, .dot.echo { background: var(--bad); } .dot.cut { background: var(--warn); }
+.dot.missing { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; }
+nav.index { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 14px; }
+.group h2 { font: 600 .72rem var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px 8px; }
+.group ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.item { width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; border: 0; background: none; color: var(--ink); cursor: pointer; font: .88rem var(--font-ui); }
+.item:hover { background: var(--paper); }
+.item[aria-current="true"] { background: var(--paper); box-shadow: inset 3px 0 0 var(--accent); }
+.item .id { font: 500 .85rem var(--font-data); }
+.item .dots { display: inline-flex; gap: 3px; }
+.mobile-pick { display: none; }
+
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 16px; }
+.head h2 { margin: 0; font: 600 1.25rem/1.25 var(--font-doc); }
+.head .kind { font: 500 .78rem var(--font-data); color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pager { display: inline-flex; gap: 6px; }
+.pager button { font: .85rem var(--font-ui); background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+
+.facing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.page { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; min-width: 0; display: grid; }
+.page-top { padding: 12px 18px; border-bottom: 1px solid var(--rule); display: grid; gap: 8px; }
+.page-label { font: 600 .72rem var(--font-ui); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.doc { padding: 16px 18px 20px; font: 1.02rem/1.62 var(--font-doc); max-height: 72vh; overflow-y: auto; }
+.doc p { margin: 0 0 .85em; max-width: 68ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+.doc.source p { font-size: .95rem; }
+mark { background: var(--mark); color: var(--mark-ink); border-radius: 2px; padding: 0 1px; }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.tab { font: 500 .83rem var(--font-ui); display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--rule); background: none; color: var(--ink); cursor: pointer; }
+.tab[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.meta { display: flex; flex-wrap: wrap; gap: 4px 14px; font: .8rem var(--font-data); color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta b { font-weight: 500; color: var(--ink); }
+
+.notice { margin: 12px 18px 0; padding: 9px 12px; border-radius: 8px; font-size: .88rem; border-left: 3px solid; }
+.notice.leak, .notice.echo { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, transparent); }
+.notice.cut { border-color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.notice.missing { border-color: var(--muted); background: color-mix(in srgb, var(--muted) 10%, transparent); }
+.notice.sub { border-color: var(--accent); background: var(--accent-soft); }
+
+.checklist { border-top: 1px solid var(--rule); padding: 12px 18px 16px; display: grid; gap: 8px; }
+.checklist h3 { margin: 0; font: 600 .78rem var(--font-ui); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.checklist p { margin: 0; font-size: .82rem; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { font: .78rem var(--font-ui); border-radius: 5px; padding: 3px 7px; border: 1px solid var(--rule); background: none; color: var(--ink); cursor: pointer; max-width: 100%; text-align: left; overflow-wrap: anywhere; }
+.chip.miss { border-color: color-mix(in srgb, var(--bad) 55%, var(--rule)); color: var(--bad); }
+.chip.hit::before { content: "✓ "; color: var(--ok); }
+.chip.miss::before { content: "✗ "; }
+
+.compare { overflow-x: auto; padding-bottom: 6px; }
+.compare-grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(300px, 1fr); gap: 12px; min-width: 0; }
+.compare .doc { max-height: 78vh; font-size: .95rem; }
+.empty { padding: 18px; color: var(--muted); }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  nav.index { display: none; }
+  .mobile-pick { display: block; }
+  .mobile-pick select { width: 100%; font: .95rem var(--font-ui); padding: 8px; border-radius: 8px; border: 1px solid var(--rule); background: var(--paper); color: var(--ink); }
+  .facing { grid-template-columns: minmax(0, 1fr); }
+  .doc { max-height: none; }
+}
+@media (prefers-reduced-motion: no-preference) { .item, .tab, .chip { transition: background-color .12s, border-color .12s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Simplification Reader</h1>
+      <p class="sub" id="sub"></p>
+    </div>
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="Prompt strategy">
+        <button type="button" data-strategy="ner-guided" aria-pressed="true">NER-guided</button>
+        <button type="button" data-strategy="zero-shot" aria-pressed="false">Zero-shot</button>
+      </div>
+      <div class="seg" role="group" aria-label="Layout">
+        <button type="button" data-view="facing" aria-pressed="true">One model</button>
+        <button type="button" data-view="compare" aria-pressed="false">All models</button>
+      </div>
+      <label class="search" for="q">
+        <span aria-hidden="true">⌕</span>
+        <input id="q" type="search" placeholder="Highlight a term, e.g. vancomycin" autocomplete="off">
+        <button type="button" id="clearq" aria-label="Clear highlight">clear</button>
+      </label>
+    </div>
+  </header>
+
+  <div class="legend" aria-label="Output status legend">
+    <span><span class="dot ok"></span> usable simplification</span>
+    <span><span class="dot cut"></span> cut off / incomplete</span>
+    <span><span class="dot leak"></span> not a simplification (model reasoning or copied prompt)</span>
+    <span><span class="dot missing"></span> no output (quota or error)</span>
+  </div>
+
+  <div class="layout">
+    <nav class="index" id="index" aria-label="Reports"></nav>
+    <main id="main" style="display:grid;gap:14px;min-width:0">
+      <div class="mobile-pick"><label for="pick" class="page-label">Report</label><select id="pick"></select></div>
+      <div class="head">
+        <div><div class="kind" id="kind"></div><h2 id="title"></h2></div>
+        <div class="pager"><button type="button" id="prev">← Previous</button><button type="button" id="next">Next →</button></div>
+      </div>
+      <div id="view"></div>
+    </main>
+  </div>
+</div>
+
+<script id="data" type="application/json">/*__DATA__*/[]</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const TYPE_LABEL = { discharge: "Discharge summaries", pathology: "Pathology reports", radiology: "Radiology (MRI)" };
+  const NOTE = {
+    leak: "Not a simplification. The model ran out of its output budget while reasoning, and the pipeline saved its reasoning notes instead. Excluded from the analysis.",
+    cut: "Cut off or incomplete: the output stops before covering the whole report (the model's token budget ran out). Excluded from the analysis.",
+    echo: "Not a simplification. The model copied the entity list from its prompt (labels such as [MILD] and \"MUST explain\") instead of writing plain prose. Excluded from the analysis.",
+    missing: "No output for this model.",
+  };
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("simreader." + k); return v == null ? d : v; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem("simreader." + k, v); } catch (e) {} },
+  };
+
+  let state = {
+    idx: 0,
+    strategy: store.get("strategy", "ner-guided"),
+    view: store.get("view", "facing"),
+    model: store.get("model", ""),
+    q: "",
+  };
+  const fromHash = decodeURIComponent(location.hash.slice(1));
+  const hashIdx = DATA.findIndex(s => s.id === fromHash);
+  if (hashIdx >= 0) state.idx = hashIdx;
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  // Summary line
+  const all = DATA.flatMap(s => s.outputs);
+  const usable = all.filter(o => o.state === "ok").length;
+  $("sub").textContent = `${DATA.length} source reports · ${all.length} model outputs · ${usable} usable simplifications`;
+
+  function outputsFor(s) { return s.outputs.filter(o => o.strategy === state.strategy); }
+
+  function highlightTerms(text) {
+    const q = state.q.trim();
+    if (!q) return [];
+    if (text.toLowerCase().includes(q.toLowerCase())) return [q];
+    return q.split(/\s+/).filter(w => w.length >= 4);
+  }
+
+  function renderText(container, text, cls) {
+    container.replaceChildren();
+    container.className = "doc" + (cls ? " " + cls : "");
+    const terms = highlightTerms(text).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+    const re = terms.length ? new RegExp("(" + terms.join("|") + ")", "gi") : null;
+    const paras = text.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+    if (!paras.length) { container.append(el("p", "empty", "Empty.")); return; }
+    for (const para of paras) {
+      const p = el("p");
+      if (!re) { p.textContent = para; }
+      else {
+        para.split(re).forEach((part, i) => {
+          if (!part) return;
+          if (i % 2 === 1) p.append(el("mark", null, part)); else p.append(document.createTextNode(part));
+        });
+      }
+      container.append(p);
+    }
+  }
+
+  function dotsFor(s) {
+    const d = el("span", "dots");
+    for (const o of outputsFor(s)) {
+      const x = el("span", "dot " + o.state);
+      x.title = `${o.name}: ${o.state}`;
+      d.append(x);
+    }
+    return d;
+  }
+
+  function renderIndex() {
+    const nav = $("index"); nav.replaceChildren();
+    const pick = $("pick"); pick.replaceChildren();
+    for (const type of ["discharge", "pathology", "radiology"]) {
+      const group = el("div", "group");
+      group.append(el("h2", null, TYPE_LABEL[type]));
+      const ul = el("ul");
+      DATA.forEach((s, i) => {
+        if (s.type !== type) return;
+        const li = el("li");
+        const b = el("button", "item");
+        b.type = "button";
+        b.setAttribute("aria-current", i === state.idx ? "true" : "false");
+        b.append(el("span", "id", s.id), dotsFor(s));
+        b.addEventListener("click", () => go(i));
+        li.append(b); ul.append(li);
+        const opt = el("option", null, `${s.id} · ${TYPE_LABEL[type]}`); opt.value = i; opt.selected = i === state.idx; pick.append(opt);
+      });
+      group.append(ul); nav.append(group);
+    }
+  }
+
+  function metaLine(o) {
+    const m = el("div", "meta");
+    const add = (k, v) => { if (v == null || v === "") return; const s = el("span"); s.append(k + " "); s.append(el("b", null, String(v))); m.append(s); };
+    add("words", o.words);
+    add("grade level", o.fkgl != null ? o.fkgl.toFixed(1) : null);
+    add("numbers kept", o.numbers != null ? Math.round(o.numbers * 100) + "%" : null);
+    add("entities kept", o.coverage != null ? Math.round(o.coverage * 100) + "%" : null);
+    return m;
+  }
+
+  function notices(o) {
+    const frag = document.createDocumentFragment();
+    if (o.state !== "ok") {
+      const n = el("div", "notice " + o.state, NOTE[o.state] + (o.error ? " " + o.error : ""));
+      frag.append(n);
+    }
+    if (o.ranOn) frag.append(el("div", "notice sub", `Labelled ${o.name}, but this output was produced by ${o.ranOn} (the requested model was over quota).`));
+    if (o.strategy === "ner-guided" && !o.entities && o.state !== "missing") {
+      frag.append(el("div", "notice sub", "The entity-extraction step failed for this run, so the model used the plain zero-shot prompt without an entity list."));
+    }
+    return frag;
+  }
+
+  function checklist(o) {
+    if (!o.entities || (!o.found.length && !o.missed.length)) return null;
+    const box = el("div", "checklist");
+    box.append(el("h3", null, `Extracted entities · ${o.found.length} kept, ${o.missed.length} not found`));
+    box.append(el("p", null, "Entities this model extracted in step 1 and was told to keep. Click one to highlight it in both texts. Matching is automatic, so check misses by eye."));
+    const chips = el("div", "chips");
+    for (const e of o.missed) chips.append(chip(e, "miss"));
+    for (const e of o.found) chips.append(chip(e, "hit"));
+    box.append(chips);
+    return box;
+  }
+  function chip(text, cls) {
+    const c = el("button", "chip " + cls, text.length > 70 ? text.slice(0, 68) + "…" : text);
+    c.type = "button"; c.title = text;
+    c.addEventListener("click", () => { $("q").value = text; state.q = text; render(); });
+    return c;
+  }
+
+  function outputPage(o, withTabs, outs) {
+    const page = el("section", "page");
+    const top = el("div", "page-top");
+    if (withTabs) {
+      const tabs = el("div", "tabs"); tabs.setAttribute("role", "tablist");
+      for (const x of outs) {
+        const t = el("button", "tab"); t.type = "button"; t.setAttribute("role", "tab");
+        t.setAttribute("aria-selected", x === o ? "true" : "false");
+        t.append(el("span", "dot " + x.state), document.createTextNode(x.name));
+        t.addEventListener("click", () => { state.model = x.model; store.set("model", x.model); render(); });
+        tabs.append(t);
+      }
+      top.append(el("div", "page-label", "Simplified version"), tabs);
+    } else {
+      const lab = el("div", "page-label"); lab.append(el("span", "dot " + o.state), document.createTextNode(" " + o.name));
+      top.append(lab);
+    }
+    top.append(metaLine(o));
+    page.append(top, notices(o));
+    const doc = el("div");
+    if (o.state === "missing") { doc.className = "doc"; doc.append(el("p", "empty", "Nothing was generated.")); }
+    else renderText(doc, o.text);
+    page.append(doc);
+    const cl = checklist(o); if (cl) page.append(cl);
+    return page;
+  }
+
+  function sourcePage(s) {
+    const page = el("section", "page");
+    const top = el("div", "page-top");
+    top.append(el("div", "page-label", "Original report"));
+    const m = el("div", "meta"); const w = el("span"); w.append("words "); w.append(el("b", null, String(s.source.split(/\s+/).filter(Boolean).length))); m.append(w);
+    top.append(m);
+    const doc = el("div"); renderText(doc, s.source, "source");
+    page.append(top, doc);
+    return page;
+  }
+
+  function render() {
+    const s = DATA[state.idx];
+    $("kind").textContent = `${s.id} · ${TYPE_LABEL[s.type]}`;
+    $("title").textContent = s.title;
+    document.querySelectorAll("[data-strategy]").forEach(b => b.setAttribute("aria-pressed", b.dataset.strategy === state.strategy ? "true" : "false"));
+    document.querySelectorAll("[data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === state.view ? "true" : "false"));
+    renderIndex();
+
+    const view = $("view"); view.replaceChildren();
+    const outs = outputsFor(s);
+    if (!outs.length) {
+      const f = el("div", "facing"); f.append(sourcePage(s));
+      const p = el("section", "page"); p.append(el("p", "empty", "No outputs for this report with this prompt."));
+      f.append(p); view.append(f); return;
+    }
+    if (state.view === "compare") {
+      const wrap = el("div", "compare"); const grid = el("div", "compare-grid");
+      grid.append(sourcePage(s));
+      for (const o of outs) grid.append(outputPage(o, false));
+      wrap.append(grid); view.append(wrap);
+    } else {
+      const chosen = outs.find(o => o.model === state.model) || outs.find(o => o.state === "ok") || outs[0];
+      const f = el("div", "facing");
+      f.append(sourcePage(s), outputPage(chosen, true, outs));
+      view.append(f);
+    }
+  }
+
+  function go(i) {
+    state.idx = (i + DATA.length) % DATA.length;
+    history.replaceState(null, "", "#" + DATA[state.idx].id);
+    render();
+  }
+
+  document.querySelectorAll("[data-strategy]").forEach(b => b.addEventListener("click", () => { state.strategy = b.dataset.strategy; store.set("strategy", state.strategy); render(); }));
+  document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => { state.view = b.dataset.view; store.set("view", state.view); render(); }));
+  $("prev").addEventListener("click", () => go(state.idx - 1));
+  $("next").addEventListener("click", () => go(state.idx + 1));
+  $("pick").addEventListener("change", e => go(Number(e.target.value)));
+  let t;
+  $("q").addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 150); });
+  $("clearq").addEventListener("click", () => { $("q").value = ""; state.q = ""; render(); });
+  document.addEventListener("keydown", e => {
+    if (e.target.matches("input, select")) return;
+    if (e.key === "ArrowRight" || e.key === "j") go(state.idx + 1);
+    if (e.key === "ArrowLeft" || e.key === "k") go(state.idx - 1);
+  });
+  render();
+})();
+</script>

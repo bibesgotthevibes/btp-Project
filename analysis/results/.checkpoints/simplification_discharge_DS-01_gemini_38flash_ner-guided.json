@@ -1,0 +1,198 @@
+{
+  "trial_id": "simplification_discharge_DS-01_gemini_38flash_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-01",
+  "sample_title": "Discharge Summary (Row 0)",
+  "model": "gemini/3.8flash",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "gemini",
+  "prompt_tokens": 2593,
+  "completion_tokens": 1910,
+  "total_tokens": 8682,
+  "latency_seconds": 26.657,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPatient: male | Age: 42\nPrimary Diagnosis: Abdominal sepsis associated with acute on chronic kidney disease\n  Secondary: Crohn's disease\n  Secondary: Acute perforative abdomen (status post ileocolectomy and new anastomosis)\n  Secondary: History of intra-abdominal collection\nSymptoms at admission: Hypotension (low blood pressure); Fever; Fainting for 1 day\nAnomalies/Findings:\n  [CRITICAL] Abdominal sepsis\n  [CRITICAL] Acute on chronic kidney disease\n  [ABNORMAL] Hypotension (normal: 120/80 mmHg)\n  [ABNORMAL] Fever (normal: 98.6°F (37°C))\n  [ABNORMAL] Fainting (syncope)\n  [BORDERLINE] Borderline blood pressure (normal: 120/80 mmHg)\nProcedures performed:\n  • Ileocolectomy and creation of a new anastomosis\n  • Admission to monitored bed in red room and transfer to Intensive Care Unit (ICU) on 26/12/2021\nMedications:\n  • Vancomycin — Very strong antibiotic injection to kill severe bacterial infections.\n  • Meropenem — Broad-spectrum powerful antibiotic injection to treat severe belly infection.\n  • Ertapenem — Antibiotic medicine previously prescribed for deep abdominal infection. | Dosage: 1 g/day, intramuscularly, for 4 weeks\n  • Potassium chloride (KCl) 6% — Potassium mineral supplement taken by mouth to raise body salts. | Dosage: orally\n  • Loperamide — Loose motion tablet to slow down the gut and reduce stoma output. | Dosage: continuous\n  • Calcium carbonate — Calcium supplement for bones and to balance body minerals. | Dosage: continuous\n  • Cholestyramine — Powder medicine to bind stomach bile juices and control watery motions. | Dosage: continuous\n  • Muciloid — Fiber powder to bulk up stools and manage bowel movements. | Dosage: continuous\nFollow-up appointment: Follow-up appointment for hospitalization on 01/22\nFollow-up appointment: Proctology team follow-up\nOngoing treatment: Vancomycin and Meropenem antibiotic therapy\nOngoing treatment: Oral KCl 6% replacement\nOngoing treatment: Continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid\nHospital stay duration: 23 h\nOutcome: alive\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\nmale, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associated with acute on chronic kidney disease. [person] with crohn's disease, recently underwent a surgical procedure with ileocolectomy and creation of a new anastomosis after acute perforative abdomen. admitted today to a monitored bed in the red room with hypotension, fever and fainting for 1 day. [person] was recently admitted to [organization] for treatment of intra-abdominal collection, increased urinary output via ileostomy and worsening of renal function, being discharged on 11/15 with a schedule of ertapenem 1 g/day, intramuscularly, for 4 weeks. [person] presents with borderline blood pressure, eupneic on room air. at the time of evaluation, he denies any complaints. he reports maintaining physiological diuresis, without complaints. reports good ostomy function. antibiotic therapy with vancomycin meropenem was started, and [person] was transferred to the intensive care unit of [organization], under the care of the proctology team accepted by [person] from the intensive care unit, {omitted}. meropenem vancomycin replacement of kcl 6% orally continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid. 12/27/2021. follow-up appointment. [person] is discharged on leave to follow-up appointment for hospitalization on 01/22.\n\nOutput:\n",
+  "source_text": "male, 42 years old. {organization}. 26/12/2021. stay: 23 h, location: ward, payer: sus. self-referral. emergency. hospital care. [person] with crohn's disease, admitted due to abdominal sepsis associated with acute on chronic kidney disease. [person] with crohn's disease, recently underwent a surgical procedure with ileocolectomy and creation of a new anastomosis after acute perforative abdomen. admitted today to a monitored bed in the red room with hypotension, fever and fainting for 1 day. [person] was recently admitted to [organization] for treatment of intra-abdominal collection, increased urinary output via ileostomy and worsening of renal function, being discharged on 11/15 with a schedule of ertapenem 1 g/day, intramuscularly, for 4 weeks. [person] presents with borderline blood pressure, eupneic on room air. at the time of evaluation, he denies any complaints. he reports maintaining physiological diuresis, without complaints. reports good ostomy function. antibiotic therapy with vancomycin meropenem was started, and [person] was transferred to the intensive care unit of [organization], under the care of the proctology team accepted by [person] from the intensive care unit, {omitted}. meropenem vancomycin replacement of kcl 6% orally continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid. 12/27/2021. follow-up appointment. [person] is discharged on leave to follow-up appointment for hospitalization on 01/22.",
+  "output_text": "You are a 42-year-old male. You were admitted to the hospital on 26/12/2021 because of a severe infection in your belly called abdominal sepsis (a very serious body-wide infection starting in the abdomen). This infection was linked to your acute on chronic kidney disease (meaning your kidneys, which already had a long-term problem, suddenly got much worse). You also have Crohn's disease (a long-term condition that causes inflammation in your digestive system). Before this admission, you had an acute perforative abdomen (a sudden hole in your belly organs), for which you underwent a surgery called ileocolectomy (where a part of your small and large intestine was removed) and creation of a new anastomosis (where the remaining parts of your intestine were joined together). You also had a history of intra-abdominal collection (a build-up of fluid or pus inside your belly).\n\nWhen you came to the hospital, you had hypotension (low blood pressure), fever, and you had been fainting (losing consciousness) for 1 day. Your blood pressure was low (hypotension), while normal BP is 120/80 mmHg. You also had a fever (your body temperature was higher than the normal 98.6°F or 37°C). Your blood pressure was borderline (meaning it was close to low, normal BP is around 120/80 mmHg).\n\nYou were admitted to a monitored bed in the red room (a special area for close observation) and then transferred to the Intensive Care Unit (ICU) on 26/12/2021 for closer monitoring and treatment. Your hospital stay was for 23 hours.\n\nPreviously, after being discharged on 11/15, you were prescribed Ertapenem (an antibiotic medicine for deep abdominal infection) 1 gram per day, given as an injection into the muscle, for 4 weeks. During this hospital stay, you were started on Vancomycin (a very strong antibiotic injection to kill severe bacterial infections) and Meropenem (a broad-spectrum powerful antibiotic injection to treat severe belly infection). You are continuing to receive Vancomycin and Meropenem antibiotic therapy. You are also taking Potassium chloride (KCl) 6% (a potassium mineral supplement taken by mouth to raise body salts) orally. Other continuous medications you are taking include Loperamide (a loose motion tablet to slow down the gut and reduce stoma output), Calcium carbonate (a calcium supplement for bones and to balance body minerals), Cholestyramine (a powder medicine to bind stomach bile juices and control watery motions), and Muciloid (a fiber powder to bulk up stools and manage bowel movements).\n\nYou are now being discharged. You have a follow-up appointment for hospitalization on 01/22. You will also have a follow-up with the Proctology team (doctors specializing in the colon and rectum).",
+  "extra": {
+    "fallback_used": true,
+    "requested_model": "gemini-3.8-flash"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": "male",
+      "age": 42
+    },
+    "diagnoses": {
+      "primary": "Abdominal sepsis associated with acute on chronic kidney disease",
+      "primary_lay_explanation": "Severe blood and belly infection causing sudden worsening of long-standing kidney damage.",
+      "secondary": [
+        "Crohn's disease",
+        "Acute perforative abdomen (status post ileocolectomy and new anastomosis)",
+        "History of intra-abdominal collection"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "Hypotension (low blood pressure)",
+      "Fever",
+      "Fainting for 1 day"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Clinical Finding",
+        "finding": "Abdominal sepsis",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Severe body-wide infection coming from the tummy area.",
+        "severity": "critical"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Acute on chronic kidney disease",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Sudden sharp drop in already damaged kidney function.",
+        "severity": "critical"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Hypotension",
+        "value": null,
+        "normal_range": "120/80 mmHg",
+        "lay_explanation": "Low BP causing weakness and reduced blood supply to organs.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Fever",
+        "value": null,
+        "normal_range": "98.6°F (37°C)",
+        "lay_explanation": "High body temperature indicating active infection.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Fainting (syncope)",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Temporary blackout or loss of consciousness due to low blood flow.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Vital Sign",
+        "finding": "Borderline blood pressure",
+        "value": null,
+        "normal_range": "120/80 mmHg",
+        "lay_explanation": "Blood pressure sitting right on the edge of normal and low.",
+        "severity": "borderline"
+      }
+    ],
+    "procedures_performed": [
+      {
+        "name": "Ileocolectomy and creation of a new anastomosis",
+        "lay_explanation": "Surgery to cut away diseased bowel and reconnect the healthy intestinal ends.",
+        "date": null
+      },
+      {
+        "name": "Admission to monitored bed in red room and transfer to Intensive Care Unit (ICU)",
+        "lay_explanation": "Emergency admission to high-dependency emergency area followed by ICU care.",
+        "date": "26/12/2021"
+      }
+    ],
+    "medications": [
+      {
+        "name": "Vancomycin",
+        "purpose_lay": "Very strong antibiotic injection to kill severe bacterial infections.",
+        "timing_dosage": null
+      },
+      {
+        "name": "Meropenem",
+        "purpose_lay": "Broad-spectrum powerful antibiotic injection to treat severe belly infection.",
+        "timing_dosage": null
+      },
+      {
+        "name": "Ertapenem",
+        "purpose_lay": "Antibiotic medicine previously prescribed for deep abdominal infection.",
+        "timing_dosage": "1 g/day, intramuscularly, for 4 weeks"
+      },
+      {
+        "name": "Potassium chloride (KCl) 6%",
+        "purpose_lay": "Potassium mineral supplement taken by mouth to raise body salts.",
+        "timing_dosage": "orally"
+      },
+      {
+        "name": "Loperamide",
+        "purpose_lay": "Loose motion tablet to slow down the gut and reduce stoma output.",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Calcium carbonate",
+        "purpose_lay": "Calcium supplement for bones and to balance body minerals.",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Cholestyramine",
+        "purpose_lay": "Powder medicine to bind stomach bile juices and control watery motions.",
+        "timing_dosage": "continuous"
+      },
+      {
+        "name": "Muciloid",
+        "purpose_lay": "Fiber powder to bulk up stools and manage bowel movements.",
+        "timing_dosage": "continuous"
+      }
+    ],
+    "warning_signs_red_flags": [],
+    "follow_up_care": {
+      "appointments": [
+        "Follow-up appointment for hospitalization on 01/22",
+        "Proctology team follow-up"
+      ],
+      "ongoing_treatments": [
+        "Vancomycin and Meropenem antibiotic therapy",
+        "Oral KCl 6% replacement",
+        "Continuous medications: loperamide, calcium carbonate, cholestyramine, muciloid"
+      ],
+      "lifestyle_diet_advice": []
+    },
+    "stay_duration": "23 h",
+    "outcome": "alive"
+  },
+  "ner_extraction_latency_seconds": 10.896,
+  "ner_extraction_tokens": 3937,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 45.37,
+    "flesch_kincaid_grade_level": 12.41,
+    "smog_index": 14.91,
+    "gunning_fog": 16.53,
+    "coleman_liau": 11.94,
+    "num_words": 441,
+    "num_sentences": 20,
+    "num_syllables": 725,
+    "average_word_length": 4.97,
+    "average_word_frequency": 4.79,
+    "ttr": 0.5374,
+    "mtld": 82.91,
+    "proportion_difficult_words": 0.5986,
+    "rouge1_f1": 45.04,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 45.04,
+    "bertscore_precision": 19.05,
+    "bertscore_recall": 40.38,
+    "bertscore_f1": 50.25,
+    "sari": 13.22,
+    "sbert_cosine_similarity": 57.53,
+    "parenthetical_explanation_count": 22,
+    "parenthetical_explanation_rate": 4.99,
+    "jargon_source_count": 7,
+    "jargon_generated_count": 9,
+    "jargon_reduction_pct": -28.57,
+    "compression_ratio_chars": 1.861,
+    "compression_ratio_words": 2.12
+  }
+}
