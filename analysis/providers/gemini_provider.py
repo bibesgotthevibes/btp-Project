@@ -24,6 +24,34 @@ from ..config import (
     REQUEST_TIMEOUT,
 )
 
+def _result_from_response(data: dict, model_id: str, latency: float) -> GenerationResult:
+    """Build a result from a generateContent response, flagging cut-off output as an error."""
+    candidate = data.get("candidates", [{}])[0]
+    text = "".join(p.get("text", "") for p in candidate.get("content", {}).get("parts", []) if not p.get("thought"))
+    usage = data.get("usageMetadata", {})
+    finish = candidate.get("finishReason")
+    if finish == "MAX_TOKENS":
+        # Thinking models spend output budget on hidden reasoning; a cut-off answer is not a result
+        return GenerationResult(
+            status="error",
+            error=f"Output truncated (finishReason=MAX_TOKENS, thinking tokens={usage.get('thoughtsTokenCount')})",
+            provider="gemini",
+            model=model_id,
+            latency_seconds=latency,
+        )
+    return GenerationResult(
+        text=text.strip(),
+        status="success",
+        provider="gemini",
+        model=model_id,
+        prompt_tokens=usage.get("promptTokenCount"),
+        completion_tokens=usage.get("candidatesTokenCount"),
+        total_tokens=usage.get("totalTokenCount"),
+        latency_seconds=latency,
+        extra={"finish_reason": finish, "thinking_tokens": usage.get("thoughtsTokenCount")},
+    )
+
+
 class GeminiProvider(BaseProvider):
     def __init__(self, api_key: Optional[str] = None):
         self.api_key = (api_key or GEMINI_API_KEY or "").strip()
@@ -59,10 +87,6 @@ class GeminiProvider(BaseProvider):
             },
         }
 
-        # For models supporting thinkingConfig, allow text space by keeping thinking budget constrained
-        if any(v in model_id for v in ["2.5", "3.1", "3.8"]):
-            payload["generationConfig"]["thinkingConfig"] = {"thinkingBudget": 0}
-
         if system_prompt:
             payload["systemInstruction"] = {
                 "parts": [{"text": system_prompt}]
@@ -93,19 +117,7 @@ class GeminiProvider(BaseProvider):
 
                     if resp.status_code == 200:
                         data = resp.json()
-                        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-                        text = "".join([p.get("text", "") for p in parts if "text" in p])
-                        usage = data.get("usageMetadata", {})
-                        return GenerationResult(
-                            text=text.strip(),
-                            status="success",
-                            provider="gemini",
-                            model=model_id,
-                            prompt_tokens=usage.get("promptTokenCount"),
-                            completion_tokens=usage.get("candidatesTokenCount"),
-                            total_tokens=usage.get("totalTokenCount"),
-                            latency_seconds=latency,
-                        )
+                        return _result_from_response(data, model_id, latency)
 
                     status_code = resp.status_code
                     error_text = resp.text
@@ -119,23 +131,11 @@ class GeminiProvider(BaseProvider):
                     with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as response:
                         latency = time.time() - start_time
                         data = json.loads(response.read().decode("utf-8"))
-                        parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-                        text = "".join([p.get("text", "") for p in parts if "text" in p])
-                        usage = data.get("usageMetadata", {})
-                        return GenerationResult(
-                            text=text.strip(),
-                            status="success",
-                            provider="gemini",
-                            model=model_id,
-                            prompt_tokens=usage.get("promptTokenCount"),
-                            completion_tokens=usage.get("candidatesTokenCount"),
-                            total_tokens=usage.get("totalTokenCount"),
-                            latency_seconds=latency,
-                        )
+                        return _result_from_response(data, model_id, latency)
 
                 # Inspect HTTP error for retryable conditions
                 last_error = f"HTTP {status_code}: {error_text[:300]}"
-                if status_code in (429, 503) and "limit: 0" not in error_text and attempt < MAX_RETRIES:
+                if status_code in (429, 503) and attempt < MAX_RETRIES:
                     time.sleep(delay)
                     delay *= 2
                     continue
@@ -152,7 +152,7 @@ class GeminiProvider(BaseProvider):
                 latency = time.time() - start_time
                 err_body = e.read().decode("utf-8") if e.fp else str(e)
                 last_error = f"HTTP {e.code}: {err_body[:300]}"
-                if e.code in (429, 503) and "limit: 0" not in err_body and attempt < MAX_RETRIES:
+                if e.code in (429, 503) and attempt < MAX_RETRIES:
                     time.sleep(delay)
                     delay *= 2
                     continue

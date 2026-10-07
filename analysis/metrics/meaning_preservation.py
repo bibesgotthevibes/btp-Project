@@ -11,6 +11,19 @@ from typing import Dict, List
 from collections import Counter
 from .readability import tokenize_words
 
+_SBERT_MODEL = None
+_SBERT_FALLBACK_WARNED = False
+
+
+def _get_sbert_model():
+    """Load the SBERT model once per process."""
+    global _SBERT_MODEL
+    if _SBERT_MODEL is None:
+        from sentence_transformers import SentenceTransformer
+        _SBERT_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+    return _SBERT_MODEL
+
+
 def compute_sbert_cosine_similarity(
     source_text: str,
     generated_text: str,
@@ -25,14 +38,17 @@ def compute_sbert_cosine_similarity(
         return 0.0
 
     try:
-        from sentence_transformers import SentenceTransformer, util
-        # Attempt lightweight model if cached
-        model = SentenceTransformer("all-MiniLM-L6-v2")
+        from sentence_transformers import util
+        model = _get_sbert_model()
         emb_src = model.encode(source_text, convert_to_tensor=True)
         emb_gen = model.encode(generated_text, convert_to_tensor=True)
         cos_sim = util.cos_sim(emb_src, emb_gen).item()
         return round(float(cos_sim) * 100.0, 2)
-    except Exception:
+    except Exception as e:
+        global _SBERT_FALLBACK_WARNED
+        if not _SBERT_FALLBACK_WARNED:
+            print(f"  [WARN] SBERT unavailable ({e!r}); using char 3-gram cosine proxy instead")
+            _SBERT_FALLBACK_WARNED = True
         # Robust character 3-gram TF-IDF cosine similarity fallback
         def _get_char_ngrams(s: str, n: int = 3) -> Counter:
             clean = s.lower()

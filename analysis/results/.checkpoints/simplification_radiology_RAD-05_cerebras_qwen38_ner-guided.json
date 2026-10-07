@@ -1,0 +1,151 @@
+{
+  "trial_id": "simplification_radiology_RAD-05_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "radiology",
+  "sample_id": "RAD-05",
+  "sample_title": "Radiology MRI (7EKH3TEF3P)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 2585,
+  "completion_tokens": 1822,
+  "total_tokens": 4407,
+  "latency_seconds": 4.899,
+  "system_prompt": "You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nExam: Brain MRI of Brain\n  Sequences: T1-weighted, FLAIR, T2-weighted, DWI, ADC, T1 IR, SWI\n  Contrast: not mentioned\n  Clinical indication: Epilepsy\nNormal structures (reassure about these):\n  ✓ Brainstem\n  ✓ Basal ganglia\n  ✓ Vascular structures\n  ✓ Other parenchymal areas\n  ✓ Central and peripheral CSF spaces\n  ✓ Cavernous sinus\n  ✓ Sella\n  ✓ Suprasellar cisterns\n  ✓ Third ventricle\n  ✓ Lateral ventricles\n  ✓ Hemispheric cortical sulcal widths\n  ✓ Major cerebral vascular structures\n  ✓ Bilateral orbits\n  ✓ Paranasal sinuses\n  ✓ Nasopharynx\n  ✓ Middle ear aeration\n  ✓ Visualized bony structures\nAbnormal findings (MUST explain all of these):\n  [MODERATE] Left amygdala: Cavernoma | chronic | not applicable\n  [MODERATE] Left inferior frontal gyrus: Two cavernomas | chronic | not applicable\n  [MODERATE] Parasagittal area of the left superior frontal gyrus: Cavernoma | chronic | not applicable\n  [MODERATE] Left cingulate gyrus: Cavernoma with adjacent areas of chronic blood elements and sequela of prior hemorrhage | chronic | not applicable\n  [MODERATE] Left precentral gyrus: Cavernoma | chronic | not applicable\n  [MODERATE] Posterior part of the left temporal lobe (inferior temporal gyrus): Resection cavity of removed cavernoma with chronic blood elements around the cavity | chronic | not applicable\nIncidental findings:\n  • Arachnoid cyst in the posterior part of the cerebellum in the posterior fossa\n  • Retention cysts in both maxillary sinuses\nRadiologist impression: Findings related to resection of the removed cavernoma from the left inferior temporal gyrus. Cavernoma foci in the left amygdala, frontal parasagittal gyrus, cingulate gyrus, inferior frontal gyrus, and precentral gyrus, sequela of prior parenchymal hemorrhage adjacent to the left cingulate (underlying cavernoma presence cannot be excluded at this level).\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').\n2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.\n3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.\n4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):\n   - Explain what the finding means in plain words without causing unnecessary panic.\n   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.\n   - Clarify whether the finding is new, chronic, or requires further evaluation.\n5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.\n6. Write as continuous plain prose paragraphs without bullet points or headers.\n7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.\n8. Output only the simplified text, nothing else.\n9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following radiology report into plain English for the patient and family:\n\nOriginal Medical Report:\nBRAIN MRI\n\nClinical information: Epilepsy\n\nTechnique: Sagittal and axial T1-weighted; sagittal, axial FLAIR; axial T2-weighted, DWI, ADC. Coronal thin sections perpendicular to the hippocampi T2-weighted, FLAIR, T1 IR.\n\nFindings: \n\nA cavernoma is observed in the left amygdala. Two cavernomas are observed in the left inferior frontal gyrus, parasagittal area of the left superior frontal gyrus, cingulate gyrus, and left precentral gyrus. Adjacent to the cavernoma in the left cingulate gyrus, in the parasagittal area, areas of chronic blood elements and sequela of prior hemorrhage are observed.\n\nA resection cavity of the removed cavernoma is observed in the posterior part of the left temporal lobe, in the location of the inferior temporal gyrus. Chronic blood elements are present around the resection cavity.\n\nThe brainstem and basal ganglia appear normal. Vascular structures appear normal. \n\nSignal intensity of other parenchymal areas is normal. Central and peripheral CSF spaces are of normal width. No space-occupying lesion was detected in the cavernous sinus, sella and suprasellar cisterns, or brainstem. An arachnoid cyst is observed in the posterior part of the cerebellum in the posterior fossa. \n\nRetention cysts are observed in both maxillary sinuses. \n\nNo specific feature was detected in diffusion-ADC and SWI sections. \n\nThe third ventricle and both lateral ventricles are of normal width. Hemispheric cortical sulcal widths are compatible with the patient's age. \n\nMajor cerebral vascular structures are patent.\n\nBilateral orbits, paranasal sinuses, nasopharynx, and middle ear aeration are normal. \n\nVisualized bony structures are normal. \n\nImpression:\n\n•\tFindings related to resection of the removed cavernoma from the left inferior temporal gyrus.\n•\tCavernoma foci in the left amygdala, frontal parasagittal gyrus, cingulate gyrus, inferior frontal gyrus, and precentral gyrus, sequela of prior parenchymal hemorrhage adjacent to the left cingulate (underlying cavernoma presence cannot be excluded at this level).\n\nOutput:\n",
+  "source_text": "BRAIN MRI\n\nClinical information: Epilepsy\n\nTechnique: Sagittal and axial T1-weighted; sagittal, axial FLAIR; axial T2-weighted, DWI, ADC. Coronal thin sections perpendicular to the hippocampi T2-weighted, FLAIR, T1 IR.\n\nFindings: \n\nA cavernoma is observed in the left amygdala. Two cavernomas are observed in the left inferior frontal gyrus, parasagittal area of the left superior frontal gyrus, cingulate gyrus, and left precentral gyrus. Adjacent to the cavernoma in the left cingulate gyrus, in the parasagittal area, areas of chronic blood elements and sequela of prior hemorrhage are observed.\n\nA resection cavity of the removed cavernoma is observed in the posterior part of the left temporal lobe, in the location of the inferior temporal gyrus. Chronic blood elements are present around the resection cavity.\n\nThe brainstem and basal ganglia appear normal. Vascular structures appear normal. \n\nSignal intensity of other parenchymal areas is normal. Central and peripheral CSF spaces are of normal width. No space-occupying lesion was detected in the cavernous sinus, sella and suprasellar cisterns, or brainstem. An arachnoid cyst is observed in the posterior part of the cerebellum in the posterior fossa. \n\nRetention cysts are observed in both maxillary sinuses. \n\nNo specific feature was detected in diffusion-ADC and SWI sections. \n\nThe third ventricle and both lateral ventricles are of normal width. Hemispheric cortical sulcal widths are compatible with the patient's age. \n\nMajor cerebral vascular structures are patent.\n\nBilateral orbits, paranasal sinuses, nasopharynx, and middle ear aeration are normal. \n\nVisualized bony structures are normal. \n\nImpression:\n\n•\tFindings related to resection of the removed cavernoma from the left inferior temporal gyrus.\n•\tCavernoma foci in the left amygdala, frontal parasagittal gyrus, cingulate gyrus, inferior frontal gyrus, and precentral gyrus, sequela of prior parenchymal hemorrhage adjacent to the left cingulate (underlying cavernoma presence cannot be excluded at this level).",
+  "output_text": "This report is from a Brain MRI, which is a detailed scan of the brain using magnetic fields and radio waves, without any radiation. The scan was performed to investigate epilepsy (a condition causing seizures). The radiologist used several specific types of images, or sequences, to look at the brain in detail, including T1-weighted, FLAIR, T2-weighted, DWI, ADC, T1 IR, and SWI.\n\nFirst, it is good news that many important parts of the brain and head are normal. The brainstem (the part of the brain that connects to the spinal cord and controls basic life functions) and the basal ganglia (deep structures in the brain that help control movement) appear normal. The vascular structures (blood vessels) are normal, and the other areas of brain tissue (parenchyma) look healthy. The central and peripheral spaces filled with fluid (CSF) are of normal width. There are no tumors or masses in the cavernous sinus (a space at the base of the brain), the sella (the bony pocket holding the pituitary gland), the suprasellar cisterns (fluid spaces above the pituitary), or the brainstem. The third ventricle and both lateral ventricles (fluid-filled spaces in the center of the brain) are of normal width. The spaces between the folds of the brain (cortical sulci) are normal for the patient's age. The major cerebral vascular structures are open and working properly. The bilateral orbits (eye sockets), paranasal sinuses (air pockets in the face bones), nasopharynx (the upper part of the throat behind the nose), and middle ear aeration (air in the middle ear) are all normal. The visualized bony structures are also normal.\n\nHowever, the scan did find some abnormal areas. A cavernoma is a small, tangle of weak blood vessels that can leak blood. This is a chronic (long-standing) condition. The scan found a cavernoma in the left amygdala (a part of the brain involved in emotion and memory). There are also two cavernomas in the left inferior frontal gyrus (a part of the brain involved in speech and planning). Additionally, there is a cavernoma in the parasagittal area of the left superior frontal gyrus (the top front part of the brain), a cavernoma in the left cingulate gyrus (a part of the brain involved in attention and emotion), and a cavernoma in the left precentral gyrus (the area just in front of the motor strip, which controls movement). Near the cavernoma in the left cingulate gyrus, there are areas of old blood (chronic blood elements) and signs of a past bleed (sequela of prior hemorrhage). It is not possible to rule out another cavernoma right next to this area based on this scan.\n\nThere is also a resection cavity (a hole left after surgery) in the posterior part of the left temporal lobe (the side of the brain involved in hearing and language), specifically in the location of the inferior temporal gyrus. This is where a cavernoma was previously removed. There are also old blood elements around this surgical cavity.\n\nThere are two incidental findings, which are things found by chance that are usually not related to the main problem. There is an arachnoid cyst (a harmless fluid-filled sac) in the posterior part of the cerebellum (the part of the brain that controls balance and coordination) in the posterior fossa (the lower back part of the skull). There are also retention cysts (small, harmless fluid-filled sacs) in both maxillary sinuses (the sinuses behind the cheeks).\n\nIn summary, the main findings are related to the previous surgery to remove a cavernoma from the left inferior temporal gyrus. There are also several other cavernomas in the left amygdala, frontal parasagittal gyrus, cingulate gyrus, inferior frontal gyrus, and precentral gyrus, along with signs of a past bleed near the left cingulate area.",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "exam_info": {
+      "modality": "Brain MRI",
+      "sequences_used": [
+        "T1-weighted",
+        "FLAIR",
+        "T2-weighted",
+        "DWI",
+        "ADC",
+        "T1 IR",
+        "SWI"
+      ],
+      "contrast_used": "not mentioned",
+      "body_region": "Brain",
+      "clinical_indication": "Epilepsy"
+    },
+    "normal_findings": [
+      "Brainstem",
+      "Basal ganglia",
+      "Vascular structures",
+      "Other parenchymal areas",
+      "Central and peripheral CSF spaces",
+      "Cavernous sinus",
+      "Sella",
+      "Suprasellar cisterns",
+      "Third ventricle",
+      "Lateral ventricles",
+      "Hemispheric cortical sulcal widths",
+      "Major cerebral vascular structures",
+      "Bilateral orbits",
+      "Paranasal sinuses",
+      "Nasopharynx",
+      "Middle ear aeration",
+      "Visualized bony structures"
+    ],
+    "abnormal_findings": [
+      {
+        "location": "Left amygdala",
+        "finding": "Cavernoma",
+        "finding_lay": "A small cluster of abnormal blood vessels (cavernoma) in the left amygdala.",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Left inferior frontal gyrus",
+        "finding": "Two cavernomas",
+        "finding_lay": "Two small clusters of abnormal blood vessels in the left inferior frontal lobe.",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Parasagittal area of the left superior frontal gyrus",
+        "finding": "Cavernoma",
+        "finding_lay": "A small cluster of abnormal blood vessels in the upper part of the left frontal lobe near the midline.",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Left cingulate gyrus",
+        "finding": "Cavernoma with adjacent areas of chronic blood elements and sequela of prior hemorrhage",
+        "finding_lay": "A small cluster of abnormal blood vessels in the left cingulate gyrus with signs of previous bleeding nearby.",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Left precentral gyrus",
+        "finding": "Cavernoma",
+        "finding_lay": "A small cluster of abnormal blood vessels in the left precentral gyrus (motor area).",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Posterior part of the left temporal lobe (inferior temporal gyrus)",
+        "finding": "Resection cavity of removed cavernoma with chronic blood elements around the cavity",
+        "finding_lay": "Surgical site where a previous cavernoma was removed, with some residual blood products.",
+        "severity": "moderate",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      }
+    ],
+    "incidental_findings": [
+      "Arachnoid cyst in the posterior part of the cerebellum in the posterior fossa",
+      "Retention cysts in both maxillary sinuses"
+    ],
+    "measurements": [],
+    "impression": "Findings related to resection of the removed cavernoma from the left inferior temporal gyrus. Cavernoma foci in the left amygdala, frontal parasagittal gyrus, cingulate gyrus, inferior frontal gyrus, and precentral gyrus, sequela of prior parenchymal hemorrhage adjacent to the left cingulate (underlying cavernoma presence cannot be excluded at this level).",
+    "recommendations": []
+  },
+  "ner_extraction_latency_seconds": 2.296,
+  "ner_extraction_tokens": 2080,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 48.88,
+    "flesch_kincaid_grade_level": 11.79,
+    "smog_index": 14.15,
+    "gunning_fog": 15.53,
+    "coleman_liau": 11.08,
+    "num_words": 624,
+    "num_sentences": 29,
+    "num_syllables": 1004,
+    "average_word_length": 4.82,
+    "average_word_frequency": 4.79,
+    "ttr": 0.4087,
+    "mtld": 46.82,
+    "proportion_difficult_words": 0.5865,
+    "rouge1_f1": 52.93,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 52.93,
+    "bertscore_precision": 16.67,
+    "bertscore_recall": 35.62,
+    "bertscore_f1": 85.56,
+    "sari": 19.62,
+    "sbert_cosine_similarity": 80.52,
+    "parenthetical_explanation_count": 29,
+    "parenthetical_explanation_rate": 4.65,
+    "jargon_source_count": 9,
+    "jargon_generated_count": 10,
+    "jargon_reduction_pct": -11.11,
+    "compression_ratio_chars": 1.84,
+    "compression_ratio_words": 2.137
+  }
+}

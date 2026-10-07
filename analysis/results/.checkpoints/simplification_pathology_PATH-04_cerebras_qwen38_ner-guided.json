@@ -1,0 +1,128 @@
+{
+  "trial_id": "simplification_pathology_PATH-04_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "pathology",
+  "sample_id": "PATH-04",
+  "sample_title": "Pathology Report (ID103_1)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 2995,
+  "completion_tokens": 1142,
+  "total_tokens": 4137,
+  "latency_seconds": 2.788,
+  "system_prompt": "You are a medical pathology simplification assistant. Convert the following surgical pathology diagnostic report into simple, plain English that a patient and their family can understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nSpecimen: Prostate; Radical prostatectomy; weight 48.2g; dimensions 5.5 x 4.7 x 2.9 cm\n  Associated structure: seminal vesicles\n  Associated structure: ductus deferentes\n  Associated structure: vascular nerve bundles\nHistologic diagnosis: Acinar adenocarcinoma (bilateral (right > left))\n  ICD-O-3: 8140/3\nGleason Score: 4 + 4 = 8 | ISUP Grade Group: 4 | High-grade pattern: 5%\nInvasion status: Perineural invasion: absent; Lymphovascular invasion: absent; Extracapsular extension: absent; Seminal vesicle invasion: absent\nResection status: R0\n  Margin — apical: negative\n  Margin — basal: negative\n  Margin — seminal vesicles: negative\n  Margin — ductus deferentes: negative\n  Margin — vascular nerve bundles: negative\nAdditional finding: pT2b, pN0 (0/19), L0, V0, Pn0\nAdditional finding: Tertiary grade 3 (5%)\nAdditional finding: Frozen section diagnosis: Resection margins of the prostate free of tumor\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain what tissue or organ was examined (e.g. prostate specimen removed during surgery).\n2. Keep essential medical terms but immediately explain each in parentheses on first use, e.g. 'adenocarcinoma (a cancer that starts in the gland cells of an organ)'.\n3. Explain the cancer type, whether it is localized or spreading, and the grade in plain words:\n   - Explain Gleason score simply: e.g. 'Gleason score 7 (a grading system from 6 to 10 that shows how abnormal the cells look; 7 means moderately aggressive cells)'.\n   - Explain surgical margins simply: e.g. 'resection margins (the outer cut edge of the tissue removed by the surgeon; clear/R0 margins mean no cancer cells were touching the edge)'.\n   - Explain IHC stains simply: e.g. 'immunohistochemistry (special chemical dye tests that identify specific proteins in cancer cells)'.\n4. Preserve all measurements (weights, dimensions in cm or mm, percentages) accurately. Never fabricate or omit numbers.\n5. Write as continuous plain prose paragraphs without bullet points or headers.\n6. Maintain a calm, objective, and supportive tone. Do not provide speculative prognoses or medical advice beyond what is written in the report.\n7. Output only the simplified text, nothing else.\n8. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including specimen weight, dimensions, Gleason score primary + secondary + total + ISUP Grade Group, percentage of high-grade pattern, every margin location and its status, every IHC marker and its result, and invasion findings. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following surgical pathology report into plain English that a patient can understand:\n\nOriginal Medical Report:\nMaterial submitted: Prostate and seminal vesicles.\nClinical information:  Dignity? TNM? R0?\n\n\nPathological-anatomical report:\n\n\nSent for frozen section examination:\nMacroscopic:\nProstatectomy specimen with seminal vesicles, 48.2 g, 5.5 x 4.7 x 2.9 cm, seminal vesicles up to\n3 cm, color marking ventral black, dorsal blue. Deposition margins for frozen section: apical right (A), left (B), basal right (C,D), vascular nerve bundle right (E), left (F)(6 Bl, 6 x SS, R after kerosene embedding).\n2nd seminal vesicle deposition margin right (A), left (B). (2 Bl, R)\n3. right half of prostate from apex to base (A-L), left half of prostate from apex to base (M-X). (24Bl,kR)\n4th (seminal vesicles): Transition prostate right seminal vesicle (A,B), right seminal vesicle (C-E), transition prostate left seminal vesicle (F,G), left seminal vesicle (H-J).\n\nFrozen section diagnosis:\nResection margins of the prostate free of tumor.  \n\nMicroscopic:\nFibromuscular prostatic parenchyma with extensive infiltration by a predominantly cribriform and glandular-confluent malignant epithelial tumor tissue. The glands are lined by cells with a nuclear-plasma relation shifted in favor of the nucleus, the nuclei somewhat rounded with prominent nucleoli. Partial formation of cleavage artifacts to the adjacent parenchyma.\n - b.w. -\n\nThe tumor is predominantly located in the right half of the prostate, on the left near the apex, but a small area with small glandular tumor infiltration (< 5%). Seminal vesicles and ductus deferentes with regular structure. Perineural sheath infiltration is not recognizable.\n\nTumor blocks for extra examinations: 3B, 3D, 3F\n\nAssessment:\n1st-4th prostatectomy specimen Infiltration of both prostate lobes (right > left) by acinar adenocarcinoma of the prostate, confined to the prostate. Gleason score 4 + 4 = 8, tertiary grade 3.\n\nTumor-free apical and basal resection margins as well as tumor-free seminal vesicles, ductus deferentes and vascular nerve bundles on both sides.\n\nTaking into account the parallel submissions, this results in the following\n\nTNM classification (Prostate 2017, 8th edition): pT2b, pN0 (0/19), L0, V0, Pn0, R0;\n\nGleason score: 4 + 4 = 8; tertiary grade: 3 (5%)\n\nGleason pattern Gleason score ISUP grading group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3\n4 + 4 8 4 x\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. x\n8020/3 Undifferentiated carcinoma n.a.\n\nOutput:\n",
+  "source_text": "Material submitted: Prostate and seminal vesicles.\nClinical information:  Dignity? TNM? R0?\n\n\nPathological-anatomical report:\n\n\nSent for frozen section examination:\nMacroscopic:\nProstatectomy specimen with seminal vesicles, 48.2 g, 5.5 x 4.7 x 2.9 cm, seminal vesicles up to\n3 cm, color marking ventral black, dorsal blue. Deposition margins for frozen section: apical right (A), left (B), basal right (C,D), vascular nerve bundle right (E), left (F)(6 Bl, 6 x SS, R after kerosene embedding).\n2nd seminal vesicle deposition margin right (A), left (B). (2 Bl, R)\n3. right half of prostate from apex to base (A-L), left half of prostate from apex to base (M-X). (24Bl,kR)\n4th (seminal vesicles): Transition prostate right seminal vesicle (A,B), right seminal vesicle (C-E), transition prostate left seminal vesicle (F,G), left seminal vesicle (H-J).\n\nFrozen section diagnosis:\nResection margins of the prostate free of tumor.  \n\nMicroscopic:\nFibromuscular prostatic parenchyma with extensive infiltration by a predominantly cribriform and glandular-confluent malignant epithelial tumor tissue. The glands are lined by cells with a nuclear-plasma relation shifted in favor of the nucleus, the nuclei somewhat rounded with prominent nucleoli. Partial formation of cleavage artifacts to the adjacent parenchyma.\n - b.w. -\n\nThe tumor is predominantly located in the right half of the prostate, on the left near the apex, but a small area with small glandular tumor infiltration (< 5%). Seminal vesicles and ductus deferentes with regular structure. Perineural sheath infiltration is not recognizable.\n\nTumor blocks for extra examinations: 3B, 3D, 3F\n\nAssessment:\n1st-4th prostatectomy specimen Infiltration of both prostate lobes (right > left) by acinar adenocarcinoma of the prostate, confined to the prostate. Gleason score 4 + 4 = 8, tertiary grade 3.\n\nTumor-free apical and basal resection margins as well as tumor-free seminal vesicles, ductus deferentes and vascular nerve bundles on both sides.\n\nTaking into account the parallel submissions, this results in the following\n\nTNM classification (Prostate 2017, 8th edition): pT2b, pN0 (0/19), L0, V0, Pn0, R0;\n\nGleason score: 4 + 4 = 8; tertiary grade: 3 (5%)\n\nGleason pattern Gleason score ISUP grading group Applies\n= 3 + 3 = 6 1\n3 + 4 7a 2\n4 + 3 7b 3\n4 + 4 8 4 x\n4 + 5, 5 + 4, 5 + 5 9-10 5\n\nICD-O-3 Explanation Applies\n8140/3 Adenocarcinoma n.d. x\n8020/3 Undifferentiated carcinoma n.a.",
+  "output_text": "The doctor removed your prostate gland, along with the seminal vesicles (the small sacs that make fluid for semen), the ductus deferentes (the tubes that carry sperm), and the vascular nerve bundles (the bundles of blood vessels and nerves that help with erections). The total weight of the removed tissue was 48.2 grams, and it measured 5.5 x 4.7 x 2.9 cm. During the surgery, a quick test called a frozen section was done, and the result showed that the resection margins (the outer cut edges of the tissue) were free of tumor.\n\nThe final detailed examination found acinar adenocarcinoma (a cancer that starts in the gland cells of an organ). This cancer was found in both the right and left sides of the prostate, with more cancer on the right side than the left. The cancer is classified with an ICD-O-3 code of 8140/3. The severity of the cancer is measured by a Gleason score of 4 + 4 = 8, which places it in ISUP Grade Group 4. This score is a grading system from 6 to 10 that shows how abnormal the cells look; a score of 8 means the cells are quite aggressive. A small portion, specifically 5% of the tumor, had a tertiary grade 3 pattern, which refers to a specific type of cell structure.\n\nThe good news is that the cancer did not spread outside the prostate. There was no perineural invasion (cancer growing along the nerves), no lymphovascular invasion (cancer in the lymph or blood vessels), no extracapsular extension (cancer breaking through the outer layer of the prostate), and no seminal vesicle invasion (cancer in the seminal vesicles). The resection status is R0, which means the surgeon removed all the visible cancer, and no cancer cells were touching the cut edges. Specifically, the margins at the apical (top) end, the basal (bottom) end, the seminal vesicles, the ductus deferentes, and the vascular nerve bundles were all negative, meaning they were clear of cancer.\n\nThe final stage of the cancer is pT2b, which means the tumor was confined to the prostate but involved more than half of it. The pN0 (0/19) result means that out of 19 lymph nodes checked, none had cancer. The L0, V0, and Pn0 codes confirm that there was no cancer in the lymphatics, blood vessels, or nerves. Overall, the cancer was localized to the prostate and was completely removed.",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "specimen_info": {
+      "organ": "Prostate",
+      "procedure_type": "Radical prostatectomy",
+      "weight_grams": 48.2,
+      "dimensions_cm": "5.5 x 4.7 x 2.9",
+      "associated_structures": [
+        "seminal vesicles",
+        "ductus deferentes",
+        "vascular nerve bundles"
+      ]
+    },
+    "histologic_diagnosis": {
+      "tumor_type": "Acinar adenocarcinoma",
+      "tumor_type_lay": "cancer that starts in the gland cells of the prostate",
+      "histologic_subtype": "acinar",
+      "distribution": "bilateral (right > left)",
+      "icd_o3_code": "8140/3"
+    },
+    "grading": {
+      "gleason_score_primary": 4,
+      "gleason_score_secondary": 4,
+      "gleason_total": 8,
+      "gleason_variant": null,
+      "isup_grade_group": 4,
+      "percent_high_grade_pattern": "5%"
+    },
+    "invasion_status": {
+      "perineural_invasion": "absent",
+      "lymphovascular_invasion": "absent",
+      "extracapsular_extension": "absent",
+      "seminal_vesicle_invasion": "absent"
+    },
+    "margin_status": {
+      "resection_status": "R0",
+      "margin_details": [
+        {
+          "location": "apical",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "basal",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "seminal vesicles",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "ductus deferentes",
+          "status": "negative",
+          "extent_mm": null
+        },
+        {
+          "location": "vascular nerve bundles",
+          "status": "negative",
+          "extent_mm": null
+        }
+      ]
+    },
+    "ihc_markers": [],
+    "additional_findings": [
+      "pT2b, pN0 (0/19), L0, V0, Pn0",
+      "Tertiary grade 3 (5%)",
+      "Frozen section diagnosis: Resection margins of the prostate free of tumor"
+    ]
+  },
+  "ner_extraction_latency_seconds": 1.437,
+  "ner_extraction_tokens": 2095,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 62.93,
+    "flesch_kincaid_grade_level": 10.39,
+    "smog_index": 11.89,
+    "gunning_fog": 13.47,
+    "coleman_liau": 9.15,
+    "num_words": 404,
+    "num_sentences": 17,
+    "num_syllables": 572,
+    "average_word_length": 4.46,
+    "average_word_frequency": 4.88,
+    "ttr": 0.4554,
+    "mtld": 56.12,
+    "proportion_difficult_words": 0.6064,
+    "rouge1_f1": 40.11,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 40.11,
+    "bertscore_precision": 18.56,
+    "bertscore_recall": 19.74,
+    "bertscore_f1": 55.71,
+    "sari": 7.79,
+    "sbert_cosine_similarity": 55.01,
+    "parenthetical_explanation_count": 11,
+    "parenthetical_explanation_rate": 2.72,
+    "jargon_source_count": 14,
+    "jargon_generated_count": 6,
+    "jargon_reduction_pct": 57.14,
+    "compression_ratio_chars": 0.936,
+    "compression_ratio_words": 1.063
+  }
+}

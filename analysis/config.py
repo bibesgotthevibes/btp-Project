@@ -104,5 +104,5 @@ REQUEST_TIMEOUT = 120      # seconds
 # ── Experiment Grid Dimensions ────────────────────────────────────────────────
 TASKS = ["summarization", "simplification"]
 DATATYPES = ["discharge", "pathology", "radiology"]
-STRATEGIES = ["zero-shot", "few-shot"]
+STRATEGIES = ["zero-shot", "few-shot", "ner-guided"]
 MODELS = list(MODEL_ENDPOINTS.keys())

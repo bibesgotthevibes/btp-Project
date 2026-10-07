@@ -1,0 +1,297 @@
+{
+  "trial_id": "simplification_discharge_DS-05_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-05",
+  "sample_title": "Discharge Summary (Row 14)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 8197,
+  "completion_tokens": 3773,
+  "total_tokens": 11970,
+  "latency_seconds": 8.616,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPatient: female | Age: 60\nPrimary Diagnosis: Liver Cirrhosis\n  Secondary: Septic Shock (resolved)\n  Secondary: Acute Respiratory Failure\n  Secondary: Staphylococcus Aureus Bacteremia (Blood Infection)\n  Secondary: Acute Kidney Injury (resolved)\n  Secondary: Pleural Effusion (Fluid around lungs)\n  Secondary: Ascites (Fluid in belly)\n  Secondary: Diabetes Mellitus\n  Secondary: Systemic Arterial Hypertension\n  Secondary: Non-toxic Multinodular Goiter\n  Secondary: Anxiety and Depression\n  Secondary: Spondyloarthrosis\n  Secondary: Fibroadenoma (Breast nodule)\nSymptoms at admission: Dyspnea (Shortness of breath); Obtunded (Reduced consciousness); Peripheral cyanosis (Blue skin due to low oxygen); Livedo reticularis (Skin discoloration); Hypotension (Low blood pressure); Massive ascites (Belly swelling); Weight gain\nAnomalies/Findings:\n  [CRITICAL] Oxygen Saturation = 85% (normal: 95-100%)\n  [ABNORMAL] Blood Glucose = 164 mg/dL (normal: 70-100 mg/dL)\n  [ABNORMAL] Serum Albumin = 2.1 g/dL (normal: 3.5-5.0 g/dL)\n  [NORMAL] LDH (Lactate Dehydrogenase) = 72 U/L (normal: 140-280 U/L)\n  [ABNORMAL] Folic Acid = 1.29 ng/mL (normal: 3.37 ng/mL)\n  [CRITICAL] INR (Coagulation) = 4.4 (normal: 0.8-1.2)\n  [ABNORMAL] Bilateral Pleural Effusion\n  [ABNORMAL] Cardiomegaly\n  [ABNORMAL] Pressure Injuries\nProcedures performed:\n  • Paracentesis on 09/19/2022\n  • Thoracentesis on 09/19/2022\n  • Thoracentesis on 09/23/2022\n  • Thoracentesis on 10/06/2022\n  • Thoracentesis on 10/10/2022\n  • Thoracentesis on 10/15/2022\n  • Orotracheal Intubation on 09/18/2022\n  • Extubation on 10/03/2022\n  • Transthoracic Echocardiography\n  • POCUS (Point of Care Ultrasound) on 09/19/2022\nMedications:\n  • Insulin NPH — Controls blood sugar. | Dosage: 1008 (likely 10 units AM, 8 units PM or similar, text says 1008)\n  • Glifage XR (Metformin) — Controls blood sugar. | Dosage: 500 mg: 2 tablets at lunch and 2 tablets at dinner\n  • Simvastatin — Lowers cholesterol. | Dosage: 20 mg/day\n  • Losartan — Lowers blood pressure. | Dosage: 50 mg: 1 tablet every 12 hours\n  • Hydrochlorothiazide — Water pill to reduce fluid. | Dosage: 1x day\n  • Sertraline — For depression and anxiety. | Dosage: 50 mg: 1 tablet every 12 hours\n  • Gabapentin — For nerve pain. | Dosage: 300 mg/day\n  • Calcium and Vitamin D — For bone health.\n  • Amitriptyline — For pain or sleep. | Dosage: 25 mg\n  • Propranolol — Protects against bleeding in liver disease. | Dosage: 10 mg every 12 hours\n  • Omeprazole — Reduces stomach acid. | Dosage: 40 mg\n  • Furosemide — Water pill to reduce fluid in belly and lungs. | Dosage: 40 mg twice a day\n  • Spironolactone — Water pill to reduce fluid in belly. | Dosage: 50 mg/d\n  • Levofloxacin — Antibiotic for infection. | Dosage: Started 09/23, stopped 09/26\n  • Oxacillin — Antibiotic for Staph infection. | Dosage: Started 09/24, stopped 10/08\n  • Meropenem — Strong antibiotic for severe infection. | Dosage: Started 09/27, stopped 10/08\nWarning signs to mention:\n  ⚠ Signs of infection (fever, chills)\n  ⚠ Worsening shortness of breath\n  ⚠ Bleeding (vomiting blood, black stools)\n  ⚠ Confusion or drowsiness\n  ⚠ Significant weight gain or swelling\nFollow-up appointment: AGAF (Gastroenterology) visit on 18/01\nOngoing treatment: Adjustment of diuretic doses with monitoring of kidney function\nOngoing treatment: Care for pressure injuries (bedsores)\nOngoing treatment: Weaning from oxygen therapy\nHospital stay duration: 01 m 11 h\nOutcome: alive\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\nliver cirrhosis. admission: 09/19/2022, discharge: 10/19/2022, stay: 01 m 11 h, location: ward, payer: SUS. 60 years old, female, from [address], incomplete high school education, works as a cleaner. Anthropometry: estimated weight: 60 kg predicted weight: 57 kg height 164 cm, problem: 1 resolved septic shock with pulmonary focus, acute respiratory failure, hypotension decreased level of consciousness, blood culture with growth of staphylococcus aureus oxas, coronavirus infection in march rtpcr 03/15 2 acute kidney injury kdigo 1 resolved pre-renal, 3 cirrhosis pleural effusion need for paracentesis and relief thoracentesis paracentesis 09/19: blood gas: 1.61 albumin: 0.49 serum albumin: 2.1 100 gb glucose: 164 ldh: 72 serum: 314 thoracentesis 09/19: transudate protein: 2 serum: 7.7 ldh: 72 serum: 279 pH: 7.378 albumin: 0.61 serum: 1.9 amylase: 117 glucose: 183 gb: 100, negative culture thoracentesis 09/23/2022: drained 700 ml. transudate thoracentesis 10/06/2022: drained 1000 ml thoracentesis 10/10/2022: drained 1000 ml. transudate thoracentesis 10/15/2022: drained 1000 ml. history of current illness: [person] diagnosed with liver cirrhosis of etiology to be clarified in follow-up with the gastroclinic at [organization]. underwent a consultation on 02/09/2022, when she was advised to increase the furosemide to 40 mg twice daily and spironolactone to 50 mg/d due to massive ascites, dyspnea, and weight gain. Paracentesis was also performed on the same day, with drainage of 4.1 liters of ascitic fluid. She underwent paracentesis again on 13/09, with 1.4 liters of fluid drained. [person] was referred from the emergency care unit with information from a medical report reporting admission on 18/09/2022, with 85% room air desaturation, obtunded, with peripheral cyanosis and livedo reticularis, followed with uneventful orotracheal intubation. {omitted}, reporting onset of dyspnea this morning. 4 ampoules of furosemide were administered, with no urine output, according to the transport team. I admit [person] intubated, sedated with midazolam and fentanyl, blocked with rocuronium, hemodynamically compensated with norepinephrine 20 ml/h. hospitalization summary: [person] initially admitted to {omitted}, where hypotheses of acute respiratory failure secondary to coronavirus, congestion or sepsis of pulmonary focus were considered. upon admission, empirical ceftriaxone was started and diagnostic paracentesis was performed, with no signs of spontaneous bacterial peritonitis. on the same day, thoracentesis was performed with removal of 1000 ml of fluid, suggestive of transudate, and relief paracentesis was performed with removal of 4000 ml, with albumin being administered due to fluid removal. Also on 09/19, a pocus was performed that showed lines and pleural thickening, which, associated with the history of respiratory failure and need for vasoactive drugs, strengthened the hypothesis of sepsis of pulmonary focus as the cause of respiratory failure. Therefore, it was decided to associate clarithromycin with clindamycin on 09/24, after observing growth of Staphylococcus aureus in blood culture, antibiotic therapy was changed from ceftriaxone clarithromycin to levofloxacin oxacillin as directed by the [organization]. On the same day, it was decided to request an echocardiogram to screen for endocarditis, given the growth of this microorganism in blood culture. On the morning of 09/27, it was decided to escalate antibiotic therapy to meropenem oxacillin due to worsening of CRP associated with increased need for vasoactive drugs. evolved with improvement in the ventilatory status, with extubation on 10/03, and withdrawal of supplemental oxygen therapy on 10/13. resolution of the septic condition, with completion of antibiotic therapy on 10/08. remained hospitalized due to the need for 24-hour nursing care, care for pressure injuries, need for oxygen therapy, management of ascites and pleural effusion, without social support for discharge home. personal history: 1 first diagnosis of liver cirrhosis of etiology to be clarified child b7 meld 9 metabolic?, child b8, meld 12 2021, child b8, meld meld 10 2021 under follow-up since 2019 due to alteration in transaminases biopsy on 07/2020 with grade i fibrosis disease progression? sample not significant? 2021 biopsy: chronic liver disease with intense fibrosis and moderate steatosis, favoring the diagnosis of grade 2 steatohepatitis stage 3 complications: ascites, shp with medium-caliber ve, spontaneous bacterial peritonitis, eh, upper gastrointestinal bleeding etiological investigation: 2020 liver biopsy: widened portal space due to mild grade I fibrosis, mild inflammatory infiltrate with mononuclear predominance grade I, minimal hepatitis at the interface, diffuse macro and microgoticular steatosis plus 60% parenchyma grade III, balloon-shaped degeneration grade I, nuclear vacuolization of hepatocytes mild to moderate steatohepatitis nash 6 therapeutic trial for hai with azathioprine and prednisone 11/03 01/14 no satisfactory response drop in tgp, but maintenance of high tgo hai score before treatment 02/2/2/3/1/2/3 9 fan: 1: 350, anti-smooth muscle 1: 80 alteration of canalicular and transaminases alteration international normalized ratio: 06/08: 1.0 / 29/09: 1.9 / 22/10: 4.4 differential diagnosis: fan: 1: 320 homogeneous nuclear anti-mitochondria non-reactive anti-smooth muscle 1: 80 anti-lkm negative ceruloplasmin: 0.305 alpha feto: 6.17 cytomegalovirus: negative epstein bar negative cea: 4.48 n: 4.9 ca 125: 25 n: 21 ca19.9: 27 shp: digestive endoscopy 2021 medium-caliber esophageal varices with no signs of recent bleeding mild hypertensive gastropathy exanthematous bulboduodenitis 2 weight loss to be clarified 10 kg in 9 months malabsorptive syndrome to be clarified folic acid deficiency decompensation diabetes mellitus?? occult neoplasia? depressive disorder? investigation: folic acid 1.29 deficient 0.35 3.37 prot/creat ratio 120 300 immunoglobulin iga dosage: 917 40350 vitamin d 04/01: 34 antitga 04/01: positive 3, recent hospitalization: epistaxis, hematuria and melena coagulopathy due to consumption? progression of liver disease? 12/30 01/01 comorbidities allergy to dipyrone chickenpox and measles in childhood tonsillectomy for hypertrophy of pharyngeal tonsils 15 years ago diabetes mellitus 15 years ago systemic arterial hypertension 10 years ago nontoxic multinodular goiter diagnosed in 2019 anxiety disorder, depression diagnosed 6 years ago spondyloarthrosis spine, low back pain painful nodule in the inferolateral quadrant of the right breast with biopsy performed in November 2019, indicating probable fibroadenoma ex-smoker habits claims to have smoked 1 pack/day for only a few months reports a history of drinking 34 cans of beer per weekend, but denies daily use of the substance claims to have stopped 2 years ago denies use of illicit drugs last sexual activity 1 year ago. Denies sexual activity without a condom Denies use of NSAIDs Reports sporadic use of mate tea and lemon balm Denies tattoos and piercings Medications used prior to hospitalization: Insulin NPH 1008 Glifage XR 500 mg: 2 tablets at lunch and 2 tablets at dinner Simvastatin 20 mg/day Losartan 50 mg: 1 tablet every 12 hours Hydrochlorothiazide: 1x day Sertraline 50 mg: 1 tablet every 12 hours Gabapentin 300 mg/day Calcium and vitamin D Amitriptyline 25 mg Propranolol 10 mg every 12 hours Omeprazole 40 mg Furosemide 40 mg twice a day Spironolactone 50 mg/d External exams: 2020 mammogram: Right retroareolar breast nodule, negative biopsy for neoplasia Right breast: BIRADS 4 Left breast: BIRADS 1 upper digestive endoscopy 2020: distal non-erosive esophagitis, enanthematous pangastritis biopsy: helicobacter pylori antibiotic therapy: current: nothing previous ceftriaxone d0 09/19 09/23 clarithromycin d0 09/20 09/23 levofloxacin d0 09/23 09/26 oxacillin d0 09/24 10/08 meropenem d0 09/27 08/10 devices nasoenteral tube valproic acid previous devices: tot 09/18 09/26 tot 09/26 10/03 central venous access right internal jugular vein 09/19 09/28 indwelling urinary catheter 09/18 03/10 cultures: urine culture 09/19: negative urine culture 09/28: negative blood culture 09/19: staphylococcus aureus in 2 samples blood culture 09/24: staphylococcus epidermidis oxa r blood culture 09/28: staphylococcus capitis oxa r pleural fluid 09/19: negative pleural fluid 09/23: negative pleural fluid 09/24: negative ascitic fluid 09/19: negative catheter tip 09/28: negative tests: tomography 09/21: bilateral pulmonary opacities that may represent edema or inflammatory process. bilateral pleural effusion with atelectatic opacities in the lower lobes. cardiomegaly. transthoracic echocardiography: ejection fraction 59% [person], LVEDD 45. marked dilation of the left atrium. preserved ventricular systolic performance. normal left ventricular segmental mobility. mild mitral and tricuspid valve insufficiency. mild left ventricular diastolic dysfunction. schedule: adjustment of diuretic doses, with active monitoring of renal function; performance of relief paracentesis and thoracentesis; progress in weaning from oxygen therapy; assessment of nasoenteric tube removal; if there is good acceptance of oral diet; care for pressure injuries in sacral and trochanteric regions; scheduled return visit at agaf 18/01, having already spoken with [person] and [person]&#39;s family members about the severity of [person]&#39;s situation as well as prognostic possibilities. family members aware of the situation and a shared decision was made not to perform new invasive measures, {omitted}.\n\nOutput:\n",
+  "source_text": "liver cirrhosis. admission: 09/19/2022, discharge: 10/19/2022, stay: 01 m 11 h, location: ward, payer: SUS. 60 years old, female, from [address], incomplete high school education, works as a cleaner. Anthropometry: estimated weight: 60 kg predicted weight: 57 kg height 164 cm, problem: 1 resolved septic shock with pulmonary focus, acute respiratory failure, hypotension decreased level of consciousness, blood culture with growth of staphylococcus aureus oxas, coronavirus infection in march rtpcr 03/15 2 acute kidney injury kdigo 1 resolved pre-renal, 3 cirrhosis pleural effusion need for paracentesis and relief thoracentesis paracentesis 09/19: blood gas: 1.61 albumin: 0.49 serum albumin: 2.1 100 gb glucose: 164 ldh: 72 serum: 314 thoracentesis 09/19: transudate protein: 2 serum: 7.7 ldh: 72 serum: 279 pH: 7.378 albumin: 0.61 serum: 1.9 amylase: 117 glucose: 183 gb: 100, negative culture thoracentesis 09/23/2022: drained 700 ml. transudate thoracentesis 10/06/2022: drained 1000 ml thoracentesis 10/10/2022: drained 1000 ml. transudate thoracentesis 10/15/2022: drained 1000 ml. history of current illness: [person] diagnosed with liver cirrhosis of etiology to be clarified in follow-up with the gastroclinic at [organization]. underwent a consultation on 02/09/2022, when she was advised to increase the furosemide to 40 mg twice daily and spironolactone to 50 mg/d due to massive ascites, dyspnea, and weight gain. Paracentesis was also performed on the same day, with drainage of 4.1 liters of ascitic fluid. She underwent paracentesis again on 13/09, with 1.4 liters of fluid drained. [person] was referred from the emergency care unit with information from a medical report reporting admission on 18/09/2022, with 85% room air desaturation, obtunded, with peripheral cyanosis and livedo reticularis, followed with uneventful orotracheal intubation. {omitted}, reporting onset of dyspnea this morning. 4 ampoules of furosemide were administered, with no urine output, according to the transport team. I admit [person] intubated, sedated with midazolam and fentanyl, blocked with rocuronium, hemodynamically compensated with norepinephrine 20 ml/h. hospitalization summary: [person] initially admitted to {omitted}, where hypotheses of acute respiratory failure secondary to coronavirus, congestion or sepsis of pulmonary focus were considered. upon admission, empirical ceftriaxone was started and diagnostic paracentesis was performed, with no signs of spontaneous bacterial peritonitis. on the same day, thoracentesis was performed with removal of 1000 ml of fluid, suggestive of transudate, and relief paracentesis was performed with removal of 4000 ml, with albumin being administered due to fluid removal. Also on 09/19, a pocus was performed that showed lines and pleural thickening, which, associated with the history of respiratory failure and need for vasoactive drugs, strengthened the hypothesis of sepsis of pulmonary focus as the cause of respiratory failure. Therefore, it was decided to associate clarithromycin with clindamycin on 09/24, after observing growth of Staphylococcus aureus in blood culture, antibiotic therapy was changed from ceftriaxone clarithromycin to levofloxacin oxacillin as directed by the [organization]. On the same day, it was decided to request an echocardiogram to screen for endocarditis, given the growth of this microorganism in blood culture. On the morning of 09/27, it was decided to escalate antibiotic therapy to meropenem oxacillin due to worsening of CRP associated with increased need for vasoactive drugs. evolved with improvement in the ventilatory status, with extubation on 10/03, and withdrawal of supplemental oxygen therapy on 10/13. resolution of the septic condition, with completion of antibiotic therapy on 10/08. remained hospitalized due to the need for 24-hour nursing care, care for pressure injuries, need for oxygen therapy, management of ascites and pleural effusion, without social support for discharge home. personal history: 1 first diagnosis of liver cirrhosis of etiology to be clarified child b7 meld 9 metabolic?, child b8, meld 12 2021, child b8, meld meld 10 2021 under follow-up since 2019 due to alteration in transaminases biopsy on 07/2020 with grade i fibrosis disease progression? sample not significant? 2021 biopsy: chronic liver disease with intense fibrosis and moderate steatosis, favoring the diagnosis of grade 2 steatohepatitis stage 3 complications: ascites, shp with medium-caliber ve, spontaneous bacterial peritonitis, eh, upper gastrointestinal bleeding etiological investigation: 2020 liver biopsy: widened portal space due to mild grade I fibrosis, mild inflammatory infiltrate with mononuclear predominance grade I, minimal hepatitis at the interface, diffuse macro and microgoticular steatosis plus 60% parenchyma grade III, balloon-shaped degeneration grade I, nuclear vacuolization of hepatocytes mild to moderate steatohepatitis nash 6 therapeutic trial for hai with azathioprine and prednisone 11/03 01/14 no satisfactory response drop in tgp, but maintenance of high tgo hai score before treatment 02/2/2/3/1/2/3 9 fan: 1: 350, anti-smooth muscle 1: 80 alteration of canalicular and transaminases alteration international normalized ratio: 06/08: 1.0 / 29/09: 1.9 / 22/10: 4.4 differential diagnosis: fan: 1: 320 homogeneous nuclear anti-mitochondria non-reactive anti-smooth muscle 1: 80 anti-lkm negative ceruloplasmin: 0.305 alpha feto: 6.17 cytomegalovirus: negative epstein bar negative cea: 4.48 n: 4.9 ca 125: 25 n: 21 ca19.9: 27 shp: digestive endoscopy 2021 medium-caliber esophageal varices with no signs of recent bleeding mild hypertensive gastropathy exanthematous bulboduodenitis 2 weight loss to be clarified 10 kg in 9 months malabsorptive syndrome to be clarified folic acid deficiency decompensation diabetes mellitus?? occult neoplasia? depressive disorder? investigation: folic acid 1.29 deficient 0.35 3.37 prot/creat ratio 120 300 immunoglobulin iga dosage: 917 40350 vitamin d 04/01: 34 antitga 04/01: positive 3, recent hospitalization: epistaxis, hematuria and melena coagulopathy due to consumption? progression of liver disease? 12/30 01/01 comorbidities allergy to dipyrone chickenpox and measles in childhood tonsillectomy for hypertrophy of pharyngeal tonsils 15 years ago diabetes mellitus 15 years ago systemic arterial hypertension 10 years ago nontoxic multinodular goiter diagnosed in 2019 anxiety disorder, depression diagnosed 6 years ago spondyloarthrosis spine, low back pain painful nodule in the inferolateral quadrant of the right breast with biopsy performed in November 2019, indicating probable fibroadenoma ex-smoker habits claims to have smoked 1 pack/day for only a few months reports a history of drinking 34 cans of beer per weekend, but denies daily use of the substance claims to have stopped 2 years ago denies use of illicit drugs last sexual activity 1 year ago. Denies sexual activity without a condom Denies use of NSAIDs Reports sporadic use of mate tea and lemon balm Denies tattoos and piercings Medications used prior to hospitalization: Insulin NPH 1008 Glifage XR 500 mg: 2 tablets at lunch and 2 tablets at dinner Simvastatin 20 mg/day Losartan 50 mg: 1 tablet every 12 hours Hydrochlorothiazide: 1x day Sertraline 50 mg: 1 tablet every 12 hours Gabapentin 300 mg/day Calcium and vitamin D Amitriptyline 25 mg Propranolol 10 mg every 12 hours Omeprazole 40 mg Furosemide 40 mg twice a day Spironolactone 50 mg/d External exams: 2020 mammogram: Right retroareolar breast nodule, negative biopsy for neoplasia Right breast: BIRADS 4 Left breast: BIRADS 1 upper digestive endoscopy 2020: distal non-erosive esophagitis, enanthematous pangastritis biopsy: helicobacter pylori antibiotic therapy: current: nothing previous ceftriaxone d0 09/19 09/23 clarithromycin d0 09/20 09/23 levofloxacin d0 09/23 09/26 oxacillin d0 09/24 10/08 meropenem d0 09/27 08/10 devices nasoenteral tube valproic acid previous devices: tot 09/18 09/26 tot 09/26 10/03 central venous access right internal jugular vein 09/19 09/28 indwelling urinary catheter 09/18 03/10 cultures: urine culture 09/19: negative urine culture 09/28: negative blood culture 09/19: staphylococcus aureus in 2 samples blood culture 09/24: staphylococcus epidermidis oxa r blood culture 09/28: staphylococcus capitis oxa r pleural fluid 09/19: negative pleural fluid 09/23: negative pleural fluid 09/24: negative ascitic fluid 09/19: negative catheter tip 09/28: negative tests: tomography 09/21: bilateral pulmonary opacities that may represent edema or inflammatory process. bilateral pleural effusion with atelectatic opacities in the lower lobes. cardiomegaly. transthoracic echocardiography: ejection fraction 59% [person], LVEDD 45. marked dilation of the left atrium. preserved ventricular systolic performance. normal left ventricular segmental mobility. mild mitral and tricuspid valve insufficiency. mild left ventricular diastolic dysfunction. schedule: adjustment of diuretic doses, with active monitoring of renal function; performance of relief paracentesis and thoracentesis; progress in weaning from oxygen therapy; assessment of nasoenteric tube removal; if there is good acceptance of oral diet; care for pressure injuries in sacral and trochanteric regions; scheduled return visit at agaf 18/01, having already spoken with [person] and [person]&#39;s family members about the severity of [person]&#39;s situation as well as prognostic possibilities. family members aware of the situation and a shared decision was made not to perform new invasive measures, {omitted}.",
+  "output_text": "Your mother, a 60-year-old woman, was admitted to the hospital on 19/09/2022 and discharged on 19/10/2022, staying for a total of 1 month and 11 hours. She was admitted due to liver cirrhosis (permanent scarring of the liver), which had led to several serious complications. At the time of admission, she was experiencing septic shock (a life-threatening drop in blood pressure caused by a severe infection), acute respiratory failure (difficulty breathing requiring machine support), and reduced consciousness (obtunded state). Her blood tests showed a blood infection caused by Staphylococcus Aureus bacteria. She also had acute kidney injury (temporary kidney damage), which has since resolved. Other conditions present included pleural effusion (fluid around the lungs), ascites (fluid buildup in the belly), diabetes mellitus (sugar disease), systemic arterial hypertension (high blood pressure), non-toxic multinodular goiter (enlarged thyroid gland), anxiety and depression, spondyloarthrosis (spine joint wear), and a fibroadenoma (a benign breast nodule).\n\nWhen she first arrived, her oxygen saturation was critically low at 85% (normal range is 95-100%), her blood glucose was high at 164 mg/dL (normal range is 70-100 mg/dL), and her serum albumin was low at 2.1 g/dL (normal range is 3.5-5.0 g/dL). Her INR (a measure of how long it takes blood to clot) was critically high at 4.4 (normal range is 0.8-1.2), indicating a high risk of bleeding. Her LDH (a liver enzyme) was 72 U/L, which is within the normal range of 140-280 U/L, though this value is often monitored in liver disease. Her folic acid level was low at 1.29 ng/mL (normal range is 3.37 ng/mL). Imaging showed bilateral pleural effusion (fluid on both sides of the lungs) and cardiomegaly (an enlarged heart). She also developed pressure injuries (bedsores) during her stay.\n\nTo treat these issues, several procedures were performed. On 18/09/2022, she underwent orotracheal intubation (a tube placed in the windpipe to help her breathe). She was successfully extubated (the tube was removed) on 03/10/2022. On 19/09/2022, a paracentesis (a procedure to drain fluid from the belly) and a thoracentesis (a procedure to drain fluid from around the lungs) were performed. Additional thoracentesis procedures were carried out on 23/09/2022, 06/10/2022, 10/10/2022, and 15/10/2022 to remove accumulated fluid. A transthoracic echocardiography (an ultrasound of the heart) and a POCUS (Point of Care Ultrasound) were also performed on 19/09/2022 to assess her heart and fluid levels.\n\nShe received several medications to manage her conditions. For her sugar, she was given Insulin NPH (to control blood sugar) at a dosage noted as 1008, and Glifage XR (Metformin) to control blood sugar, taken as 2 tablets at lunch and 2 tablets at dinner. To lower her cholesterol, she took Simvastatin 20 mg daily. For her high blood pressure, she took Losartan 50 mg, 1 tablet every 12 hours, and Hydrochlorothiazide, a water pill to reduce fluid, once a day. For her mental health, she was prescribed Sertraline 50 mg, 1 tablet every 12 hours, for depression and anxiety. For nerve pain, she took Gabapentin 300 mg daily. For bone health, she received Calcium and Vitamin D. Amitriptyline 25 mg was given for pain or sleep. Propranolol 10 mg every 12 hours was prescribed to protect against bleeding in liver disease. Omeprazole 40 mg was given to reduce stomach acid. To reduce fluid in the belly and lungs, she took Furosemide 40 mg twice a day and Spironolactone 50 mg daily. Antibiotics were used to treat the infection: Levofloxacin was started on 23/09 and stopped on 26/09; Oxacillin was started on 24/09 and stopped on 08/10; and Meropenem, a strong antibiotic for severe infection, was started on 27/09 and stopped on 08/10.\n\nGoing forward, her treatment plan includes adjusting the doses of her water pills (diuretics) while closely monitoring her kidney function. She will continue to receive care for her pressure injuries and will gradually wean off oxygen therapy. You must watch for warning signs such as signs of infection (fever, chills), worsening shortness of breath, bleeding (vomiting blood or black stools), confusion or drowsiness, and significant weight gain or swelling. A follow-up appointment with the Gastroenterology department (AGAF) is scheduled for 18/01. The family has been informed about the severity of her condition and the prognosis, and a shared decision was made not to perform new invasive measures.",
+  "model_used": "qwen/qwen3.8-27b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": "female",
+      "age": 60
+    },
+    "diagnoses": {
+      "primary": "Liver Cirrhosis",
+      "primary_lay_explanation": "Severe scarring of the liver that stops it from working properly.",
+      "secondary": [
+        "Septic Shock (resolved)",
+        "Acute Respiratory Failure",
+        "Staphylococcus Aureus Bacteremia (Blood Infection)",
+        "Acute Kidney Injury (resolved)",
+        "Pleural Effusion (Fluid around lungs)",
+        "Ascites (Fluid in belly)",
+        "Diabetes Mellitus",
+        "Systemic Arterial Hypertension",
+        "Non-toxic Multinodular Goiter",
+        "Anxiety and Depression",
+        "Spondyloarthrosis",
+        "Fibroadenoma (Breast nodule)"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "Dyspnea (Shortness of breath)",
+      "Obtunded (Reduced consciousness)",
+      "Peripheral cyanosis (Blue skin due to low oxygen)",
+      "Livedo reticularis (Skin discoloration)",
+      "Hypotension (Low blood pressure)",
+      "Massive ascites (Belly swelling)",
+      "Weight gain"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Vital Sign",
+        "finding": "Oxygen Saturation",
+        "value": "85%",
+        "normal_range": "95-100%",
+        "lay_explanation": "Low oxygen level in the blood.",
+        "severity": "critical"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Blood Glucose",
+        "value": "164 mg/dL",
+        "normal_range": "70-100 mg/dL",
+        "lay_explanation": "High blood sugar level.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Serum Albumin",
+        "value": "2.1 g/dL",
+        "normal_range": "3.5-5.0 g/dL",
+        "lay_explanation": "Low protein level in blood, common in liver disease.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "LDH (Lactate Dehydrogenase)",
+        "value": "72 U/L",
+        "normal_range": "140-280 U/L",
+        "lay_explanation": "Enzyme level in blood.",
+        "severity": "normal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "Folic Acid",
+        "value": "1.29 ng/mL",
+        "normal_range": "3.37 ng/mL",
+        "lay_explanation": "Low level of a vitamin needed for blood cells.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Lab Result",
+        "finding": "INR (Coagulation)",
+        "value": "4.4",
+        "normal_range": "0.8-1.2",
+        "lay_explanation": "Blood takes too long to clot, risk of bleeding.",
+        "severity": "critical"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Bilateral Pleural Effusion",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Fluid buildup around both lungs.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Cardiomegaly",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Enlarged heart.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Pressure Injuries",
+        "value": null,
+        "normal_range": null,
+        "lay_explanation": "Bedsores on the back and hips.",
+        "severity": "abnormal"
+      }
+    ],
+    "procedures_performed": [
+      {
+        "name": "Paracentesis",
+        "lay_explanation": "Draining fluid from the belly to reduce swelling.",
+        "date": "09/19/2022"
+      },
+      {
+        "name": "Thoracentesis",
+        "lay_explanation": "Draining fluid from around the lungs to help breathing.",
+        "date": "09/19/2022"
+      },
+      {
+        "name": "Thoracentesis",
+        "lay_explanation": "Draining fluid from around the lungs.",
+        "date": "09/23/2022"
+      },
+      {
+        "name": "Thoracentesis",
+        "lay_explanation": "Draining fluid from around the lungs.",
+        "date": "10/06/2022"
+      },
+      {
+        "name": "Thoracentesis",
+        "lay_explanation": "Draining fluid from around the lungs.",
+        "date": "10/10/2022"
+      },
+      {
+        "name": "Thoracentesis",
+        "lay_explanation": "Draining fluid from around the lungs.",
+        "date": "10/15/2022"
+      },
+      {
+        "name": "Orotracheal Intubation",
+        "lay_explanation": "Inserting a tube into the throat to help breathing with a machine.",
+        "date": "09/18/2022"
+      },
+      {
+        "name": "Extubation",
+        "lay_explanation": "Removing the breathing tube.",
+        "date": "10/03/2022"
+      },
+      {
+        "name": "Transthoracic Echocardiography",
+        "lay_explanation": "Ultrasound of the heart to check its function.",
+        "date": null
+      },
+      {
+        "name": "POCUS (Point of Care Ultrasound)",
+        "lay_explanation": "Quick ultrasound at the bedside.",
+        "date": "09/19/2022"
+      }
+    ],
+    "medications": [
+      {
+        "name": "Insulin NPH",
+        "purpose_lay": "Controls blood sugar.",
+        "timing_dosage": "1008 (likely 10 units AM, 8 units PM or similar, text says 1008)"
+      },
+      {
+        "name": "Glifage XR (Metformin)",
+        "purpose_lay": "Controls blood sugar.",
+        "timing_dosage": "500 mg: 2 tablets at lunch and 2 tablets at dinner"
+      },
+      {
+        "name": "Simvastatin",
+        "purpose_lay": "Lowers cholesterol.",
+        "timing_dosage": "20 mg/day"
+      },
+      {
+        "name": "Losartan",
+        "purpose_lay": "Lowers blood pressure.",
+        "timing_dosage": "50 mg: 1 tablet every 12 hours"
+      },
+      {
+        "name": "Hydrochlorothiazide",
+        "purpose_lay": "Water pill to reduce fluid.",
+        "timing_dosage": "1x day"
+      },
+      {
+        "name": "Sertraline",
+        "purpose_lay": "For depression and anxiety.",
+        "timing_dosage": "50 mg: 1 tablet every 12 hours"
+      },
+      {
+        "name": "Gabapentin",
+        "purpose_lay": "For nerve pain.",
+        "timing_dosage": "300 mg/day"
+      },
+      {
+        "name": "Calcium and Vitamin D",
+        "purpose_lay": "For bone health.",
+        "timing_dosage": null
+      },
+      {
+        "name": "Amitriptyline",
+        "purpose_lay": "For pain or sleep.",
+        "timing_dosage": "25 mg"
+      },
+      {
+        "name": "Propranolol",
+        "purpose_lay": "Protects against bleeding in liver disease.",
+        "timing_dosage": "10 mg every 12 hours"
+      },
+      {
+        "name": "Omeprazole",
+        "purpose_lay": "Reduces stomach acid.",
+        "timing_dosage": "40 mg"
+      },
+      {
+        "name": "Furosemide",
+        "purpose_lay": "Water pill to reduce fluid in belly and lungs.",
+        "timing_dosage": "40 mg twice a day"
+      },
+      {
+        "name": "Spironolactone",
+        "purpose_lay": "Water pill to reduce fluid in belly.",
+        "timing_dosage": "50 mg/d"
+      },
+      {
+        "name": "Levofloxacin",
+        "purpose_lay": "Antibiotic for infection.",
+        "timing_dosage": "Started 09/23, stopped 09/26"
+      },
+      {
+        "name": "Oxacillin",
+        "purpose_lay": "Antibiotic for Staph infection.",
+        "timing_dosage": "Started 09/24, stopped 10/08"
+      },
+      {
+        "name": "Meropenem",
+        "purpose_lay": "Strong antibiotic for severe infection.",
+        "timing_dosage": "Started 09/27, stopped 10/08"
+      }
+    ],
+    "warning_signs_red_flags": [
+      "Signs of infection (fever, chills)",
+      "Worsening shortness of breath",
+      "Bleeding (vomiting blood, black stools)",
+      "Confusion or drowsiness",
+      "Significant weight gain or swelling"
+    ],
+    "follow_up_care": {
+      "appointments": [
+        "AGAF (Gastroenterology) visit on 18/01"
+      ],
+      "ongoing_treatments": [
+        "Adjustment of diuretic doses with monitoring of kidney function",
+        "Care for pressure injuries (bedsores)",
+        "Weaning from oxygen therapy"
+      ],
+      "lifestyle_diet_advice": [
+        "Monitor fluid intake",
+        "Low salt diet (implied by ascites management)"
+      ]
+    },
+    "stay_duration": "01 m 11 h",
+    "outcome": "alive"
+  },
+  "ner_model_used": "qwen/qwen3.8-27b",
+  "ner_reused": false,
+  "ner_raw_text": "{\n  \"patient_demographics\": {\n    \"gender\": \"female\",\n    \"age\": 60\n  },\n  \"diagnoses\": {\n    \"primary\": \"Liver Cirrhosis\",\n    \"primary_lay_explanation\": \"Severe scarring of the liver that stops it from working properly.\",\n    \"secondary\": [\n      \"Septic Shock (resolved)\",\n      \"Acute Respiratory Failure\",\n      \"Staphylococcus Aureus Bacteremia (Blood Infection)\",\n      \"Acute Kidney Injury (resolved)\",\n      \"Pleural Effusion (Fluid around lungs)\",\n      \"Ascites (Fluid in belly)\",\n      \"Diabetes Mellitus\",\n      \"Systemic Arterial Hypertension\",\n      \"Non-toxic Multinodular Goiter\",\n      \"Anxiety and Depression\",\n      \"Spondyloarthrosis\",\n      \"Fibroadenoma (Breast nodule)\"\n    ],\n    \"icd_codes_mentioned\": []\n  },\n  \"symptoms_at_admission\": [\n    \"Dyspnea (Shortness of breath)\",\n    \"Obtunded (Reduced consciousness)\",\n    \"Peripheral cyanosis (Blue skin due to low oxygen)\",\n    \"Livedo reticularis (Skin discoloration)\",\n    \"Hypotension (Low blood pressure)\",\n    \"Massive ascites (Belly swelling)\",\n    \"Weight gain\"\n  ],\n  \"anomalies_detected\": [\n    {\n      \"type\": \"Vital Sign\",\n      \"finding\": \"Oxygen Saturation\",\n      \"value\": \"85%\",\n      \"normal_range\": \"95-100%\",\n      \"lay_explanation\": \"Low oxygen level in the blood.\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Blood Glucose\",\n      \"value\": \"164 mg/dL\",\n      \"normal_range\": \"70-100 mg/dL\",\n      \"lay_explanation\": \"High blood sugar level.\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Serum Albumin\",\n      \"value\": \"2.1 g/dL\",\n      \"normal_range\": \"3.5-5.0 g/dL\",\n      \"lay_explanation\": \"Low protein level in blood, common in liver disease.\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"LDH (Lactate Dehydrogenase)\",\n      \"value\": \"72 U/L\",\n      \"normal_range\": \"140-280 U/L\",\n      \"lay_explanation\": \"Enzyme level in blood.\",\n      \"severity\": \"normal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"Folic Acid\",\n      \"value\": \"1.29 ng/mL\",\n      \"normal_range\": \"3.37 ng/mL\",\n      \"lay_explanation\": \"Low level of a vitamin needed for blood cells.\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Lab Result\",\n      \"finding\": \"INR (Coagulation)\",\n      \"value\": \"4.4\",\n      \"normal_range\": \"0.8-1.2\",\n      \"lay_explanation\": \"Blood takes too long to clot, risk of bleeding.\",\n      \"severity\": \"critical\"\n    },\n    {\n      \"type\": \"Imaging Finding\",\n      \"finding\": \"Bilateral Pleural Effusion\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"Fluid buildup around both lungs.\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Imaging Finding\",\n      \"finding\": \"Cardiomegaly\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"Enlarged heart.\",\n      \"severity\": \"abnormal\"\n    },\n    {\n      \"type\": \"Clinical Finding\",\n      \"finding\": \"Pressure Injuries\",\n      \"value\": null,\n      \"normal_range\": null,\n      \"lay_explanation\": \"Bedsores on the back and hips.\",\n      \"severity\": \"abnormal\"\n    }\n  ],\n  \"procedures_performed\": [\n    {\n      \"name\": \"Paracentesis\",\n      \"lay_explanation\": \"Draining fluid from the belly to reduce swelling.\",\n      \"date\": \"09/19/2022\"\n    },\n    {\n      \"name\": \"Thoracentesis\",\n      \"lay_explanation\": \"Draining fluid from around the lungs to help breathing.\",\n      \"date\": \"09/19/2022\"\n    },\n    {\n      \"name\": \"Thoracentesis\",\n      \"lay_explanation\": \"Draining fluid from around the lungs.\",\n      \"date\": \"09/23/2022\"\n    },\n    {\n      \"name\": \"Thoracentesis\",\n      \"lay_explanation\": \"Draining fluid from around the lungs.\",\n      \"date\": \"10/06/2022\"\n    },\n    {\n      \"name\": \"Thoracentesis\",\n      \"lay_explanation\": \"Draining fluid from around the lungs.\",\n      \"date\": \"10/10/2022\"\n    },\n    {\n      \"name\": \"Thoracentesis\",\n      \"lay_explanation\": \"Draining fluid from around the lungs.\",\n      \"date\": \"10/15/2022\"\n    },\n    {\n      \"name\": \"Orotracheal Intubation\",\n      \"lay_explanation\": \"Inserting a tube into the throat to help breathing with a machine.\",\n      \"date\": \"09/18/2022\"\n    },\n    {\n      \"name\": \"Extubation\",\n      \"lay_explanation\": \"Removing the breathing tube.\",\n      \"date\": \"10/03/2022\"\n    },\n    {\n      \"name\": \"Transthoracic Echocardiography\",\n      \"lay_explanation\": \"Ultrasound of the heart to check its function.\",\n      \"date\": null\n    },\n    {\n      \"name\": \"POCUS (Point of Care Ultrasound)\",\n      \"lay_explanation\": \"Quick ultrasound at the bedside.\",\n      \"date\": \"09/19/2022\"\n    }\n  ],\n  \"medications\": [\n    {\n      \"name\": \"Insulin NPH\",\n      \"purpose_lay\": \"Controls blood sugar.\",\n      \"timing_dosage\": \"1008 (likely 10 units AM, 8 units PM or similar, text says 1008)\"\n    },\n    {\n      \"name\": \"Glifage XR (Metformin)\",\n      \"purpose_lay\": \"Controls blood sugar.\",\n      \"timing_dosage\": \"500 mg: 2 tablets at lunch and 2 tablets at dinner\"\n    },\n    {\n      \"name\": \"Simvastatin\",\n      \"purpose_lay\": \"Lowers cholesterol.\",\n      \"timing_dosage\": \"20 mg/day\"\n    },\n    {\n      \"name\": \"Losartan\",\n      \"purpose_lay\": \"Lowers blood pressure.\",\n      \"timing_dosage\": \"50 mg: 1 tablet every 12 hours\"\n    },\n    {\n      \"name\": \"Hydrochlorothiazide\",\n      \"purpose_lay\": \"Water pill to reduce fluid.\",\n      \"timing_dosage\": \"1x day\"\n    },\n    {\n      \"name\": \"Sertraline\",\n      \"purpose_lay\": \"For depression and anxiety.\",\n      \"timing_dosage\": \"50 mg: 1 tablet every 12 hours\"\n    },\n    {\n      \"name\": \"Gabapentin\",\n      \"purpose_lay\": \"For nerve pain.\",\n      \"timing_dosage\": \"300 mg/day\"\n    },\n    {\n      \"name\": \"Calcium and Vitamin D\",\n      \"purpose_lay\": \"For bone health.\",\n      \"timing_dosage\": null\n    },\n    {\n      \"name\": \"Amitriptyline\",\n      \"purpose_lay\": \"For pain or sleep.\",\n      \"timing_dosage\": \"25 mg\"\n    },\n    {\n      \"name\": \"Propranolol\",\n      \"purpose_lay\": \"Protects against bleeding in liver disease.\",\n      \"timing_dosage\": \"10 mg every 12 hours\"\n    },\n    {\n      \"name\": \"Omeprazole\",\n      \"purpose_lay\": \"Reduces stomach acid.\",\n      \"timing_dosage\": \"40 mg\"\n    },\n    {\n      \"name\": \"Furosemide\",\n      \"purpose_lay\": \"Water pill to reduce fluid in belly and lungs.\",\n      \"timing_dosage\": \"40 mg twice a day\"\n    },\n    {\n      \"name\": \"Spironolactone\",\n      \"purpose_lay\": \"Water pill to reduce fluid in belly.\",\n      \"timing_dosage\": \"50 mg/d\"\n    },\n    {\n      \"name\": \"Levofloxacin\",\n      \"purpose_lay\": \"Antibiotic for infection.\",\n      \"timing_dosage\": \"Started 09/23, stopped 09/26\"\n    },\n    {\n      \"name\": \"Oxacillin\",\n      \"purpose_lay\": \"Antibiotic for Staph infection.\",\n      \"timing_dosage\": \"Started 09/24, stopped 10/08\"\n    },\n    {\n      \"name\": \"Meropenem\",\n      \"purpose_lay\": \"Strong antibiotic for severe infection.\",\n      \"timing_dosage\": \"Started 09/27, stopped 10/08\"\n    }\n  ],\n  \"warning_signs_red_flags\": [\n    \"Signs of infection (fever, chills)\",\n    \"Worsening shortness of breath\",\n    \"Bleeding (vomiting blood, black stools)\",\n    \"Confusion or drowsiness\",\n    \"Significant weight gain or swelling\"\n  ],\n  \"follow_up_care\": {\n    \"appointments\": [\n      \"AGAF (Gastroenterology) visit on 18/01\"\n    ],\n    \"ongoing_treatments\": [\n      \"Adjustment of diuretic doses with monitoring of kidney function\",\n      \"Care for pressure injuries (bedsores)\",\n      \"Weaning from oxygen therapy\"\n    ],\n    \"lifestyle_diet_advice\": [\n      \"Monitor fluid intake\",\n      \"Low salt diet (implied by ascites management)\"\n    ]\n  },\n  \"stay_duration\": \"01 m 11 h\",\n  \"outcome\": \"alive\"\n}",
+  "ner_extraction_latency_seconds": 5.434,
+  "ner_extraction_tokens": 6096,
+  "ner_fallback_used": false
+}

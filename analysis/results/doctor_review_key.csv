@@ -1,0 +1,30 @@
+report,version,model_label,model_that_ran,strategy,entity_list_used,trial_id
+DS-01,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_discharge_DS-01_cerebras_qwen38_ner-guided
+DS-01,B,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),zero-shot,False,simplification_discharge_DS-01_cerebras_qwen38_zero-shot
+DS-02,A,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_discharge_DS-02_cerebras_qwen38_zero-shot
+DS-02,B,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_discharge_DS-02_cerebras_qwen38_ner-guided
+DS-03,A,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_discharge_DS-03_cerebras_qwen38_zero-shot
+DS-03,B,Qwen 3.8,qwen/qwen3.8-27b,ner-guided,True,simplification_discharge_DS-03_cerebras_qwen38_ner-guided
+DS-04,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_discharge_DS-04_cerebras_qwen38_ner-guided
+DS-04,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_discharge_DS-04_cerebras_qwen38_zero-shot
+DS-05,A,Qwen 3.8,qwen/qwen3.8-27b,ner-guided,True,simplification_discharge_DS-05_cerebras_qwen38_ner-guided
+PATH-01,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_pathology_PATH-01_cerebras_qwen38_ner-guided
+PATH-01,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_pathology_PATH-01_cerebras_qwen38_zero-shot
+PATH-02,A,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_pathology_PATH-02_cerebras_qwen38_zero-shot
+PATH-02,B,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_pathology_PATH-02_cerebras_qwen38_ner-guided
+PATH-03,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_pathology_PATH-03_cerebras_qwen38_ner-guided
+PATH-03,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_pathology_PATH-03_cerebras_qwen38_zero-shot
+PATH-04,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_pathology_PATH-04_cerebras_qwen38_ner-guided
+PATH-04,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_pathology_PATH-04_cerebras_qwen38_zero-shot
+PATH-05,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_pathology_PATH-05_cerebras_qwen38_ner-guided
+PATH-05,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_pathology_PATH-05_cerebras_qwen38_zero-shot
+RAD-01,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_radiology_RAD-01_cerebras_qwen38_ner-guided
+RAD-01,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_radiology_RAD-01_cerebras_qwen38_zero-shot
+RAD-02,A,Qwen 3.8,qwen/qwen3.8-27b,ner-guided,True,simplification_radiology_RAD-02_cerebras_qwen38_ner-guided
+RAD-02,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_radiology_RAD-02_cerebras_qwen38_zero-shot
+RAD-03,A,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_radiology_RAD-03_cerebras_qwen38_ner-guided
+RAD-03,B,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_radiology_RAD-03_cerebras_qwen38_zero-shot
+RAD-04,A,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_radiology_RAD-04_cerebras_qwen38_zero-shot
+RAD-04,B,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_radiology_RAD-04_cerebras_qwen38_ner-guided
+RAD-05,A,Qwen 3.8,qwen/qwen3.8-27b,zero-shot,False,simplification_radiology_RAD-05_cerebras_qwen38_zero-shot
+RAD-05,B,Qwen 3.8,groq:qwen/qwen3.8-27b (first candidate),ner-guided,True,simplification_radiology_RAD-05_cerebras_qwen38_ner-guided

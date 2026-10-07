@@ -1,0 +1,204 @@
+{
+  "trial_id": "simplification_discharge_DS-02_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "discharge",
+  "sample_id": "DS-02",
+  "sample_title": "Discharge Summary (Row 1)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 4876,
+  "completion_tokens": 2423,
+  "total_tokens": 7299,
+  "latency_seconds": 5.588,
+  "system_prompt": "You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nPatient: male | Age: None\nPrimary Diagnosis: Bloodstream infection (MRSA) with secondary complications: Infective Endocarditis, Spondylodiscitis, and Ileopsoas Abscess\n  Secondary: Bacterial Endocarditis (Mitral Valve)\n  Secondary: Pyogenic Spondylodiscitis (L3/L4)\n  Secondary: Left Ileopsoas Abscess\n  Secondary: Sacral Pressure Injury\n  Secondary: Chronic Kidney Disease (on Hemodialysis)\n  Secondary: Arteriovenous Fistula Stenosis\n  Secondary: Suspected Amyloidosis\nSymptoms at admission: Severe left lower back pain; Asthenia (weakness); Altered gait (difficulty walking); Secretion from catheter dressing\nAnomalies/Findings:\n  [CRITICAL] Blood Culture Positive for Staphylococcus Aureus (MRSA) = Positive (OXA R) (normal: Negative)\n  [CRITICAL] Vegetation in Mitral Valve = Present (normal: Absent)\n  [CRITICAL] Infectious Spondylodiscitis with Anterior Epidural Abscess = L3/L4 level (normal: No infection or abscess)\n  [ABNORMAL] Left Ileopsoas Abscess = 15 x 2.1 x 1.8 cm (normal: No collection)\n  [ABNORMAL] Sacral Pressure Injury = Present (normal: Intact skin)\n  [ABNORMAL] Arteriovenous Fistula Stenosis = Local stenosis noted (normal: Patent (open) fistula)\n  [BORDERLINE] Bibasilar Crackles = Discreet (normal: Clear breath sounds)\n  [ABNORMAL] Irregular Heart Rhythm = Present (normal: Regular rhythm)\nProcedures performed:\n  • Catheter Removal on 11/08/2020\n  • Surgical Debridement of Sacral Pressure Injury\n  • Attempted Percutaneous Abscess Puncture on 12/02/2020\n  • Hemodialysis on Ongoing (Tue, Thu, Sat)\nMedications:\n  • Vancomycin — Antibiotic to kill the resistant bacteria in the blood and body. | Dosage: 0.5 g after each scheduled hemodialysis session\nWarning signs to mention:\n  ⚠ Fever or chills\n  ⚠ Increased pain in the back or hip\n  ⚠ Redness, swelling, or discharge from the dialysis fistula site\n  ⚠ Worsening of the sacral wound (smell, increased pain, or pus)\nFollow-up appointment: Amyloidosis Cardiology Outpatient Clinic on 01/13/2021\nFollow-up appointment: Pressure Injury Surgery Outpatient Clinic on 01/16/2021\nFollow-up appointment: Motor Rehabilitation appointment (date to be scheduled by Physiatry)\nFollow-up appointment: Phlebography/Ultrasound for Arteriovenous Fistula assessment (date to be scheduled)\nOngoing treatment: Hemodialysis on Tuesdays, Thursdays, and Saturdays\nOngoing treatment: Vancomycin antibiotic therapy until 01/09/2021\nOngoing treatment: Home care for sacral pressure injury\nHospital stay duration: 1 month 24 days 15 hours\nOutcome: alive\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.\n2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.\n3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.\n4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.\n5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.\n6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.\n7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').\n8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.\n9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.\n10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.\n11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.\n12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.\n13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following discharge summary into simple, plain Indian English for family members:\n\nOriginal Medical Report:\n1. bloodstream infection associated with Schilley catheter in the right femoral vein sac 11/08 2. bacterial endocarditis associated with catheter echocardiogram 11/18: presence of vegetation in the mitral valve 3. pyogenic spondylodiscitis in l3/l4 11/05: low back pain, gait disturbance, computed tomography of the lumbosacral spine 11/12: findings suggestive of a fracture due to bone fragility of the vertebral body of l1, gas foci in the spinal canal at the level of l2l3 that may be related to an extruded disc herniation with degenerative disc disease, and an infectious or inflammatory process cannot be ruled out, lumbar magnetic resonance imaging 25/11/2020: infectious spondylodiscitis with anterior epidural abscess 4. left ileopsoas abscess, magnetic resonance imaging 25/10/2020: intramuscular collection in the ileopsoas left 15 x 2.1 x 1.8 cm with edema and adjacent post-contrast enhancement. admission: 11/08/2020, discharge: 01/02/2021, stay: 01 m 24 d 15 h, location: ward: ward payer: sus. [person] attends hemodialysis session with severe left lower back pain that had started 3 days ago, associated with asthenia, and altered gait. [person] who was accompanying him, denies fever, nausea, and vomiting. Denies other associated symptoms. catheter dressing in the right femoral vein was secreting. [person] evolved during hospitalization with a diagnosis of bloodstream infection by staphylococcus aureus mrsa, complicated by l2l4 spondylodiscitis, mitral valve infective endocarditis, and ileopsoas muscle abscess. Catheter removed on 11/08 and antibiotic therapy guided by vancomycin culture was started on 11/08. Abscess in psoas was not approached due to interposition of bowel loops in an attempt at percutaneous drainage by the {organization} on 12/02. Comparative radiological improvement was observed in axial lesions and conservative treatment was maintained regarding foci of infection identified during hospitalization. [person] remained afebrile with successively negative blood cultures. As a complication associated with immobility, he developed sacral pressure injury, treated with surgical debridement and local measures. Injury care guidelines were provided by the team. He evolved with the need for hemodialysis on Tuesdays, Thursdays and Saturdays due to arteriovenous fistula in the left upper limb, but local stenosis was noted. He is currently on renal replacement therapy. good general condition, pale 1/4, hydrated, acyanotic, anicteric, afebrile to the touch and eupneic in room air. neurology: conscious and oriented in time, space and person. respiratory auscultation: bilateral vesicular breath sounds with discreet bibasilar crackles, no signs of respiratory distress. cardiac auscultation: irregular heart rhythm, with normal sound sounds, no murmurs. abdomen: protuberant, bowel sounds, normotensive, painless on superficial or deep palpation, no signs of peritoneal irritation. warm and well perfused extremities. upper limbs: fistula in the left upper limb with present thrill. lower limbs: presence of discreet edema and anterior tibial ochre dermatitis. nuclear magnetic resonance 25/10/2020: intramuscular collection in the left ileopsoas 15 x 2.1 x 1.8 cm with edema and post-contrast enhancement adjacent cultures: catheter tip 11/08: vancomycin-sensitive staphylococcus aureus blood culture 11/08: staphylococcus aureus sg catheter 11/08 staphylococcus aureus blood culture 11/11: staphylococcus aureus oxa r in 2 samples blood culture 11/21: citrobacter koseri 1 sample staphylococcus aureus 1 sample blood culture 11/24: staphylococcus capitis blood culture 11/28: negative blood culture 12/01: negative blood culture 12/02: negative. attempted percutaneous abscess puncture on 12/02 not performed due to interposition of intestinal loops. nuclear magnetic resonance report of the pelvis performed on 12/16. agreed with [organization] for chronic patients to attend the hemodialysis room at [organization] on Tuesdays, Thursdays and Saturdays, with transportation from the city of origin to the unit carried out by stretcher taxi {omitted}. therefore, we discharge the patient with the following pending issues: observations: administer 0.5 g of vancomycin after each scheduled hemodialysis session antibiotic therapy until 01/09/2021, completing 6 weeks after the last negative blood culture assessment of arteriovenous fistula: phlebography of arteriovenous fistula indicated assess fistulography by brachial to determine the site of stenosis and then perform phlebography or assess pre-procedure with ultrasound in the room. [person] placed on list. [organization] will contact you to schedule a treatment, as recorded in the note by the sacral pressure injury specialist team: [person]'s outpatient follow-up appointment on 16/01/2021 for pressure injury reassessment. Instructions for home care of the injury were provided. Cardiology follow-up for amyloidosis investigation: [person] missed a follow-up appointment appointment on 09/09, scheduled for 01/13 for motor rehabilitation. We are awaiting an appointment by the physiatry department at [organization] requested on 12/27. Check the nuclear magnetic resonance report of the pelvis from 12/16. Previous chronic medications were maintained. Dialysis room Tuesdays, Thursdays, and Saturdays. Amyloidosis cardiology outpatient clinic 01/13. Pressure injury surgery outpatient clinic 01/16.\n\nOutput:\n",
+  "source_text": "1. bloodstream infection associated with Schilley catheter in the right femoral vein sac 11/08 2. bacterial endocarditis associated with catheter echocardiogram 11/18: presence of vegetation in the mitral valve 3. pyogenic spondylodiscitis in l3/l4 11/05: low back pain, gait disturbance, computed tomography of the lumbosacral spine 11/12: findings suggestive of a fracture due to bone fragility of the vertebral body of l1, gas foci in the spinal canal at the level of l2l3 that may be related to an extruded disc herniation with degenerative disc disease, and an infectious or inflammatory process cannot be ruled out, lumbar magnetic resonance imaging 25/11/2020: infectious spondylodiscitis with anterior epidural abscess 4. left ileopsoas abscess, magnetic resonance imaging 25/10/2020: intramuscular collection in the ileopsoas left 15 x 2.1 x 1.8 cm with edema and adjacent post-contrast enhancement. admission: 11/08/2020, discharge: 01/02/2021, stay: 01 m 24 d 15 h, location: ward: ward payer: sus. [person] attends hemodialysis session with severe left lower back pain that had started 3 days ago, associated with asthenia, and altered gait. [person] who was accompanying him, denies fever, nausea, and vomiting. Denies other associated symptoms. catheter dressing in the right femoral vein was secreting. [person] evolved during hospitalization with a diagnosis of bloodstream infection by staphylococcus aureus mrsa, complicated by l2l4 spondylodiscitis, mitral valve infective endocarditis, and ileopsoas muscle abscess. Catheter removed on 11/08 and antibiotic therapy guided by vancomycin culture was started on 11/08. Abscess in psoas was not approached due to interposition of bowel loops in an attempt at percutaneous drainage by the {organization} on 12/02. Comparative radiological improvement was observed in axial lesions and conservative treatment was maintained regarding foci of infection identified during hospitalization. [person] remained afebrile with successively negative blood cultures. As a complication associated with immobility, he developed sacral pressure injury, treated with surgical debridement and local measures. Injury care guidelines were provided by the team. He evolved with the need for hemodialysis on Tuesdays, Thursdays and Saturdays due to arteriovenous fistula in the left upper limb, but local stenosis was noted. He is currently on renal replacement therapy. good general condition, pale 1/4, hydrated, acyanotic, anicteric, afebrile to the touch and eupneic in room air. neurology: conscious and oriented in time, space and person. respiratory auscultation: bilateral vesicular breath sounds with discreet bibasilar crackles, no signs of respiratory distress. cardiac auscultation: irregular heart rhythm, with normal sound sounds, no murmurs. abdomen: protuberant, bowel sounds, normotensive, painless on superficial or deep palpation, no signs of peritoneal irritation. warm and well perfused extremities. upper limbs: fistula in the left upper limb with present thrill. lower limbs: presence of discreet edema and anterior tibial ochre dermatitis. nuclear magnetic resonance 25/10/2020: intramuscular collection in the left ileopsoas 15 x 2.1 x 1.8 cm with edema and post-contrast enhancement adjacent cultures: catheter tip 11/08: vancomycin-sensitive staphylococcus aureus blood culture 11/08: staphylococcus aureus sg catheter 11/08 staphylococcus aureus blood culture 11/11: staphylococcus aureus oxa r in 2 samples blood culture 11/21: citrobacter koseri 1 sample staphylococcus aureus 1 sample blood culture 11/24: staphylococcus capitis blood culture 11/28: negative blood culture 12/01: negative blood culture 12/02: negative. attempted percutaneous abscess puncture on 12/02 not performed due to interposition of intestinal loops. nuclear magnetic resonance report of the pelvis performed on 12/16. agreed with [organization] for chronic patients to attend the hemodialysis room at [organization] on Tuesdays, Thursdays and Saturdays, with transportation from the city of origin to the unit carried out by stretcher taxi {omitted}. therefore, we discharge the patient with the following pending issues: observations: administer 0.5 g of vancomycin after each scheduled hemodialysis session antibiotic therapy until 01/09/2021, completing 6 weeks after the last negative blood culture assessment of arteriovenous fistula: phlebography of arteriovenous fistula indicated assess fistulography by brachial to determine the site of stenosis and then perform phlebography or assess pre-procedure with ultrasound in the room. [person] placed on list. [organization] will contact you to schedule a treatment, as recorded in the note by the sacral pressure injury specialist team: [person]'s outpatient follow-up appointment on 16/01/2021 for pressure injury reassessment. Instructions for home care of the injury were provided. Cardiology follow-up for amyloidosis investigation: [person] missed a follow-up appointment appointment on 09/09, scheduled for 01/13 for motor rehabilitation. We are awaiting an appointment by the physiatry department at [organization] requested on 12/27. Check the nuclear magnetic resonance report of the pelvis from 12/16. Previous chronic medications were maintained. Dialysis room Tuesdays, Thursdays, and Saturdays. Amyloidosis cardiology outpatient clinic 01/13. Pressure injury surgery outpatient clinic 01/16.",
+  "output_text": "Your son, [person], was admitted to the hospital on 11/08/2020 and discharged on 01/02/2021, staying for a total of 1 month, 24 days, and 15 hours. He came in with severe pain in his left lower back, general weakness (asthenia), difficulty walking (altered gait), and fluid leaking from the dressing of his catheter (a tube used for dialysis) in the right femoral vein. The main problem found was a serious infection in the blood (bloodstream infection) caused by a resistant type of bacteria called Staphylococcus Aureus (MRSA). This infection spread to other parts of his body, causing infective endocarditis (infection of the heart valve), specifically on the mitral valve, where a clump of bacteria called vegetation was found. It also caused pyogenic spondylodiscitis (infection of the spine and the discs between the bones) at the L3/L4 level, with an abscess (a pocket of pus) in front of the spinal cord called an anterior epidural abscess. Additionally, he had a left ileopsoas abscess, which is a collection of pus in the deep hip muscle, measuring 15 x 2.1 x 1.8 cm. He also developed a sacral pressure injury (a bed sore on the tailbone) due to lying in bed for a long time. His kidneys are not working well (Chronic Kidney Disease), so he needs hemodialysis (a machine that cleans the blood) three times a week. There is also a narrowing (stenosis) in his arteriovenous fistula (the special blood vessel connection used for dialysis) in his left arm. Doctors also suspect he has amyloidosis (a condition where abnormal proteins build up in organs).\n\nDuring his stay, the catheter was removed on 11/08/2020. He started taking an antibiotic called Vancomycin, which is used to kill the resistant bacteria in his blood and body. The dose is 0.5 g given after each scheduled hemodialysis session. He continues this antibiotic therapy until 01/09/2021. Doctors tried to drain the pus from the hip muscle using a needle (percutaneous abscess puncture) on 12/02/2020, but they could not do it because intestines were in the way. Instead, they treated it with antibiotics. The sacral pressure injury was cleaned surgically (surgical debridement) to remove dead tissue. His blood cultures (tests to check for bacteria in the blood) became negative, meaning the infection in the blood is clearing up. His heart rhythm was irregular, and he had some mild crackles (crackling sounds) when breathing, but he was not in distress.\n\nHe will continue hemodialysis on Tuesdays, Thursdays, and Saturdays. He needs to see the Amyloidosis Cardiology Outpatient Clinic on 01/13/2021 to check for the suspected protein buildup. He must attend the Pressure Injury Surgery Outpatient Clinic on 01/16/2021 to check the healing of the bed sore. He also needs a Motor Rehabilitation appointment, which the Physiatry department will schedule. Finally, he needs a Phlebography or Ultrasound to check the narrowing in his dialysis fistula; the date for this will be scheduled by the hospital.\n\nPlease watch for these warning signs and contact the doctor immediately if you see them: fever or chills; increased pain in the back or hip; redness, swelling, or discharge from the dialysis fistula site; or worsening of the sacral wound, such as a bad smell, increased pain, or pus. For home care of the sacral wound, please follow the instructions given by the team. The hospital stay is over, and he is alive and stable.",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "patient_demographics": {
+      "gender": "male",
+      "age": null
+    },
+    "diagnoses": {
+      "primary": "Bloodstream infection (MRSA) with secondary complications: Infective Endocarditis, Spondylodiscitis, and Ileopsoas Abscess",
+      "primary_lay_explanation": "A serious infection in the blood caused by a resistant type of bacteria (MRSA) that spread to the heart valve, the spine, and the muscles in the hip area.",
+      "secondary": [
+        "Bacterial Endocarditis (Mitral Valve)",
+        "Pyogenic Spondylodiscitis (L3/L4)",
+        "Left Ileopsoas Abscess",
+        "Sacral Pressure Injury",
+        "Chronic Kidney Disease (on Hemodialysis)",
+        "Arteriovenous Fistula Stenosis",
+        "Suspected Amyloidosis"
+      ],
+      "icd_codes_mentioned": []
+    },
+    "symptoms_at_admission": [
+      "Severe left lower back pain",
+      "Asthenia (weakness)",
+      "Altered gait (difficulty walking)",
+      "Secretion from catheter dressing"
+    ],
+    "anomalies_detected": [
+      {
+        "type": "Lab Result",
+        "finding": "Blood Culture Positive for Staphylococcus Aureus (MRSA)",
+        "value": "Positive (OXA R)",
+        "normal_range": "Negative",
+        "lay_explanation": "Bacteria found in the blood, indicating a serious infection.",
+        "severity": "critical"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Vegetation in Mitral Valve",
+        "value": "Present",
+        "normal_range": "Absent",
+        "lay_explanation": "Infection clumps on the heart valve, which can block blood flow.",
+        "severity": "critical"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Infectious Spondylodiscitis with Anterior Epidural Abscess",
+        "value": "L3/L4 level",
+        "normal_range": "No infection or abscess",
+        "lay_explanation": "Infection in the spine bones and discs, with a pocket of pus near the spinal cord.",
+        "severity": "critical"
+      },
+      {
+        "type": "Imaging Finding",
+        "finding": "Left Ileopsoas Abscess",
+        "value": "15 x 2.1 x 1.8 cm",
+        "normal_range": "No collection",
+        "lay_explanation": "A large pocket of pus in the muscle near the hip.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Sacral Pressure Injury",
+        "value": "Present",
+        "normal_range": "Intact skin",
+        "lay_explanation": "A bed sore on the tailbone area due to lying down for a long time.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Arteriovenous Fistula Stenosis",
+        "value": "Local stenosis noted",
+        "normal_range": "Patent (open) fistula",
+        "lay_explanation": "The blood vessel used for dialysis is narrowed, which can reduce blood flow.",
+        "severity": "abnormal"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Bibasilar Crackles",
+        "value": "Discreet",
+        "normal_range": "Clear breath sounds",
+        "lay_explanation": "Crackling sounds in the lungs, possibly due to fluid or mild congestion.",
+        "severity": "borderline"
+      },
+      {
+        "type": "Clinical Finding",
+        "finding": "Irregular Heart Rhythm",
+        "value": "Present",
+        "normal_range": "Regular rhythm",
+        "lay_explanation": "The heart is not beating in a steady pattern.",
+        "severity": "abnormal"
+      }
+    ],
+    "procedures_performed": [
+      {
+        "name": "Catheter Removal",
+        "lay_explanation": "Removing the tube from the leg vein that was causing the infection.",
+        "date": "11/08/2020"
+      },
+      {
+        "name": "Surgical Debridement of Sacral Pressure Injury",
+        "lay_explanation": "Cleaning and removing dead tissue from the bed sore to help it heal.",
+        "date": null
+      },
+      {
+        "name": "Attempted Percutaneous Abscess Puncture",
+        "lay_explanation": "Trying to drain the pus from the hip muscle with a needle, but it was not done because intestines were in the way.",
+        "date": "12/02/2020"
+      },
+      {
+        "name": "Hemodialysis",
+        "lay_explanation": "Machine cleaning of the blood because the kidneys are not working well.",
+        "date": "Ongoing (Tue, Thu, Sat)"
+      }
+    ],
+    "medications": [
+      {
+        "name": "Vancomycin",
+        "purpose_lay": "Antibiotic to kill the resistant bacteria in the blood and body.",
+        "timing_dosage": "0.5 g after each scheduled hemodialysis session"
+      }
+    ],
+    "warning_signs_red_flags": [
+      "Fever or chills",
+      "Increased pain in the back or hip",
+      "Redness, swelling, or discharge from the dialysis fistula site",
+      "Worsening of the sacral wound (smell, increased pain, or pus)"
+    ],
+    "follow_up_care": {
+      "appointments": [
+        "Amyloidosis Cardiology Outpatient Clinic on 01/13/2021",
+        "Pressure Injury Surgery Outpatient Clinic on 01/16/2021",
+        "Motor Rehabilitation appointment (date to be scheduled by Physiatry)",
+        "Phlebography/Ultrasound for Arteriovenous Fistula assessment (date to be scheduled)"
+      ],
+      "ongoing_treatments": [
+        "Hemodialysis on Tuesdays, Thursdays, and Saturdays",
+        "Vancomycin antibiotic therapy until 01/09/2021",
+        "Home care for sacral pressure injury"
+      ],
+      "lifestyle_diet_advice": [
+        "Maintain previous chronic medications",
+        "Follow injury care guidelines for the sacral wound"
+      ]
+    },
+    "stay_duration": "1 month 24 days 15 hours",
+    "outcome": "alive"
+  },
+  "ner_extraction_latency_seconds": 3.545,
+  "ner_extraction_tokens": 3700,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 57.47,
+    "flesch_kincaid_grade_level": 10.56,
+    "smog_index": 13.5,
+    "gunning_fog": 14.72,
+    "coleman_liau": 10.44,
+    "num_words": 578,
+    "num_sentences": 27,
+    "num_syllables": 872,
+    "average_word_length": 4.7,
+    "average_word_frequency": 4.88,
+    "ttr": 0.5087,
+    "mtld": 101.97,
+    "proportion_difficult_words": 0.5675,
+    "rouge1_f1": 47.15,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 47.15,
+    "bertscore_precision": 27.16,
+    "bertscore_recall": 19.75,
+    "bertscore_f1": 70.85,
+    "sari": 8.12,
+    "sbert_cosine_similarity": 75.36,
+    "parenthetical_explanation_count": 18,
+    "parenthetical_explanation_rate": 3.11,
+    "jargon_source_count": 35,
+    "jargon_generated_count": 16,
+    "jargon_reduction_pct": 54.29,
+    "compression_ratio_chars": 0.628,
+    "compression_ratio_words": 0.727
+  }
+}

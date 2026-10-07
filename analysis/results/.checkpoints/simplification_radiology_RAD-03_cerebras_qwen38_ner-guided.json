@@ -1,0 +1,168 @@
+{
+  "trial_id": "simplification_radiology_RAD-03_cerebras_qwen38_ner-guided",
+  "task": "simplification",
+  "datatype": "radiology",
+  "sample_id": "RAD-03",
+  "sample_title": "Radiology MRI (436G6LTU2V)",
+  "model": "cerebras/qwen3.8",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 2599,
+  "completion_tokens": 2160,
+  "total_tokens": 4759,
+  "latency_seconds": 4.79,
+  "system_prompt": "You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nExam: Cranial MRI of Brain\n  Sequences: T1-weighted, FLAIR, T2-weighted, DWI, ADC, SWI\n  Contrast: yes\n  Clinical indication: Headache\nNormal structures (reassure about these):\n  ✓ Ventricular system size\n  ✓ Bilateral basal ganglia\n  ✓ Thalamus\n  ✓ Brainstem\n  ✓ Cerebellum\n  ✓ Main cerebral vascular structures\n  ✓ Cranial bone structures\n  ✓ Both globes\n  ✓ Retrobulbar fat tissue\n  ✓ Optic nerves\n  ✓ Optic chiasm\nAbnormal findings (MUST explain all of these):\n  [SEVERE] Left parietal lobe, posterior periventricular: Abscess measuring approximately 20x18 mm with walls showing contrast enhancement and diffusion restriction in the center | acute | enhancing\n  [SEVERE] Left parietal lobe, anterior periventricular: Abscess measuring 18x8 mm opening into the ventricle, with walls showing contrast enhancement and diffusion restriction in the center | acute | enhancing\n  [SEVERE] Ependyma extending from occipital atrium to body of left lateral ventricle: Contrast enhancement in the ependyma at the ventricle and opening site | acute | enhancing\n  [SEVERE] Ventricle and occipital horns of both ventricles: Abscess foci showing diffusion restriction within the ventricle and in the occipital horns of both ventricles | acute | not applicable\n  [MODERATE] Walls of right lateral ventricle, 3rd and 4th ventricles, and cerebral aqueduct: Thickening and signal increase not showing contrast enhancement in the ependyma | indeterminate | non-enhancing\n  [MODERATE] White matter of parietal and occipital lobes: Vasogenic edema extending to the corpus callosum | acute | not applicable\n  [MILD] Bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses: Mucosal thickening | indeterminate | not applicable\n  [MILD] Right mastoid cells: Minimal inflammatory signal increases | indeterminate | not applicable\nMeasurements to include:\n  • Posterior left parietal abscess: 20x18 mm\n  • Anterior left parietal abscess: 18x8 mm\nRadiologist impression: Cerebral abscesses in the left parietal lobe, posterior periventricular location, opening into the ventricle, ventriculitis. Mucosal thickening in the bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses. Minimal inflammatory signal increases in the right mastoid cells.\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').\n2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.\n3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.\n4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):\n   - Explain what the finding means in plain words without causing unnecessary panic.\n   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.\n   - Clarify whether the finding is new, chronic, or requires further evaluation.\n5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.\n6. Write as continuous plain prose paragraphs without bullet points or headers.\n7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.\n8. Output only the simplified text, nothing else.\n9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following radiology report into plain English for the patient and family:\n\nOriginal Medical Report:\nBRAIN (CRANIAL) MRI\n\nClinical information: Headache\n\nTechnique: Sagittal and axial T1-weighted; sagittal, axial and coronal FLAIR; axial T2-weighted, DWI, ADC and SWI. (20 ml Dotarem) 3-plane T1-weighted after contrast agent injection.\n\nFindings:\n\nAbscesses are observed in the left parietal lobe, posterior periventricularly located and adjacent to each other, the posterior one measuring approximately 20x18 mm, and the anterior one periventricularly located measuring 18x8 mm and opening into the ventricle, with walls showing contrast enhancement and diffusion restriction in the center. Contrast enhancement is observed in the ependyma extending from the occipital atrium to the body portion of the left lateral ventricle at the ventricle and opening site, and abscess foci showing diffusion restriction are observed within the ventricle and in the occipital horns of both ventricles. Thickening and signal increase not showing contrast enhancement are present in the ependyma in the walls of the right lateral ventricle and 3rd and 4th ventricles and in the cerebral aqueduct. Ventricular system size is normal. Vasogenic edema extending to the corpus callosum is observed in the white matter of the parietal and occipital lobes. Hemorrhage was not detected.\n\nAside from this, bilateral basal ganglia, thalamus, brainstem, and cerebellum appear normal.\n\nMain cerebral vascular structures are patent.\n\nCranial bone structures, both globes, retrobulbar fat tissue, optic nerves, and optic chiasm are normal.\n\nImpression:\n\n· Cerebral abscesses in the left parietal lobe, posterior periventricular location, opening into the ventricle, ventriculitis\n· Mucosal thickening in the bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses.\n· Minimal inflammatory signal increases in the right mastoid cells.\n\nOutput:\n",
+  "source_text": "BRAIN (CRANIAL) MRI\n\nClinical information: Headache\n\nTechnique: Sagittal and axial T1-weighted; sagittal, axial and coronal FLAIR; axial T2-weighted, DWI, ADC and SWI. (20 ml Dotarem) 3-plane T1-weighted after contrast agent injection.\n\nFindings:\n\nAbscesses are observed in the left parietal lobe, posterior periventricularly located and adjacent to each other, the posterior one measuring approximately 20x18 mm, and the anterior one periventricularly located measuring 18x8 mm and opening into the ventricle, with walls showing contrast enhancement and diffusion restriction in the center. Contrast enhancement is observed in the ependyma extending from the occipital atrium to the body portion of the left lateral ventricle at the ventricle and opening site, and abscess foci showing diffusion restriction are observed within the ventricle and in the occipital horns of both ventricles. Thickening and signal increase not showing contrast enhancement are present in the ependyma in the walls of the right lateral ventricle and 3rd and 4th ventricles and in the cerebral aqueduct. Ventricular system size is normal. Vasogenic edema extending to the corpus callosum is observed in the white matter of the parietal and occipital lobes. Hemorrhage was not detected.\n\nAside from this, bilateral basal ganglia, thalamus, brainstem, and cerebellum appear normal.\n\nMain cerebral vascular structures are patent.\n\nCranial bone structures, both globes, retrobulbar fat tissue, optic nerves, and optic chiasm are normal.\n\nImpression:\n\n· Cerebral abscesses in the left parietal lobe, posterior periventricular location, opening into the ventricle, ventriculitis\n· Mucosal thickening in the bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses.\n· Minimal inflammatory signal increases in the right mastoid cells.",
+  "output_text": "You had a cranial MRI, which is a detailed brain scan using magnetic fields and radio waves without any radiation. To get the clearest picture, the doctors used several different types of images called sequences, including T1-weighted, FLAIR, T2-weighted, DWI, ADC, and SWI. They also injected a contrast dye called Dotarem to help highlight specific areas. The reason for this scan was to investigate your headache.\n\nFirst, it is good news that many important parts of your head and brain look healthy. The size of the ventricular system (the fluid-filled spaces in the brain) is normal. The bilateral basal ganglia (deep brain structures involved in movement), thalamus (a relay station for sensory signals), brainstem (the part connecting the brain to the spine), and cerebellum (the part of the brain that controls balance and coordination) all appear normal. Your main cerebral vascular structures (the major blood vessels in the brain) are open and working properly. The cranial bone structures (your skull), both globes (your eyeballs), retrobulbar fat tissue (the fat behind the eyes), optic nerves (the nerves carrying vision signals), and optic chiasm (where the optic nerves cross) are all normal as well.\n\nHowever, the scan did find some serious issues that need attention. There are two abscesses (pockets of infection and pus) in the left parietal lobe (the part of the brain involved in processing sensory information). The first one is in the posterior periventricular area (near the back of the fluid spaces) and measures approximately 20x18 mm. The second one is in the anterior periventricular area (near the front of the fluid spaces) and measures 18x8 mm. This second abscess is actually opening into the ventricle. The walls of both abscesses light up with the contrast dye, and the centers show what is called diffusion restriction, which confirms they are acute (new) and active infections.\n\nBecause these abscesses are connected to the fluid spaces, there is inflammation in the ependyma (the thin lining of the ventricles). This inflammation extends from the occipital atrium (a specific part of the ventricle) to the body of the left lateral ventricle. There are also signs of infection, known as abscess foci with diffusion restriction, inside the ventricle itself and in the occipital horns (the back parts) of both ventricles. This condition is called ventriculitis (inflammation of the ventricles). Additionally, the linings of the right lateral ventricle, the 3rd and 4th ventricles, and the cerebral aqueduct (the narrow channel connecting the 3rd and 4th ventricles) show thickening and increased signal, but they do not light up with the contrast dye. This finding is indeterminate, meaning it is not fully clear if it is active infection or something else, but it is not currently enhancing.\n\nThe infection has also caused swelling, called vasogenic edema, in the white matter (the nerve fibers) of the parietal and occipital (back of the brain) lobes. This swelling extends to the corpus callosum (the bridge of nerve fibers connecting the two halves of the brain). This swelling is acute (new).\n\nFinally, the scan showed some minor issues in the sinuses and ears. There is mucosal thickening (swelling of the lining) in the bilateral maxillary sinuses (cheek sinuses), ethmoidal cells (sinuses between the eyes), and frontal sinuses (forehead sinuses). This is indeterminate and not currently causing enhancement. There are also minimal inflammatory signal increases in the right mastoid cells (the bone behind the ear), which suggests a mild, indeterminate inflammation there.\n\nIn summary, the radiologist’s overall impression is that you have cerebral abscesses in the left parietal lobe that are opening into the ventricle, causing ventriculitis. There is also mucosal thickening in the maxillary, ethmoidal, and frontal sinuses, and minimal inflammation in the right mastoid cells. These findings are serious and require immediate medical attention from your doctor to treat the infection.",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "qwen-3.8-27b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "exam_info": {
+      "modality": "Cranial MRI",
+      "sequences_used": [
+        "T1-weighted",
+        "FLAIR",
+        "T2-weighted",
+        "DWI",
+        "ADC",
+        "SWI"
+      ],
+      "contrast_used": "yes",
+      "body_region": "Brain",
+      "clinical_indication": "Headache"
+    },
+    "normal_findings": [
+      "Ventricular system size",
+      "Bilateral basal ganglia",
+      "Thalamus",
+      "Brainstem",
+      "Cerebellum",
+      "Main cerebral vascular structures",
+      "Cranial bone structures",
+      "Both globes",
+      "Retrobulbar fat tissue",
+      "Optic nerves",
+      "Optic chiasm"
+    ],
+    "abnormal_findings": [
+      {
+        "location": "Left parietal lobe, posterior periventricular",
+        "finding": "Abscess measuring approximately 20x18 mm with walls showing contrast enhancement and diffusion restriction in the center",
+        "finding_lay": "A pocket of infection (abscess) in the left side of the brain near the fluid-filled spaces, showing signs of active inflammation.",
+        "severity": "severe",
+        "chronicity": "acute",
+        "enhancement": "enhancing"
+      },
+      {
+        "location": "Left parietal lobe, anterior periventricular",
+        "finding": "Abscess measuring 18x8 mm opening into the ventricle, with walls showing contrast enhancement and diffusion restriction in the center",
+        "finding_lay": "A second pocket of infection in the left brain that has ruptured into the fluid-filled space, indicating a serious spread of infection.",
+        "severity": "severe",
+        "chronicity": "acute",
+        "enhancement": "enhancing"
+      },
+      {
+        "location": "Ependyma extending from occipital atrium to body of left lateral ventricle",
+        "finding": "Contrast enhancement in the ependyma at the ventricle and opening site",
+        "finding_lay": "Inflammation of the lining of the brain's fluid spaces on the left side, consistent with ventriculitis.",
+        "severity": "severe",
+        "chronicity": "acute",
+        "enhancement": "enhancing"
+      },
+      {
+        "location": "Ventricle and occipital horns of both ventricles",
+        "finding": "Abscess foci showing diffusion restriction within the ventricle and in the occipital horns of both ventricles",
+        "finding_lay": "Small areas of infection found inside the fluid-filled spaces of the brain on both sides.",
+        "severity": "severe",
+        "chronicity": "acute",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Walls of right lateral ventricle, 3rd and 4th ventricles, and cerebral aqueduct",
+        "finding": "Thickening and signal increase not showing contrast enhancement in the ependyma",
+        "finding_lay": "Thickening of the lining of the brain's fluid spaces on the right side and in the center, suggesting inflammation without active blood flow changes.",
+        "severity": "moderate",
+        "chronicity": "indeterminate",
+        "enhancement": "non-enhancing"
+      },
+      {
+        "location": "White matter of parietal and occipital lobes",
+        "finding": "Vasogenic edema extending to the corpus callosum",
+        "finding_lay": "Swelling in the brain tissue around the infection sites, spreading to the connecting bridge between the two brain hemispheres.",
+        "severity": "moderate",
+        "chronicity": "acute",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses",
+        "finding": "Mucosal thickening",
+        "finding_lay": "Inflammation and swelling of the lining of the sinuses in the face and forehead.",
+        "severity": "mild",
+        "chronicity": "indeterminate",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "Right mastoid cells",
+        "finding": "Minimal inflammatory signal increases",
+        "finding_lay": "Mild inflammation in the bone behind the right ear.",
+        "severity": "mild",
+        "chronicity": "indeterminate",
+        "enhancement": "not applicable"
+      }
+    ],
+    "incidental_findings": [],
+    "measurements": [
+      {
+        "structure": "Posterior left parietal abscess",
+        "value": "20x18",
+        "unit": "mm"
+      },
+      {
+        "structure": "Anterior left parietal abscess",
+        "value": "18x8",
+        "unit": "mm"
+      }
+    ],
+    "impression": "Cerebral abscesses in the left parietal lobe, posterior periventricular location, opening into the ventricle, ventriculitis. Mucosal thickening in the bilateral maxillary sinuses, ethmoidal cells, and frontal sinuses. Minimal inflammatory signal increases in the right mastoid cells.",
+    "recommendations": []
+  },
+  "ner_extraction_latency_seconds": 2.68,
+  "ner_extraction_tokens": 2322,
+  "ner_fallback_used": false,
+  "metrics": {
+    "flesch_reading_ease": 43.31,
+    "flesch_kincaid_grade_level": 12.28,
+    "smog_index": 14.96,
+    "gunning_fog": 16.57,
+    "coleman_liau": 13.08,
+    "num_words": 632,
+    "num_sentences": 31,
+    "num_syllables": 1067,
+    "average_word_length": 5.16,
+    "average_word_frequency": 4.69,
+    "ttr": 0.4335,
+    "mtld": 62.55,
+    "proportion_difficult_words": 0.6013,
+    "rouge1_f1": 50.37,
+    "rouge2_f1": 0.0,
+    "rougeL_f1": 50.37,
+    "bertscore_precision": 16.3,
+    "bertscore_recall": 40.39,
+    "bertscore_f1": 82.81,
+    "sari": 17.74,
+    "sbert_cosine_similarity": 80.98,
+    "parenthetical_explanation_count": 30,
+    "parenthetical_explanation_rate": 4.75,
+    "jargon_source_count": 4,
+    "jargon_generated_count": 7,
+    "jargon_reduction_pct": -75.0,
+    "compression_ratio_chars": 2.222,
+    "compression_ratio_words": 2.478
+  }
+}

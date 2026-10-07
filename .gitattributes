@@ -1,2 +1,5 @@
 *.zip filter=lfs diff=lfs merge=lfs -text
-*.csv filter=lfs diff=lfs merge=lfs -text
+datasets/**/*.csv filter=lfs diff=lfs merge=lfs -text
+# Small generated result CSVs: plain git (too small to be worth LFS), but keep
+# bytes verbatim so regenerating them does not produce line-ending-only diffs.
+analysis/results/*.csv -text

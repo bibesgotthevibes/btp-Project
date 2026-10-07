@@ -12,6 +12,17 @@ from typing import Dict, List, Set, Tuple
 from collections import Counter
 from .readability import tokenize_words
 
+_ROUGE_SCORER = None
+_BERT_SCORER = None
+_FALLBACK_WARNED = set()
+
+
+def _warn_fallback(metric: str, err: Exception) -> None:
+    """Print once per metric when a proxy is used instead of the real library."""
+    if metric not in _FALLBACK_WARNED:
+        print(f"  [WARN] {metric} unavailable ({err!r}); using lexical proxy instead")
+        _FALLBACK_WARNED.add(metric)
+
 # ── 1. SARI Implementation (Xu et al. 2016) ───────────────────────────────────
 
 def _get_ngrams(tokens: List[str], n: int) -> Counter:
@@ -103,16 +114,19 @@ def compute_sari(
 
 def compute_rouge_scores(reference: str, hypothesis: str) -> Dict[str, float]:
     """Compute ROUGE-1, ROUGE-2, ROUGE-L F1 scores."""
+    global _ROUGE_SCORER
     try:
-        from rouge_score import rouge_scorer
-        scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
-        scores = scorer.score(reference, hypothesis)
+        if _ROUGE_SCORER is None:
+            from rouge_score import rouge_scorer
+            _ROUGE_SCORER = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+        scores = _ROUGE_SCORER.score(reference, hypothesis)
         return {
             "rouge1_f1": round(scores["rouge1"].fmeasure * 100.0, 2),
             "rouge2_f1": round(scores["rouge2"].fmeasure * 100.0, 2),
             "rougeL_f1": round(scores["rougeL"].fmeasure * 100.0, 2),
         }
-    except Exception:
+    except Exception as e:
+        _warn_fallback("ROUGE (rouge_score)", e)
         # Lightweight token-overlap fallback
         ref_tokens = set(tokenize_words(reference.lower()))
         hyp_tokens = set(tokenize_words(hypothesis.lower()))
@@ -140,20 +154,20 @@ def compute_bertscore(
     Attempts bert_score package if available, otherwise computes
     token-level IDF-weighted cosine similarity fallback.
     """
+    global _BERT_SCORER
     try:
-        import bert_score
-        P, R, F1 = bert_score.score(
-            [hypothesis],
-            [reference],
-            lang="en",
-            verbose=False,
-        )
+        if _BERT_SCORER is None:
+            from bert_score import BERTScorer
+            # Same model/layer as bert_score.score(lang="en"), loaded once per process
+            _BERT_SCORER = BERTScorer(lang="en")
+        P, R, F1 = _BERT_SCORER.score([hypothesis], [reference], verbose=False)
         return {
             "bertscore_precision": round(float(P[0]) * 100.0, 2),
             "bertscore_recall": round(float(R[0]) * 100.0, 2),
             "bertscore_f1": round(float(F1[0]) * 100.0, 2),
         }
-    except Exception:
+    except Exception as e:
+        _warn_fallback("BERTScore (bert_score)", e)
         # Lightweight character/word n-gram cosine similarity proxy
         ref_tokens = tokenize_words(reference.lower())
         hyp_tokens = tokenize_words(hypothesis.lower())

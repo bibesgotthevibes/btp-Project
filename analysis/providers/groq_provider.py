@@ -7,6 +7,7 @@ and Qwen (qwen/qwen3.6-27b).
 """
 
 import json
+import re
 import time
 import urllib.request
 import urllib.error
@@ -20,6 +21,20 @@ from ..config import (
     INITIAL_RETRY_DELAY,
     REQUEST_TIMEOUT,
 )
+
+def _retry_after_seconds(resp) -> float:
+    """Seconds Groq asks us to wait (retry-after header or 'try again in Xs'), plus a margin."""
+    try:
+        header = resp.headers.get("retry-after")
+        if header:
+            return float(header) + 1.0
+        m = re.search(r"try again in (?:(\d+)m)?([\d.]+)s", resp.text)
+        if m:
+            return int(m.group(1) or 0) * 60 + float(m.group(2)) + 1.0
+    except Exception:
+        pass
+    return 0.0
+
 
 class GroqProvider(BaseProvider):
     def __init__(self, api_key: Optional[str] = None):
@@ -52,7 +67,10 @@ class GroqProvider(BaseProvider):
             "model": model_id,
             "messages": messages,
             "temperature": temperature,
-            "max_tokens": min(max_tokens, 2048),
+            # gpt-oss spends part of this budget reasoning, so it needs the full requested budget
+            # (a 2048 cap left many outputs empty). Qwen keeps the 2048 cap: Groq's free tier
+            # rejects Qwen requests whose budget exceeds its 1000 output-tokens-per-minute limit.
+            "max_tokens": min(max_tokens, 2048) if "qwen" in model_id.lower() else max_tokens,
         }
 
         if "qwen" in model_id.lower():
@@ -86,12 +104,15 @@ class GroqProvider(BaseProvider):
                         choice = data.get("choices", [{}])[0]
                         msg = choice.get("message", {})
                         text = (msg.get("content") or "").strip()
-                        if not text and msg.get("reasoning"):
-                            text = (msg.get("reasoning") or "").strip()
+                        # Never return the reasoning trace as the answer: when the token budget runs
+                        # out mid-reasoning, content is empty and reasoning is NOT a simplification.
+                        if text and choice.get("finish_reason") == "length":
+                            text = ""
 
                         if not text:
                             last_error = f"Empty generation content returned (finish_reason={choice.get('finish_reason')})"
-                            if attempt < MAX_RETRIES:
+                            # Hitting the token budget is deterministic: retrying would only burn tokens
+                            if attempt < MAX_RETRIES and choice.get("finish_reason") != "length":
                                 time.sleep(delay)
                                 delay *= 2
                                 continue
@@ -130,12 +151,15 @@ class GroqProvider(BaseProvider):
                         choice = data.get("choices", [{}])[0]
                         msg = choice.get("message", {})
                         text = (msg.get("content") or "").strip()
-                        if not text and msg.get("reasoning"):
-                            text = (msg.get("reasoning") or "").strip()
+                        # Never return the reasoning trace as the answer: when the token budget runs
+                        # out mid-reasoning, content is empty and reasoning is NOT a simplification.
+                        if text and choice.get("finish_reason") == "length":
+                            text = ""
 
                         if not text:
                             last_error = f"Empty generation content returned (finish_reason={choice.get('finish_reason')})"
-                            if attempt < MAX_RETRIES:
+                            # Hitting the token budget is deterministic: retrying would only burn tokens
+                            if attempt < MAX_RETRIES and choice.get("finish_reason") != "length":
                                 time.sleep(delay)
                                 delay *= 2
                                 continue
@@ -160,8 +184,15 @@ class GroqProvider(BaseProvider):
                         )
 
                 last_error = f"HTTP {status_code}: {error_text[:300]}"
+                if status_code == 429 and "Request too large" in error_text and payload["max_tokens"] > 1000 and attempt < MAX_RETRIES:
+                    # Free tier sometimes enforces max_tokens <= the 1000 output-tokens/minute limit.
+                    # Retry with 1000: complete answers still succeed; longer ones end with
+                    # finish_reason=length and are reported as errors, never as partial text.
+                    payload["max_tokens"] = 1000
+                    continue
                 if status_code in (429, 503) and attempt < MAX_RETRIES:
-                    time.sleep(delay)
+                    # Per-minute token limits need the server's hint, not a short fixed backoff
+                    time.sleep(max(delay, _retry_after_seconds(resp)))
                     delay *= 2
                     continue
                 return GenerationResult(

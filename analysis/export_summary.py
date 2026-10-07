@@ -22,7 +22,7 @@ PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from analysis.config import RESULTS_DIR
+from analysis.config import RESULTS_DIR, MODEL_ENDPOINTS
 
 EVALUATIONS_JSON = RESULTS_DIR / "evaluations.json"
 SUMMARY_REPORT_MD = RESULTS_DIR / "summary_report.md"
@@ -31,6 +31,14 @@ SUMMARY_REPORT_MD = RESULTS_DIR / "summary_report.md"
 def mean(values: List[float]) -> float:
     vals = [v for v in values if isinstance(v, (int, float))]
     return round(sum(vals) / len(vals), 2) if vals else 0.0
+
+
+def display_model(r: Dict[str, Any]) -> str:
+    """Label a record by the model that actually produced it (flags substitute-model runs)."""
+    if (r.get("extra") or {}).get("fallback_used"):
+        used = r.get("model_used") or (MODEL_ENDPOINTS.get(r["model"], {}).get("fallback_models") or ["substitute"])[0]
+        return f"{r['model']} (ran on {used})"
+    return r["model"]
 
 
 def generate_summary_report() -> str:
@@ -57,16 +65,16 @@ def generate_summary_report() -> str:
 
     # ── 1. Model Leaderboard ──────────────────────────────────────────────────
     lines.append("## 1. Model Comparison Leaderboard\n")
-    lines.append("| Model | Task | FKGL (↓) | FRE (↑) | SARI (↑) | ROUGE-1 | BERTScore | SBERT Cos | Jargon Red % | Latency (s) |")
-    lines.append("|---|---|---|---|---|---|---|---|---|---|")
+    lines.append("| Model | Task | Strategy | n | FKGL (↓) | FRE (↑) | SARI (↑) | ROUGE-1 | BERTScore | SBERT Cos | Jargon Red % | Latency (s) |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
 
-    # Group by (model, task)
+    # Group by (actual model, task, strategy)
     by_model_task = defaultdict(list)
     for r in valid_records:
-        key = (r["model"], r["task"])
+        key = (display_model(r), r["task"], r["strategy"])
         by_model_task[key].append(r)
 
-    for (model, task), group in sorted(by_model_task.items()):
+    for (model, task, strat), group in sorted(by_model_task.items()):
         fkgl = mean([g["metrics"].get("flesch_kincaid_grade_level") for g in group])
         fre = mean([g["metrics"].get("flesch_reading_ease") for g in group])
         sari = mean([g["metrics"].get("sari") for g in group])
@@ -76,7 +84,7 @@ def generate_summary_report() -> str:
         j_red = mean([g["metrics"].get("jargon_reduction_pct") for g in group])
         lat = mean([g.get("latency_seconds", 0) for g in group])
 
-        lines.append(f"| **{model}** | {task} | {fkgl} | {fre} | {sari} | {r1}% | {bs}% | {sbert}% | {j_red}% | {lat}s |")
+        lines.append(f"| **{model}** | {task} | {strat} | {len(group)} | {fkgl} | {fre} | {sari} | {r1}% | {bs}% | {sbert}% | {j_red}% | {lat}s |")
 
     lines.append("\n---\n")
 
@@ -125,7 +133,7 @@ def generate_summary_report() -> str:
     lines.append("\n---\n")
 
     # ── 4. Prompt Strategy: Zero-shot vs Few-shot ─────────────────────────────
-    lines.append("## 4. Prompt Strategy: Zero-Shot vs. Few-Shot\n")
+    lines.append("## 4. Prompt Strategy Comparison\n")
     lines.append("| Strategy | Task | SARI (↑) | Par Explanations/100w | ROUGE-1 | FKGL (↓) | FRE (↑) |")
     lines.append("|---|---|---|---|---|---|---|")
 
@@ -142,6 +150,32 @@ def generate_summary_report() -> str:
         fre = mean([g["metrics"].get("flesch_reading_ease") for g in group])
 
         lines.append(f"| **{strat}** | {task} | {sari} | {expl_rate} | {r1}% | {fkgl} | {fre} |")
+
+    # ── 5. NER-guided: did the entity-extraction stage actually run? ──────────
+    ner_records = [r for r in valid_records if r["strategy"] == "ner-guided"]
+    if ner_records:
+        lines.append("\n---\n")
+        lines.append("## 5. NER-Guided: Entities Used vs. Zero-Shot Fallback\n")
+        lines.append("| NER stage | n | FKGL (↓) | FRE (↑) | SARI (↑) | ROUGE-L | BERTScore | SBERT Cos | Jargon Red % |")
+        lines.append("|---|---|---|---|---|---|---|---|---|")
+        by_ner = defaultdict(list)
+        for r in ner_records:
+            by_ner[r.get("ner_extraction_status") or "unknown"].append(r)
+        for status, group in sorted(by_ner.items()):
+            label = "entities used" if status == "success" else f"{status} → zero-shot fallback"
+            m = lambda k: mean([g["metrics"].get(k) for g in group])
+            lines.append(f"| {label} | {len(group)} | {m('flesch_kincaid_grade_level')} | {m('flesch_reading_ease')} | {m('sari')} | {m('rougeL_f1')}% | {m('bertscore_f1')}% | {m('sbert_cosine_similarity')}% | {m('jargon_reduction_pct')}% |")
+
+    # ── 6. Missing trials ─────────────────────────────────────────────────────
+    failed = [r for r in records if r.get("status") != "success"]
+    if failed:
+        lines.append("\n---\n")
+        lines.append(f"## 6. Missing Trials ({len(failed)})\n")
+        lines.append("| Trial | Error |")
+        lines.append("|---|---|")
+        for r in failed:
+            err = " ".join(str(r.get("error") or "").split())[:140].replace("|", "/")
+            lines.append(f"| {r.get('trial_id')} | {err} |")
 
     content = "\n".join(lines)
     with open(SUMMARY_REPORT_MD, "w", encoding="utf-8") as f:

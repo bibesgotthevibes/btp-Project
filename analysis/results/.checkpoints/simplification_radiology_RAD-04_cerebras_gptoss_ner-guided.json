@@ -1,0 +1,103 @@
+{
+  "trial_id": "simplification_radiology_RAD-04_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "radiology",
+  "sample_id": "RAD-04",
+  "sample_title": "Radiology MRI (CU6OXMT22Y)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 1081,
+  "completion_tokens": 1072,
+  "total_tokens": 4821,
+  "latency_seconds": 4.207,
+  "system_prompt": "You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nExam: Brain MRI (Cranial) of Brain\n  Sequences: T1-weighted, FLAIR, axial T2-weighted, SWI, DWI\n  Contrast: not mentioned\n  Clinical indication: Headache, dizziness\nNormal structures (reassure about these):\n  ✓ brainstem\n  ✓ cerebellum\n  ✓ fourth ventricle\n  ✓ posterior fossa cisterns\n  ✓ bilateral basal ganglia\n  ✓ internal capsules\n  ✓ corpus callosum\n  ✓ cerebral parenchyma (excluding chronic gliotic foci)\n  ✓ third ventricle\n  ✓ lateral ventricles\n  ✓ sulci\n  ✓ major cerebral vascular structures\n  ✓ paranasal sinuses\n  ✓ right middle ear aeration\n  ✓ nasopharynx\n  ✓ orbits\n  ✓ visualized bones\n  ✓ SWI sequences\nAbnormal findings (MUST explain all of these):\n  [MILD] bilateral tegmental tracts in the pons: nonspecific T2 hyperintensity | indeterminate | not applicable\n  [MILD] posterior periventricular and frontal white matter: chronic gliotic foci <5 mm in diameter | chronic | not applicable\n  [MILD] left ear: chronic otitis | chronic | not applicable\nMeasurements to include:\n  • gliotic foci: <5 mm\nRadiologist impression: Chronic ischemic-gliotic lesions in the cerebral white matter.\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').\n2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.\n3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.\n4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):\n   - Explain what the finding means in plain words without causing unnecessary panic.\n   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.\n   - Clarify whether the finding is new, chronic, or requires further evaluation.\n5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.\n6. Write as continuous plain prose paragraphs without bullet points or headers.\n7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.\n8. Output only the simplified text, nothing else.\n9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following radiology report into plain English for the patient and family:\n\nOriginal Medical Report:\nBRAIN MRI (CRANIAL) [date_1]:\nClinical information: Headache, dizziness.\nTechnique: 3-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI.\nFindings:\nApart from nonspecific T2 hyperintensity in the bilateral tegmental tracts in the pons, the brainstem and cerebellum, fourth ventricle, and posterior fossa cisterns are normal.\nThe bilateral basal ganglia, internal capsules, and corpus callosum are normal.\nApart from chronic gliotic foci <5 mm in diameter in the posterior periventricular and frontal white matter, the cerebral parenchyma is normal.\nNo specific findings on SWI sections.\nThe third and lateral ventricles and sulci are normal.\nThe major cerebral vascular structures are patent.\nLeft chronic otitis is present. The paranasal sinuses and right middle ear aeration, nasopharynx, and orbits are normal.\nNo specific findings in the visualized bones.\nImpression:\n•\tChronic ischemic-gliotic lesions in the cerebral white matter.\n\nOutput:\n",
+  "source_text": "BRAIN MRI (CRANIAL) [date_1]:\nClinical information: Headache, dizziness.\nTechnique: 3-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI.\nFindings:\nApart from nonspecific T2 hyperintensity in the bilateral tegmental tracts in the pons, the brainstem and cerebellum, fourth ventricle, and posterior fossa cisterns are normal.\nThe bilateral basal ganglia, internal capsules, and corpus callosum are normal.\nApart from chronic gliotic foci <5 mm in diameter in the posterior periventricular and frontal white matter, the cerebral parenchyma is normal.\nNo specific findings on SWI sections.\nThe third and lateral ventricles and sulci are normal.\nThe major cerebral vascular structures are patent.\nLeft chronic otitis is present. The paranasal sinuses and right middle ear aeration, nasopharynx, and orbits are normal.\nNo specific findings in the visualized bones.\nImpression:\n•\tChronic ischemic-gliotic lesions in the cerebral white matter.",
+  "output_text": "The scan that was done is a brain MRI (cranial) of the brain, which is a detailed brain scan that uses magnetic fields and radio waves but no radiation. The images were taken with several different techniques: T1‑weighted, FLAIR, axial T2‑weighted, SWI (susceptibility weighted imaging), and DWI (diffusion weighted imaging). No contrast dye was used. The doctor ordered the scan because of headache and dizziness.\n\nEverything that was looked at came back normal. The brainstem (the part of the brain that connects to the spinal cord), the cerebellum (the part that controls balance and coordination), the fourth ventricle (a fluid‑filled space in the back of the brain), and the posterior fossa cisterns (the spaces around the brainstem) are all normal. The bilateral basal ganglia (deep brain structures that help control movement), the internal capsules (wires that carry signals to and from the brain), and the corpus callosum (the big bundle of nerves that connects the two halves of the brain) are normal. The main part of the brain tissue (the cerebral parenchyma) is normal except for a few tiny scar spots. The third ventricle and the lateral ventricles (fluid‑filled spaces in the brain) and the grooves on the brain surface (sulci) are normal. The main blood vessels in the brain are open (patent). The sinuses in the face (paranasal sinuses), the right middle ear air space, the area behind the nose (nasopharynx), the eye sockets (orbits), and the bones that were seen in the scan are all normal. The SWI images also did not show anything abnormal.\n\nThere are a few mild abnormal findings. In the pons (a part of the brainstem that helps control breathing and other functions), the tiny nerve tracts called the tegmental tracts show a mild, nonspecific bright spot on the T2 images. This is not a specific disease and is usually not a problem. In the white matter of the brain (the part that carries signals between different brain areas), there are small chronic gliotic foci (tiny scar spots) that are less than 5 millimeters in size. These are old changes that have been there for a long time. In the left ear, there is chronic otitis, which means a long‑standing ear infection that has been present for a while.\n\nThe measurement that was noted is that the gliotic foci are less than 5 millimeters.\n\nThe radiologist’s overall impression is “chronic ischemic‑gliotic lesions in the cerebral white matter.” This means that the small scar spots in the white matter are likely caused by past episodes of reduced blood flow, which is common as people age or if they have high blood pressure or other risk factors. The report does not recommend any additional tests or treatments at this time.",
+  "model_used": "openai/gpt-oss-20b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "exam_info": {
+      "modality": "Brain MRI (Cranial)",
+      "sequences_used": [
+        "T1-weighted",
+        "FLAIR",
+        "axial T2-weighted",
+        "SWI",
+        "DWI"
+      ],
+      "contrast_used": "not mentioned",
+      "body_region": "Brain",
+      "clinical_indication": "Headache, dizziness"
+    },
+    "normal_findings": [
+      "brainstem",
+      "cerebellum",
+      "fourth ventricle",
+      "posterior fossa cisterns",
+      "bilateral basal ganglia",
+      "internal capsules",
+      "corpus callosum",
+      "cerebral parenchyma (excluding chronic gliotic foci)",
+      "third ventricle",
+      "lateral ventricles",
+      "sulci",
+      "major cerebral vascular structures",
+      "paranasal sinuses",
+      "right middle ear aeration",
+      "nasopharynx",
+      "orbits",
+      "visualized bones",
+      "SWI sequences"
+    ],
+    "abnormal_findings": [
+      {
+        "location": "bilateral tegmental tracts in the pons",
+        "finding": "nonspecific T2 hyperintensity",
+        "finding_lay": "Areas of increased signal on T2-weighted images in the pons, which may represent small chronic changes",
+        "severity": "mild",
+        "chronicity": "indeterminate",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "posterior periventricular and frontal white matter",
+        "finding": "chronic gliotic foci <5 mm in diameter",
+        "finding_lay": "Small scar-like areas in the white matter, likely from old small strokes",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      },
+      {
+        "location": "left ear",
+        "finding": "chronic otitis",
+        "finding_lay": "Long-standing inflammation of the left ear",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "not applicable"
+      }
+    ],
+    "incidental_findings": [],
+    "measurements": [
+      {
+        "structure": "gliotic foci",
+        "value": "<5",
+        "unit": "mm"
+      }
+    ],
+    "impression": "Chronic ischemic-gliotic lesions in the cerebral white matter.",
+    "recommendations": []
+  },
+  "ner_model_used": "",
+  "ner_reused": true,
+  "ner_raw_text": "",
+  "ner_extraction_latency_seconds": 2.411,
+  "ner_extraction_tokens": 2668,
+  "ner_fallback_used": false
+}

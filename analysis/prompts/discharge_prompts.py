@@ -88,3 +88,30 @@ FINAL DIAGNOSES: Acute gastroenteritis with moderate dehydration; prerenal acute
 DISCHARGE PLAN & ACTION ITEMS: Discharged hemodynamically stable on oral rehydration therapy and regular levothyroxine; follow-up in primary care clinic in 1 week."""
     }
 ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. DISCHARGE NER-GUIDED SIMPLIFICATION
+# ══════════════════════════════════════════════════════════════════════════════
+# This prompt template has a {ner_retention_block} placeholder that is filled
+# at runtime with the structured JSON entities extracted in Stage 1.
+# The builder injects it via build_ner_guided_prompt() in builder.py.
+
+DISCHARGE_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT = """You are a medical language simplification assistant. Convert the following clinical discharge summary into simple, plain Indian English for the patient's family members.
+
+{ner_retention_block}
+
+Rules:
+1. Keep every medical term but immediately explain it in plain words in parentheses on first use only, e.g. 'hypertension (high BP)'.
+2. Use simple language a 6th-grader can understand. Avoid unexplained jargon. Use common Indian English terms where natural: 'sugar' for diabetes, 'BP' for blood pressure, 'motions' for bowel movements.
+3. Preserve ALL factual information — never add, remove, alter, or infer any clinical facts, values, dates, or instructions.
+4. Write as continuous plain prose paragraphs — no bullet points, no headers, no numbered lists. Output only the simplified text, nothing else.
+5. For any measurement (e.g. BP, blood sugar, heart rate, lab values), briefly state what the normal range is and whether the patient's value was within it.
+6. Use a calm, respectful tone. Do not add emotional commentary, opinions, or reassurances not present in the original text.
+7. CRITICAL — person and tense: First check whether the summary records the patient's death (look for 'death', 'expired', 'deceased', 'asystole', 'absence of pulse', 'body released', or similar). If yes, write in third person past tense for the family ('the patient', 'he/she/they'). If no, address the patient directly in second person ('you', 'your').
+8. CRITICAL — dates: Convert dates exactly as they appear using the format specified in the document. Never guess or infer a date not explicitly stated.
+9. For each medication, state its name and purpose in plain language, e.g. 'Ceftriaxone — an antibiotic given to fight the bacterial infection'.
+10. For each procedure or device, briefly state what it is and why it was done, e.g. 'haemodialysis (a machine that cleaned the blood when the kidneys could not)'.
+11. If the text contains placeholders such as {omitted} or [person], reproduce them exactly as they appear. Do not guess or replace them.
+12. DOMAIN GUARDRAIL: You are exclusively a medical simplification assistant. Output only the simplified clinical explanation.
+13. CRITICAL — ENTITY RETENTION: Every diagnosis, medication name, procedure, anomaly value, lab result, date, and follow-up instruction listed in the extracted entities block above MUST be explicitly mentioned in your simplified output. Do not omit any of them."""

@@ -1,0 +1,116 @@
+{
+  "trial_id": "simplification_radiology_RAD-02_cerebras_gptoss_ner-guided",
+  "task": "simplification",
+  "datatype": "radiology",
+  "sample_id": "RAD-02",
+  "sample_title": "Radiology MRI (K67NPC32IW)",
+  "model": "cerebras/gptoss",
+  "strategy": "ner-guided",
+  "status": "success",
+  "error": null,
+  "provider": "groq",
+  "prompt_tokens": 1488,
+  "completion_tokens": 3409,
+  "total_tokens": 7775,
+  "latency_seconds": 6.785,
+  "system_prompt": "You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).\n\n=== EXTRACTED CLINICAL ENTITIES — YOU MUST RETAIN ALL OF THESE ===\nExam: Brain (Cranial) and Temporal MRI of Brain and temporal bone\n  Sequences: T1-weighted, FLAIR, axial T2-weighted, SWI, DWI, CISS\n  Contrast: yes\n  Clinical indication: Left face and jaw pain; peripheral facial paralysis one month ago\nNormal structures (reassure about these):\n  ✓ Brainstem\n  ✓ Cerebellum\n  ✓ Cerebral parenchyma\n  ✓ Ventricles\n  ✓ Sulci\n  ✓ Other bone structures\n  ✓ Middle ear aeration\n  ✓ Mastoid cell aeration\n  ✓ Inner ear structures\nAbnormal findings (MUST explain all of these):\n  [MILD] Bone lateral to left jugular foramen (skull base): Non-enhancing bone lesion, minimally expansile, stable size | chronic | non-enhancing\n  [MILD] Bilateral parietal bones: Non-enhancing bone lesions with similar features to the jugular foramen lesion | chronic | non-enhancing\n  [MILD] Vertex of the skull (two lesions): Bone lesions with periosteal reaction | chronic | non-enhancing\n  [MILD] Preganglionic segment of the left facial nerve: Mild contrast enhancement | acute | enhancing\n  [NONE] Temporal segment of the left facial nerve: No contrast enhancement or thickening | none | non-enhancing\nRadiologist impression: Non-enhancing solid bone lesion between the left jugular foramen and facial canal; bilateral parietal bone lesions with similar features; temporal bone CT recommended to evaluate bone trabeculation; lack of contrast enhancement partially excludes neoplastic processes such as glomus jugulare and lymphoma, but malignant bone marrow involvement should be considered; mild contrast enhancement in the left preganglionic facial nerve compatible with Bell's palsy; no intracranial pathology detected.\nRecommended follow-up actions (mention all of these):\n  → Temporal bone CT examination to determine the status of bone trabeculation [ROUTINE] — To evaluate bone structure and rule out neoplastic processes\n  → Evaluate for malignant diseases causing bone marrow involvement [ROUTINE] — Because bone lesions may represent malignant bone marrow disease\n=================================================================\nCRITICAL RETENTION RULE: Every entity, value, measurement, date, medication name, finding, and recommendation listed above MUST appear in your simplified output. Do not omit any of them.\n\nRules:\n1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').\n2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.\n3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.\n4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):\n   - Explain what the finding means in plain words without causing unnecessary panic.\n   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.\n   - Clarify whether the finding is new, chronic, or requires further evaluation.\n5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.\n6. Write as continuous plain prose paragraphs without bullet points or headers.\n7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.\n8. Output only the simplified text, nothing else.\n9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them.",
+  "user_prompt": "--- Your Task ---\nPlease simplify the following radiology report into plain English for the patient and family:\n\nOriginal Medical Report:\nBRAIN (CRANIAL) AND TEMPORAL MRI\nClinical information: Left face and jaw pain; peripheral facial paralysis one month ago.\nTechnique:\nCranial: 3-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI. T1-weighted after IV contrast agent.\nTemporal: Axial and coronal T2-weighted, T1-weighted; CISS and DWI. T1-weighted after IV contrast agent.\n\nFindings:\nCranial MRI:\nBrainstem, cerebellum, and cerebral parenchyma; ventricles and sulci are normal.\nIntracranial DWI, SWI, and post-contrast sections show no specific findings.\nIn the bone lateral to the left jugular foramen; there is a non-enhancing bone lesion, minimally expansile, located medial to the vertical segment of the left facial nerve. Present also in the MRI examination of the patient's e-Nabız system, and sizes are stable.\nThe postganglionic segment of the left facial nerve is normal despite close proximity. Residual contrast enhancement in the preganglionic segment is in favor of Bell's palsy, and the cisternal segment of the facial nerve is normal.\nIn the left portion of the skull base, there are bilateral parietal bone lesions with similar features to the bone lesion described above (FLAIR axial 134-150). These lesions belong to the bone marrow, and periosteal reaction belonging to the outer table accompanies 2 bone lesions at the vertex (FLAIR axial 145 and 157).\nOther bone structures are normal.\nTemporal bone MRI shows bilateral middle ear and mastoid cell aeration, inner ear structures are normal.\n\nImpression:\n• Non-enhancing solid bone lesion in the bone between the left jugular foramen and facial canal; bilateral parietal bone lesions with similar features.\no Temporal bone CT examination is recommended to determine the status of bone trabeculation.\no The lack of contrast enhancement partially excludes neoplastic processes such as glomus jugulare and lymphoma, but should be evaluated in terms of malignant diseases causing bone marrow involvement.\n• The temporal segment of the facial nerve is in close proximity but there is no contrast enhancement-thickening. There is mild contrast enhancement in the left preganglionic facial nerve compatible with Bell's palsy.\n• No intracranial pathology was detected.\n\nOutput:\n",
+  "source_text": "BRAIN (CRANIAL) AND TEMPORAL MRI\nClinical information: Left face and jaw pain; peripheral facial paralysis one month ago.\nTechnique:\nCranial: 3-plane T1-weighted, FLAIR; axial T2-weighted, SWI, and DWI. T1-weighted after IV contrast agent.\nTemporal: Axial and coronal T2-weighted, T1-weighted; CISS and DWI. T1-weighted after IV contrast agent.\n\nFindings:\nCranial MRI:\nBrainstem, cerebellum, and cerebral parenchyma; ventricles and sulci are normal.\nIntracranial DWI, SWI, and post-contrast sections show no specific findings.\nIn the bone lateral to the left jugular foramen; there is a non-enhancing bone lesion, minimally expansile, located medial to the vertical segment of the left facial nerve. Present also in the MRI examination of the patient's e-Nabız system, and sizes are stable.\nThe postganglionic segment of the left facial nerve is normal despite close proximity. Residual contrast enhancement in the preganglionic segment is in favor of Bell's palsy, and the cisternal segment of the facial nerve is normal.\nIn the left portion of the skull base, there are bilateral parietal bone lesions with similar features to the bone lesion described above (FLAIR axial 134-150). These lesions belong to the bone marrow, and periosteal reaction belonging to the outer table accompanies 2 bone lesions at the vertex (FLAIR axial 145 and 157).\nOther bone structures are normal.\nTemporal bone MRI shows bilateral middle ear and mastoid cell aeration, inner ear structures are normal.\n\nImpression:\n• Non-enhancing solid bone lesion in the bone between the left jugular foramen and facial canal; bilateral parietal bone lesions with similar features.\no Temporal bone CT examination is recommended to determine the status of bone trabeculation.\no The lack of contrast enhancement partially excludes neoplastic processes such as glomus jugulare and lymphoma, but should be evaluated in terms of malignant diseases causing bone marrow involvement.\n• The temporal segment of the facial nerve is in close proximity but there is no contrast enhancement-thickening. There is mild contrast enhancement in the left preganglionic facial nerve compatible with Bell's palsy.\n• No intracranial pathology was detected.",
+  "output_text": "Exam: Brain (Cranial) and Temporal MRI of Brain and temporal bone. Sequences: T1-weighted, FLAIR, axial T2-weighted, SWI, DWI, CISS. Contrast: yes. Clinical indication: Left face and jaw pain; peripheral facial paralysis one month ago.  \n\nNormal structures (reassure about these): ✓ Brainstem, ✓ Cerebellum, ✓ Cerebral parenchyma, ✓ Ventricles, ✓ Sulci, ✓ Other bone structures, ✓ Middle ear aeration, ✓ Mastoid cell aeration, ✓ Inner ear structures.  \n\nAbnormal findings (MUST explain all of these):  \n[MILD] Bone lateral to left jugular foramen (skull base): Non‑enhancing bone lesion, minimally expansile, stable size | chronic | non‑enhancing.  \n[MILD] Bilateral parietal bones: Non‑enhancing bone lesions with similar features to the jugular foramen lesion | chronic | non‑enhancing.  \n[MILD] Vertex of the skull (two lesions): Bone lesions with periosteal reaction | chronic | non‑enhancing.  \n[MILD] Preganglionic segment of the left facial nerve: Mild contrast enhancement | acute | enhancing.  \n[NONE] Temporal segment of the left facial nerve: No contrast enhancement or thickening | none | non‑enhancing.  \n\nRadiologist impression: Non‑enhancing solid bone lesion between the left jugular foramen and facial canal; bilateral parietal bone lesions with similar features; temporal bone CT recommended to evaluate bone trabeculation; lack of contrast enhancement partially excludes neoplastic processes such as glomus jugulare and lymphoma, but malignant bone marrow involvement should be considered; mild contrast enhancement in the left preganglionic facial nerve compatible with Bell's palsy; no intracranial pathology detected.  \n\nRecommended follow‑up actions (mention all of these):  \n→ Temporal bone CT examination to determine the status of bone trabeculation [ROUTINE] — To evaluate bone structure and rule out neoplastic processes;  \n→ Evaluate for malignant diseases causing bone marrow involvement [ROUTINE] — Because bone lesions may represent malignant bone marrow disease.",
+  "model_used": "openai/gpt-oss-20b",
+  "extra": {
+    "fallback_provider": "groq",
+    "requested_model": "gpt-oss-120b"
+  },
+  "ner_extraction_status": "success",
+  "ner_extraction_json": {
+    "exam_info": {
+      "modality": "Brain (Cranial) and Temporal MRI",
+      "sequences_used": [
+        "T1-weighted",
+        "FLAIR",
+        "axial T2-weighted",
+        "SWI",
+        "DWI",
+        "CISS"
+      ],
+      "contrast_used": "yes",
+      "body_region": "Brain and temporal bone",
+      "clinical_indication": "Left face and jaw pain; peripheral facial paralysis one month ago"
+    },
+    "normal_findings": [
+      "Brainstem",
+      "Cerebellum",
+      "Cerebral parenchyma",
+      "Ventricles",
+      "Sulci",
+      "Other bone structures",
+      "Middle ear aeration",
+      "Mastoid cell aeration",
+      "Inner ear structures"
+    ],
+    "abnormal_findings": [
+      {
+        "location": "Bone lateral to left jugular foramen (skull base)",
+        "finding": "Non-enhancing bone lesion, minimally expansile, stable size",
+        "finding_lay": "A small, non-cancerous bone growth near the left jugular foramen that has not changed in size",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "non-enhancing"
+      },
+      {
+        "location": "Bilateral parietal bones",
+        "finding": "Non-enhancing bone lesions with similar features to the jugular foramen lesion",
+        "finding_lay": "Small bone growths on both sides of the skull in the parietal region that are similar to the lesion near the jugular foramen",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "non-enhancing"
+      },
+      {
+        "location": "Vertex of the skull (two lesions)",
+        "finding": "Bone lesions with periosteal reaction",
+        "finding_lay": "Two bone growths at the top of the skull with surrounding bone reaction",
+        "severity": "mild",
+        "chronicity": "chronic",
+        "enhancement": "non-enhancing"
+      },
+      {
+        "location": "Preganglionic segment of the left facial nerve",
+        "finding": "Mild contrast enhancement",
+        "finding_lay": "Slight swelling or inflammation of the left facial nerve segment before it exits the skull",
+        "severity": "mild",
+        "chronicity": "acute",
+        "enhancement": "enhancing"
+      },
+      {
+        "location": "Temporal segment of the left facial nerve",
+        "finding": "No contrast enhancement or thickening",
+        "finding_lay": "No swelling or abnormal thickening of the facial nerve in the temporal region",
+        "severity": "none",
+        "chronicity": "none",
+        "enhancement": "non-enhancing"
+      }
+    ],
+    "incidental_findings": [],
+    "measurements": [],
+    "impression": "Non-enhancing solid bone lesion between the left jugular foramen and facial canal; bilateral parietal bone lesions with similar features; temporal bone CT recommended to evaluate bone trabeculation; lack of contrast enhancement partially excludes neoplastic processes such as glomus jugulare and lymphoma, but malignant bone marrow involvement should be considered; mild contrast enhancement in the left preganglionic facial nerve compatible with Bell's palsy; no intracranial pathology detected.",
+    "recommendations": [
+      {
+        "action": "Temporal bone CT examination to determine the status of bone trabeculation",
+        "urgency": "routine",
+        "reason": "To evaluate bone structure and rule out neoplastic processes"
+      },
+      {
+        "action": "Evaluate for malignant diseases causing bone marrow involvement",
+        "urgency": "routine",
+        "reason": "Because bone lesions may represent malignant bone marrow disease"
+      }
+    ]
+  },
+  "ner_model_used": "",
+  "ner_reused": true,
+  "ner_raw_text": "",
+  "ner_extraction_latency_seconds": 2.772,
+  "ner_extraction_tokens": 2878,
+  "ner_fallback_used": false
+}

@@ -74,3 +74,26 @@ SECONDARY & INCIDENTAL FINDINGS: Mild abnormal enhancement involving the left pr
 IMPRESSION & ACTIONABLE RECOMMENDATIONS: 1. Solid osseous lesion at left skull base/jugular foramen adjacent to facial canal; recommend dedicated high-resolution temporal bone CT to assess cortical and trabecular architecture. 2. Left facial nerve preganglionic enhancement concordant with clinical Bell's palsy."""
     }
 ]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. RADIOLOGY NER-GUIDED SIMPLIFICATION
+# ══════════════════════════════════════════════════════════════════════════════
+
+RADIOLOGY_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT = """You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).
+
+{ner_retention_block}
+
+Rules:
+1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').
+2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.
+3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.
+4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):
+   - Explain what the finding means in plain words without causing unnecessary panic.
+   - Explain common terms simply: e.g. 'ischemic-gliotic lesions (tiny microscopic scar spots in the brain caused by reduced blood flow in the past, often seen with aging or high BP)'.
+   - Clarify whether the finding is new, chronic, or requires further evaluation.
+5. If the radiologist recommends further tests (e.g. follow-up CT, contrast scan, or consultation), state this clearly.
+6. Write as continuous plain prose paragraphs without bullet points or headers.
+7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.
+8. Output only the simplified text, nothing else.
+9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them."""
