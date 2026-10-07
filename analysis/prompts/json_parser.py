@@ -245,13 +245,9 @@ def _format_radiology_retention(data: dict, lines: list) -> None:
         modality = exam.get("modality", "")
         region = exam.get("body_region", "")
         indication = exam.get("clinical_indication", "")
-        contrast = exam.get("contrast_used", "")
-        sequences = ", ".join(exam.get("sequences_used", []))
+        # Sequences and contrast are left out: the retention rule made models open
+        # with "T1-weighted, FLAIR, axial T2..." lists that mean nothing to patients.
         lines.append(f"Exam: {modality} of {region}")
-        if sequences:
-            lines.append(f"  Sequences: {sequences}")
-        if contrast:
-            lines.append(f"  Contrast: {contrast}")
         if indication:
             lines.append(f"  Clinical indication: {indication}")
 
@@ -303,4 +299,7 @@ if __name__ == "__main__":
     assert _drop_placeholders(raw) == {"exam_info": {"modality": "Chest X-ray"}, "normal_findings": ["No pneumothorax"]}
     block = ner_json_to_retention_block(raw, "radiology")
     assert "not mentioned" not in block.lower() and "Contrast" not in block and "No pneumothorax" in block, block
+    mri = ner_json_to_retention_block({"exam_info": {"modality": "MRI", "body_region": "brain",
+                                       "sequences_used": ["T1", "FLAIR"], "contrast_used": "yes"}}, "radiology")
+    assert "FLAIR" not in mri and "Contrast" not in mri and "Exam: MRI of brain" in mri, mri
     print("json_parser self-check passed")

@@ -14,7 +14,7 @@ Separates tasks into:
 RADIOLOGY_SIMPLIFY_SYSTEM_PROMPT = """You are a medical radiology simplification assistant. Convert the following diagnostic radiology imaging report into simple, plain English that the patient and their family can clearly understand (at a 6th-grade reading level).
 
 Rules:
-1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').
+1. Start with one short sentence naming the scan and why it was done (e.g. 'You had an MRI scan of your brain because of dizziness.'). Do not explain how the scan works or list technical details such as sequences, contrast or radiation.
 2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.
 3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.
 4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):
@@ -37,7 +37,7 @@ The bilateral basal ganglia, internal capsules, and corpus callosum are normal.
 Except for physiologic cystic perivascular enlargement in the left parietal region, the cerebral parenchyma is normal.
 Intracranial DWI and SWI sections are normal.
 Impression: Cranial MRI findings within normal limits.""",
-        "output": """You had a cranial MRI (a detailed magnetic brain scan that takes pictures of brain tissue without using radiation) because of dizziness. The results of the scan are completely normal and reassuring (findings within normal limits). All major parts of your brain — including the brainstem (which controls basic functions like breathing and heartbeat), the cerebellum (the balance and walking center), and the fluid-filled spaces in the head (ventricles) — are in healthy condition. The deep nerve pathways (basal ganglia and internal capsule) look normal. There is a tiny natural fluid space (physiologic cystic perivascular enlargement — a harmless, normal widening around a tiny blood vessel that is present from birth) in the upper left side of the brain, which is completely normal and not a cause for concern. There is no evidence of stroke, bleeding, infection, or tumor. Overall, your brain scan is healthy and normal."""
+        "output": """You had an MRI scan of your brain because of dizziness. The results of the scan are completely normal and reassuring (findings within normal limits). All major parts of your brain — including the brainstem (which controls basic functions like breathing and heartbeat), the cerebellum (the balance and walking center), and the fluid-filled spaces in the head (ventricles) — are in healthy condition. The deep nerve pathways (basal ganglia and internal capsule) look normal. There is a tiny natural fluid space (physiologic cystic perivascular enlargement — a harmless, normal widening around a tiny blood vessel that is present from birth) in the upper left side of the brain, which is completely normal and not a cause for concern. There is no evidence of stroke, bleeding, infection, or tumor. Overall, your brain scan is healthy and normal."""
     }
 ]
 
@@ -85,7 +85,7 @@ RADIOLOGY_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT = """You are a medical radiology sim
 {ner_retention_block}
 
 Rules:
-1. Explain the type of imaging scan conducted in simple words (e.g. 'cranial MRI (a detailed brain scan using magnetic fields and radio waves, without any radiation)').
+1. Start with one short sentence naming the scan and why it was done (e.g. 'You had an MRI scan of your brain because of dizziness.'). Do not explain how the scan works or list technical details such as sequences, contrast or radiation.
 2. Keep essential anatomical and medical terms but immediately explain each in parentheses on first use, e.g. 'cerebellum (the part of the brain that controls balance and coordination)'.
 3. Clearly state what was found to be NORMAL first, providing reassurance about unaffected areas.
 4. For any ABNORMAL findings (such as lesions, abscesses, ischemia, inflammation, or fractures):
@@ -96,7 +96,7 @@ Rules:
 6. Write as continuous plain prose paragraphs without bullet points or headers.
 7. Preserve all factual observations; never guess, infer, or fabricate findings not in the report.
 8. Output only the simplified text, nothing else.
-9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan modality and sequences, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them."""
+9. CRITICAL — ENTITY RETENTION: Every entity listed in the extracted entities block above MUST appear in your simplified output — including the scan type, every normal structure listed, every abnormal finding with its location and severity, all measurements with units, the radiologist's overall impression, and every recommended follow-up action. Do not omit any of them."""
 
 
 # ══════════════════════════════════════════════════════════════════════════════
