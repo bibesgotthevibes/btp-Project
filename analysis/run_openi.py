@@ -14,7 +14,7 @@ meaningful. A "reference" row scores the gold lay text itself as a readability
 baseline (its overlap scores are trivially perfect; ignore those).
 
 Usage:
-  python -m analysis.run_openi --n 20                      # all configured models
+  python -m analysis.run_openi                             # 30 reports, all models and strategies
   python -m analysis.run_openi --n 50 --models ollama/llama3.1:8b --strategies zero-shot
   python -m analysis.run_openi --summary                   # re-print summary only
 """
@@ -104,7 +104,7 @@ def print_summary(records):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--n", type=int, default=20, help="Number of report pairs to run.")
+    ap.add_argument("--n", type=int, default=30, help="Number of report pairs to run.")
     ap.add_argument("--split", default="validation", choices=["train", "validation"])
     ap.add_argument("--models", nargs="+", default=MODELS, choices=MODELS)
     ap.add_argument("--strategies", nargs="+", default=STRATEGIES, choices=STRATEGIES)
