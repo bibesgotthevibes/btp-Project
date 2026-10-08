@@ -10,6 +10,8 @@ rouge-score
 bert-score
 sentence-transformers
 wordfreq
+textstat
+easse @ git+https://github.com/feralvam/easse
 # alignscore runtime deps
 pytorch-lightning==1.9.5
 setuptools<70
