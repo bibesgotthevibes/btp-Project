@@ -3,15 +3,16 @@ analysis/review_form.py
 ───────────────────────
 Doctor review of the Open-i benchmark outputs (results/openi/results.json).
 
-  build:  python -m analysis.review_form build --model cerebras/qwen3.8 --n 15
+  build:  python -m analysis.review_form build --model ollama/gemma4:12b --n 10 --compare-n 5
           -> results/openi/doctor_review.html      (send this single file to the doctor)
              results/openi/doctor_review_key.csv   (version id -> system; keep it, don't send)
   import: python -m analysis.review_form import answers.csv
           -> per-system summary of the doctor's ratings
 
-Per report the doctor sees the original chest X-ray report and three blinded versions:
-the model's direct (zero-shot) output, its NER-guided output, and the dataset reference.
-Version letters are shuffled per report so the reviewer can't tell which is which.
+Part 1 (method comparison): per report, one model's few-shot, NER-guided and NER-repair
+outputs plus the dataset reference. Part 2 (model comparison): other reports, the few-shot
+output of every model. Each report shows the original chest X-ray report and blinded versions
+whose letters are shuffled per report, so the reviewer can't tell which is which.
 Questions match build_doctor_pdf.py so both reviews can be compared.
 
 The page saves answers in the browser as the doctor goes and has a
@@ -45,32 +46,35 @@ QUESTIONS = [  # (field, label, options) — same as build_doctor_pdf.py
 ]
 
 
-def build(model: str, n: int, seed: int = 42):
+def build(model: str, n: int, compare_n: int, seed: int = 42):
+    """Part 1: n reports x {few-shot, NER-guided, NER-repair} of `model` + the reference.
+    Part 2: compare_n other reports x the few-shot output of every model that has one."""
     pairs = pd.read_csv(PAIRS_CSV)
     order = list(pairs[pairs.split == "validation"].sample(n=30, random_state=seed).nlmcxr_file)  # benchmark order
     by_key = {(r["sample_id"], r["model"], r["strategy"]): r for r in load_results() if r["status"] == "success"}
+    fewshot_models = sorted({m for (_, m, st) in by_key if st == "few-shot"})
 
-    reports, key_rows = [], []
-    for sid in order:
-        systems = {"direct": by_key.get((sid, model, "zero-shot")),
-                   "ner-guided": by_key.get((sid, model, "ner-guided")),
-                   "reference": by_key.get((sid, "reference", "-"))}
-        if not all(systems.values()):
-            continue  # need all three versions to compare
-        items = list(systems.items())
-        random.Random(f"review-{sid}").shuffle(items)
-        versions = []
-        for i, (system, r) in enumerate(items):
-            letter = "ABC"[i]
-            versions.append({"letter": letter, "text": r["output_text"]})
-            key_rows.append({"report": sid, "version": letter, "system": system,
-                             "model": model if system != "reference" else "LaymanRRG reference"})
-        reports.append({"id": sid, "source": r["source_text"], "versions": versions})
-        if len(reports) == n:
-            break
+    part1 = [(model, "few-shot"), (model, "ner-guided"), (model, "ner-repair"), ("reference", "-")]
+    part2 = [(m, "few-shot") for m in fewshot_models]
+    plan = [(1, part1, n), (2, part2, compare_n)]
 
-    if len(reports) < n:
-        print(f"Only {len(reports)} reports have all three versions for {model}; using those.")
+    reports, key_rows, used = [], [], set()
+    for part, systems, count in plan:
+        picked = [sid for sid in order if sid not in used and all((sid, m, st) in by_key for m, st in systems)][:count]
+        if len(picked) < count:
+            print(f"Part {part}: only {len(picked)} reports have all {len(systems)} versions; using those.")
+        for sid in picked:
+            used.add(sid)
+            items = list(systems)
+            random.Random(f"review-{sid}").shuffle(items)
+            versions = []
+            for i, (m, st) in enumerate(items):
+                letter = chr(ord("A") + i)
+                versions.append({"letter": letter, "text": by_key[(sid, m, st)]["output_text"]})
+                key_rows.append({"report": sid, "version": letter, "part": part, "model": m, "strategy": st})
+            reports.append({"id": sid, "part": part, "source": by_key[(sid, "reference", "-")]["source_text"],
+                            "versions": versions})
+
     payload = json.dumps({"reports": reports, "questions": QUESTIONS}, ensure_ascii=False)
     OUT_HTML.write_text(HTML.replace("__DATA__", payload.replace("</", "<\\/")), encoding="utf-8")
     with open(OUT_KEY, "w", newline="", encoding="utf-8") as f:
@@ -84,10 +88,10 @@ def import_answers(path: str):
     answers = pd.read_csv(path, dtype=str)
     key = pd.read_csv(OUT_KEY, dtype=str)
     df = answers.merge(key, on=["report", "version"], how="left")
-    if df.system.isna().any():
+    if df.model.isna().any():
         print("WARNING: some answers don't match the key (was the form rebuilt after sending?)")
     df["understandable"] = pd.to_numeric(df.understandable, errors="coerce")
-    g = df.groupby("system")
+    g = df.groupby(["part", "model", "strategy"])
     summary = pd.DataFrame({
         "n": g.size(),
         "serious_errors_%": g.accuracy.apply(lambda s: (s == "Serious errors").mean() * 100),
@@ -131,7 +135,8 @@ button{font:inherit;background:var(--accent);color:var(--on-accent);border:0;bor
 </style></head><body><main>
 <h1>Chest X-ray report review</h1>
 <div class="card">
-<p>We are testing whether AI models can rewrite chest X-ray reports into plain language a patient can understand. Each original report below is followed by <b>three plain-language versions (A, B, C)</b> in random order; they don't reveal how they were made, so please judge each on its own.</p>
+<p>We are testing whether AI models can rewrite chest X-ray reports into plain language a patient can understand. Each original report below is followed by <b>several plain-language versions (A, B, C…)</b> in random order; they don't reveal how they were made, so please judge each on its own.</p>
+<p><b>Part 1</b> has 4 versions per report. <b>Part 2</b> has more versions per report (one from each of several AI models), so it takes a little longer per report.</p>
 <p>For each version, check: <b>accuracy</b> (anything wrong or misinterpreted?), <b>invented information</b> (anything not in the original?), <b>missing information</b> (anything clinically important left out?), <b>understandability</b>, and whether it <b>could be given to a patient</b>. Short notes are very helpful.</p>
 <p class="muted">The reports are from a public, de-identified research dataset (Open-i); "XXXX" marks text removed during anonymisation. Your answers are saved in this browser as you go, so you can close the page and come back. When finished, press <b>Download my answers</b> and send us the file.</p>
 <label for="reviewer"><b>Your name</b></label><input type="text" id="reviewer" autocomplete="name">
@@ -141,14 +146,22 @@ button{font:inherit;background:var(--accent);color:var(--on-accent);border:0;bor
 </main>
 <script>
 const DATA = __DATA__;
-const STORE = "cxr-review-v1";
+const STORE = "cxr-review-v2";  // bump when the set of reports/versions changes
 let saved = {};
 try { saved = JSON.parse(localStorage.getItem(STORE) || "{}"); } catch (e) {}
 const persist = () => { try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (e) {} };
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const root = document.getElementById("reports");
 
+let lastPart = null;
 DATA.reports.forEach((r, i) => {
+  if (r.part !== lastPart) {
+    lastPart = r.part;
+    const h = document.createElement("h2");
+    h.textContent = `Part ${r.part}`;
+    h.style.marginTop = "32px";
+    root.appendChild(h);
+  }
   const card = document.createElement("section");
   card.className = "card";
   let html = `<h2>Report ${i + 1} of ${DATA.reports.length} <span class="muted">(${esc(r.id)})</span></h2>
@@ -213,8 +226,9 @@ if __name__ == "__main__":
     sub = ap.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build")
     b.add_argument("--model", required=True, help="e.g. cerebras/qwen3.8")
-    b.add_argument("--n", type=int, default=15)
+    b.add_argument("--n", type=int, default=10, help="Part 1 reports (method comparison)")
+    b.add_argument("--compare-n", type=int, default=5, help="Part 2 reports (model comparison)")
     i = sub.add_parser("import")
     i.add_argument("answers_csv")
     args = ap.parse_args()
-    build(args.model, args.n) if args.cmd == "build" else import_answers(args.answers_csv)
+    build(args.model, args.n, args.compare_n) if args.cmd == "build" else import_answers(args.answers_csv)
