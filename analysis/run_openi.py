@@ -34,7 +34,13 @@ if str(PROJECT_ROOT) not in sys.path:
 from analysis.config import MODELS, STRATEGIES, RESULTS_DIR, DATASETS_DIR
 from analysis.prompts import build_prompt, build_ner_extraction_prompt
 from analysis.prompts.json_parser import parse_json_from_llm_response, ner_json_to_retention_block
-from analysis.prompts.radiology_prompts import RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT
+from analysis.prompts.radiology_prompts import (
+    RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT,
+    RADIOLOGY_CXR_FINDINGS_EXTRACTION_PROMPT,
+    RADIOLOGY_CXR_FINDINGS_EXAMPLE,
+    RADIOLOGY_CXR_CHECKLIST_SIMPLIFY_SYSTEM_PROMPT,
+    RADIOLOGY_CXR_REPAIR_SYSTEM_PROMPT,
+)
 from analysis.providers import ModelRouter, GenerationResult
 from analysis.metrics import evaluate_generation
 
@@ -43,8 +49,8 @@ OUT_DIR = RESULTS_DIR / "openi"
 OUT_JSON = OUT_DIR / "results.json"
 OUT_CSV = OUT_DIR / "results.csv"
 
-SUMMARY_METRICS = ["sari", "bertscore_f1", "rougeL_f1", "alignscore", "negation_dropped", "negation_added",
-                   "negation_cue_retention", "flesch_kincaid_grade_level", "proportion_difficult_words"]
+SUMMARY_METRICS = ["sari", "bertscore_f1", "rougeL_f1", "alignscore", "completeness", "missed_findings",
+                   "negation_dropped", "flesch_kincaid_grade_level", "proportion_difficult_words"]
 
 
 def load_results():
@@ -60,12 +66,59 @@ def save_results(records):
     pd.DataFrame(flat).to_csv(OUT_CSV, index=False)
 
 
-def generate(router, model, strategy, src):
-    """Returns (GenerationResult, ner_json). ner-guided = teammate's Stage 1 entity extraction,
-    then the chest X-ray prompt with the entity block injected (same rules as the direct run)."""
+# Improved NER variants (see radiology_prompts.py): A = few-shot + plain checklist, B = check & repair.
+NER_VARIANTS = ["ner-fewshot", "ner-repair"]
+
+
+def _failed(stage, res):
+    why = res.error if res.status != "success" else "could not parse findings JSON"
+    return GenerationResult(status="error", error=f"{stage}: {why}", provider=res.provider,
+                            model=res.model, latency_seconds=res.latency_seconds)
+
+
+def extract_findings(router, model, src):
+    """Stage 1 of the variants: every finding as a plain-English sentence. Returns (res, findings | None)."""
+    ex = RADIOLOGY_CXR_FINDINGS_EXAMPLE
+    user = (f"Example report:\n{ex['input']}\n\nExample JSON:\n{ex['output']}\n\n"
+            f"Extract the findings from this report:\n{src.strip()}")
+    res = router.generate(model, RADIOLOGY_CXR_FINDINGS_EXTRACTION_PROMPT, user, temperature=0.1)
+    data = parse_json_from_llm_response(res.text) if res.status == "success" else None
+    findings = [f for f in (data or {}).get("findings", []) if isinstance(f, dict) and f.get("plain")]
+    return res, findings or None
+
+
+def generate(router, model, strategy, src, draft=None):
+    """Returns (GenerationResult, extra fields for the record).
+    ner-guided = teammate's entity extraction + chest X-ray prompt with the entity block.
+    ner-fewshot / ner-repair: see NER_VARIANTS. ner-repair reuses the saved few-shot output as its draft."""
+    if strategy in NER_VARIANTS:
+        ext, findings = extract_findings(router, model, src)
+        if not findings:
+            return _failed("findings stage", ext), {}
+        checklist = "\n".join(f"- {f['plain']}" for f in findings)
+        extra = {"ner_json": findings}
+        if strategy == "ner-fewshot":
+            system_prompt = RADIOLOGY_CXR_CHECKLIST_SIMPLIFY_SYSTEM_PROMPT.replace("{checklist}", checklist)
+            _, user_prompt, _ = build_prompt("simplification", "radiology_cxr", "few-shot", src)
+            res = router.generate(model, system_prompt, user_prompt)
+        else:
+            if draft is None:
+                sp, up, _ = build_prompt("simplification", "radiology_cxr", "few-shot", src)
+                d = router.generate(model, sp, up)
+                if d.status != "success":
+                    return _failed("draft stage", d), extra
+                draft = d.text
+            user = (f"Original report:\n{src.strip()}\n\nChecklist:\n{checklist}\n\n"
+                    f"Draft rewrite:\n{draft.strip()}\n\nFinal text:")
+            res = router.generate(model, RADIOLOGY_CXR_REPAIR_SYSTEM_PROMPT, user)
+            extra["draft"] = draft
+            extra["repaired"] = res.status == "success" and res.text.strip() != draft.strip()
+        res.latency_seconds += ext.latency_seconds
+        return res, extra
+
     if strategy != "ner-guided":
         system_prompt, user_prompt, _ = build_prompt("simplification", "radiology_cxr", strategy, src)
-        return router.generate(model, system_prompt, user_prompt), None
+        return router.generate(model, system_prompt, user_prompt), {}
 
     ner_sys, ner_user, _ = build_ner_extraction_prompt("radiology", src)
     ner_res = router.generate(model, ner_sys, ner_user, temperature=0.1)
@@ -74,7 +127,7 @@ def generate(router, model, strategy, src):
         # No silent zero-shot fallback: a failed extraction is recorded as a failed trial.
         why = ner_res.error if ner_res.status != "success" else "could not parse entity JSON"
         return GenerationResult(status="error", error=f"NER stage: {why}", provider=ner_res.provider,
-                                model=ner_res.model, latency_seconds=ner_res.latency_seconds), None
+                                model=ner_res.model, latency_seconds=ner_res.latency_seconds), {}
 
     # exam_info left out: the scan is known to be a chest X-ray and the prompt doesn't explain it;
     # small extractors mislabel it ("Chest CT"), which the retention rule would then force in.
@@ -83,7 +136,7 @@ def generate(router, model, strategy, src):
     _, user_prompt, _ = build_prompt("simplification", "radiology_cxr", "zero-shot", src)
     res = router.generate(model, system_prompt, user_prompt)
     res.latency_seconds += ner_res.latency_seconds  # report end-to-end latency for both stages
-    return res, ner_json
+    return res, {"ner_json": ner_json}
 
 
 def _key(r):
@@ -107,13 +160,23 @@ def main():
     ap.add_argument("--n", type=int, default=30, help="Number of report pairs to run.")
     ap.add_argument("--split", default="validation", choices=["train", "validation"])
     ap.add_argument("--models", nargs="+", default=MODELS, choices=MODELS)
-    ap.add_argument("--strategies", nargs="+", default=STRATEGIES, choices=STRATEGIES)
+    ap.add_argument("--strategies", nargs="+", default=STRATEGIES + NER_VARIANTS, choices=STRATEGIES + NER_VARIANTS)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--summary", action="store_true", help="Only print the summary of saved results.")
+    ap.add_argument("--rescore", action="store_true", help="Recompute metrics for all saved outputs (no generation).")
     args = ap.parse_args()
 
     records = load_results()
     if args.summary:
+        print_summary(records)
+        return
+    if args.rescore:
+        for i, r in enumerate(records):
+            if r["status"] == "success":
+                r["metrics"] = evaluate_generation(r["source_text"], r["output_text"], reference_text=r["reference_text"])
+            if i % 50 == 0:
+                print(f"rescored {i}/{len(records)}", flush=True)
+        save_results(records)
         print_summary(records)
         return
 
@@ -123,6 +186,7 @@ def main():
     done = {_key(r) for r in records if r["status"] == "success"}
     records = [r for r in records if _key(r) in done]  # drop failed, retry them
     router = ModelRouter(allow_substitute=False)  # never relabel another model's output
+    by_key = {_key(r)[:3]: r["output_text"] for r in records if r["status"] == "success"}
 
     for _, p in pairs.iterrows():
         sid, src, ref = p.nlmcxr_file, p.radiology_report, p.layman_report
@@ -135,11 +199,11 @@ def main():
         for model, strategy in itertools.product(args.models, args.strategies):
             if (sid, model, strategy) in done:
                 continue
-            res, ner_json = generate(router, model, strategy, src)
+            draft = by_key.get((sid, model, "few-shot")) if strategy == "ner-repair" else None
+            res, extra = generate(router, model, strategy, src, draft=draft)
             rec = {"sample_id": sid, "model": model, "strategy": strategy, "status": res.status,
                    "error": res.error, "provider": res.provider, "actual_model": res.model, "latency_seconds": round(res.latency_seconds, 2),
-                   "source_text": src, "reference_text": ref, "output_text": res.text, "metrics": None,
-                   "ner_json": ner_json}
+                   "source_text": src, "reference_text": ref, "output_text": res.text, "metrics": None, **extra}
             if res.status == "success":
                 rec["metrics"] = evaluate_generation(src, res.text, reference_text=ref)
                 print(f"✓ {sid} {model} {strategy} ({res.latency_seconds:.1f}s) "
@@ -151,7 +215,7 @@ def main():
 
     save_results(records)
     print_summary(records)
-    ner_failed = sum(1 for r in records if (r.get("error") or "").startswith("NER stage"))
+    ner_failed = sum(1 for r in records if (r.get("error") or "").split(":")[0] in ("NER stage", "findings stage", "draft stage"))
     if ner_failed:
         print(f"\nNER stage failed on {ner_failed} trials (not scored; rerun to retry)")
     print(f"\nSaved: {OUT_JSON}\n       {OUT_CSV}")

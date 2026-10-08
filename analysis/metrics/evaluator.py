@@ -17,7 +17,7 @@ from .lexical_complexity import compute_lexical_complexity
 from .quality import compute_sari, compute_rouge_scores, compute_bertscore
 from .meaning_preservation import compute_sbert_cosine_similarity
 from .clinical_jargon import compute_clinical_jargon_metrics
-from .factuality import compute_alignscore
+from .factuality import compute_alignscore, compute_completeness
 from .negation import compute_negation_metrics
 
 def evaluate_generation(
@@ -56,6 +56,8 @@ def evaluate_generation(
             "compression_ratio_chars": 0.0,
             "compression_ratio_words": 0.0,
             "alignscore": 0.0,
+            "completeness": 0.0,
+            "missed_findings": 0,
             "negation_dropped": 0,
             "negation_added": 0,
             "negation_shared_terms": 0,
@@ -91,6 +93,7 @@ def evaluate_generation(
 
     # 5. Factuality & Negation (always against the source: facts live there, not in the lay reference)
     scores["alignscore"] = compute_alignscore(source_text, generated_text)
+    scores.update(compute_completeness(source_text, generated_text))
     scores.update(compute_negation_metrics(source_text, generated_text))
 
     return scores

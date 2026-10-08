@@ -138,3 +138,44 @@ RADIOLOGY_CXR_NER_GUIDED_SIMPLIFY_SYSTEM_PROMPT = RADIOLOGY_CXR_SIMPLIFY_SYSTEM_
     "\n\nRules:", "\n\n{ner_retention_block}\n\nRules:", 1
 ) + """
 8. Every finding in the extracted entities block above must appear in your rewrite with the same meaning, including every negative ('no ...') finding."""
+
+# ── Improved NER variants (Open-i benchmark) ──────────────────────────────────
+# Stage 1 for both: list every finding as a plain-English sentence (not a medical-term
+# schema), so the checklist doesn't pull jargon back into the rewrite.
+
+RADIOLOGY_CXR_FINDINGS_EXTRACTION_PROMPT = """You extract findings from chest X-ray reports. List EVERY finding in the report, including normal findings, negative findings ('no ...'), comparisons with earlier exams, devices, and measurements.
+
+For each finding give:
+- "finding": the finding as written in the report
+- "status": "present", "absent" (the report says it is not there) or "uncertain"
+- "plain": one short plain-English sentence a patient understands, stating the finding exactly as the report does (keep 'no' for absent findings, keep sides, sizes and comparisons)
+
+Return only JSON: {"findings": [{"finding": "...", "status": "...", "plain": "..."}]}"""
+
+RADIOLOGY_CXR_FINDINGS_EXAMPLE = {  # Open-i 3242.xml (train)
+    "input": "The heart and cardiomediastinal silhouette are normal in size and contour. There is no focal air space opacity, pleural effusion, or pneumothorax. There are multilevel degenerative changes in the thoracic spine. No acute cardiopulmonary finding.",
+    "output": """{"findings": [
+  {"finding": "heart and cardiomediastinal silhouette normal in size and contour", "status": "present", "plain": "The heart and the area around it are normal in size and shape."},
+  {"finding": "focal air space opacity", "status": "absent", "plain": "There is no sign of pneumonia."},
+  {"finding": "pleural effusion", "status": "absent", "plain": "There is no fluid around the lungs."},
+  {"finding": "pneumothorax", "status": "absent", "plain": "There is no air outside the lungs."},
+  {"finding": "multilevel degenerative changes in the thoracic spine", "status": "present", "plain": "There is wear and tear in several parts of the upper spine."},
+  {"finding": "acute cardiopulmonary finding", "status": "absent", "plain": "There is no sudden heart or lung problem."}
+]}""",
+}
+
+# Variant A: few-shot chest X-ray prompt + plain-language checklist.
+RADIOLOGY_CXR_CHECKLIST_SIMPLIFY_SYSTEM_PROMPT = RADIOLOGY_CXR_SIMPLIFY_SYSTEM_PROMPT.replace(
+    "\n\nRules:", "\n\nChecklist of every finding in this report:\n{checklist}\n\nRules:", 1
+) + """
+8. Make sure every checklist item is covered with the same meaning. You may reword them, but keep every 'no'."""
+
+# Variant B: write the normal few-shot rewrite first, then check it against the checklist
+# and repair only what is missing or wrong.
+RADIOLOGY_CXR_REPAIR_SYSTEM_PROMPT = """You check a plain-language rewrite of a chest X-ray report. You are given the original report, a checklist of every finding in it, and a draft rewrite.
+
+If the draft covers every checklist item with the correct meaning (including every 'no', side, size and comparison), output the draft exactly as it is.
+
+Otherwise, fix only what is missing or wrong: add or correct those sentences in the same plain style and keep every other sentence unchanged. Do not add anything that is not in the report.
+
+Output only the final text, nothing else."""
