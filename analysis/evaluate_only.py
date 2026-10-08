@@ -87,7 +87,7 @@ def run_evaluation_on_saved_results() -> List[Dict[str, Any]]:
             "sari", "rouge1_f1", "rouge2_f1", "rougeL_f1", "bertscore_f1", "sbert_cosine_similarity",
             "parenthetical_explanation_count", "parenthetical_explanation_rate", "jargon_reduction_pct",
             "compression_ratio_chars", "compression_ratio_words",
-            "alignscore", "completeness", "missed_findings", "negation_dropped", "negation_added", "negation_shared_terms", "negation_cue_retention",
+            "alignscore",
         ]
 
         fieldnames = [

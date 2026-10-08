@@ -49,8 +49,8 @@ OUT_DIR = RESULTS_DIR / "openi"
 OUT_JSON = OUT_DIR / "results.json"
 OUT_CSV = OUT_DIR / "results.csv"
 
-SUMMARY_METRICS = ["sari", "bertscore_f1", "rougeL_f1", "alignscore", "completeness", "missed_findings",
-                   "negation_dropped", "flesch_kincaid_grade_level", "proportion_difficult_words"]
+SUMMARY_METRICS = ["sari", "bertscore_f1", "rougeL_f1", "alignscore", "flesch_kincaid_grade_level",
+                   "proportion_difficult_words"]
 
 
 def load_results():

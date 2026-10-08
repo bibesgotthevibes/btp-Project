@@ -6,7 +6,7 @@ Lexical complexity and diversity metrics:
 - Average word frequency (Zipf-scale log frequency, via wordfreq)
 - Type-Token Ratio (TTR)
 - Measure of Textual Lexical Diversity (MTLD)
-- Proportion of difficult words (Zipf < 3)
+- Proportion of difficult words (textstat, Dale-Chall word list)
 """
 
 import re
@@ -15,8 +15,6 @@ from typing import Dict, List
 from collections import Counter
 from .readability import tokenize_words
 
-# Words rarer than ~1 per million (Zipf < 3) count as difficult, e.g. "pneumothorax" 2.4, "lungs" 4.0.
-DIFFICULT_ZIPF_THRESHOLD = 3.0
 
 
 def compute_ttr(words: List[str]) -> float:
@@ -74,7 +72,7 @@ def compute_lexical_complexity(text: str) -> Dict[str, float]:
     - average_word_frequency (Zipf score)
     - ttr (Type-Token Ratio)
     - mtld (Measure of Textual Lexical Diversity)
-    - proportion_difficult_words (ratio of words with Zipf < 3)
+    - proportion_difficult_words (textstat difficult words / words)
     """
     words = tokenize_words(text)
     if not words:
@@ -101,7 +99,8 @@ def compute_lexical_complexity(text: str) -> Dict[str, float]:
     mtld = compute_mtld(words)
 
     # 5. Proportion of difficult / rare words
-    difficult_count = sum(1 for f in freq_scores if f < DIFFICULT_ZIPF_THRESHOLD)
+    import textstat
+    difficult_count = textstat.difficult_words(text)  # not on the Dale-Chall familiar-word list
     prop_difficult = difficult_count / len(words)
 
     return {
