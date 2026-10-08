@@ -120,7 +120,11 @@ def generate(router, model, strategy, src, draft=None):
         system_prompt, user_prompt, _ = build_prompt("simplification", "radiology_cxr", strategy, src)
         return router.generate(model, system_prompt, user_prompt), {}
 
-    ner_sys, ner_user, _ = build_ner_extraction_prompt("radiology", src)
+    ner_sys, _, msgs = build_ner_extraction_prompt("radiology", src)
+    # The shared builder omits the one-shot example because it is a curated test report (RAD-02,
+    # brain MRI). Open-i is a different dataset (chest X-ray), so here it is safe to include it.
+    ner_user = "\n\n".join([f"Example request:\n{m['content']}" if m["role"] == "user" else f"Example JSON answer:\n{m['content']}"
+                             for m in msgs[1:-1]] + [msgs[-1]["content"]])
     ner_res = router.generate(model, ner_sys, ner_user, temperature=0.1)
     ner_json = parse_json_from_llm_response(ner_res.text) if ner_res.status == "success" else None
     if not ner_json:

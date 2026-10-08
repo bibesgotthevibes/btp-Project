@@ -158,16 +158,16 @@ def build_ner_extraction_prompt(
     Returns:
         (system_prompt, user_content, messages_list)
         system_prompt = the NER extraction system prompt
-        user_content  = the one-shot example folded in, then the actual extraction request
+        user_content  = the final user turn content (last message)
         messages_list = the full one-shot messages array
     """
     messages = build_ner_extraction_messages(datatype, text)
+    # system_prompt is the first message's content
     system_prompt = messages[0]["content"]
-    # Providers take only (system, user), so fold the example user/assistant turns into
-    # the user content; sending only messages[-1] silently dropped the one-shot example.
-    example = [f"Example request:\n{m['content']}" if m["role"] == "user" else f"Example JSON answer:\n{m['content']}"
-               for m in messages[1:-1]]
-    user_content = "\n\n".join(example + [messages[-1]["content"]])
+    # user_content is the last message's content (the actual extraction request).
+    # The one-shot example turns are deliberately NOT sent: the examples are taken from the
+    # curated test reports (DS-01, RAD-02), so sending them would leak test data.
+    user_content = messages[-1]["content"]
     return system_prompt, user_content, messages
 
 
