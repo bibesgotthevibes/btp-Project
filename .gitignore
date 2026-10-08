@@ -65,3 +65,9 @@ YADA/
 
 # Model checkpoints (AlignScore etc.)
 .cache/
+
+# Office lock files
+~$*
+
+# Downloaded reference datasets (large; download links in datasets/README.md)
+datasets/lay_reference_datasets/
