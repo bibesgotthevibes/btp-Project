@@ -52,6 +52,9 @@ def _polarities(text: str) -> Tuple[Dict[str, Set[str]], int]:
     """Map each finding stem to the polarities it occurs with ('neg'/'pos'); count cues."""
     pol: Dict[str, Set[str]] = {}
     cues = 0
+    # Bracketed glosses restate the phrase before them ("no fluid around the lungs (pleural
+    # effusion)"); their terms sit outside the negation window, so drop them.
+    text = re.sub(r"\([^)]*\)", " ", text)
     for sent in _SENT.split(text.lower()):
         toks = _TOK.findall(sent)
         last_cue = None
@@ -99,4 +102,6 @@ if __name__ == "__main__":
     assert scope["negation_dropped"] == scope["negation_added"] == 0, scope
     named = compute_negation_metrics("No pneumothorax.", "There is no air trapped around your lungs, a condition called pneumothorax.")
     assert named["negation_dropped"] == 0, named
+    gloss = compute_negation_metrics("No pleural effusion.", "There is no fluid around the lungs on either side (pleural effusion).")
+    assert gloss["negation_dropped"] == 0, gloss
     print("negation self-check passed")
