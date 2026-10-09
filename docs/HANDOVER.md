@@ -2,7 +2,7 @@
 
 BTP Team 4 · Lay language conversion of medical reports · October 2026
 
-This page is for the teammates taking over the next phase. Part A explains what already exists (code, data, results, lessons), so you do not rebuild it. Part B is the implementation plan for the four new tasks. For a link to every prompt, dataset and result file, see [EVALUATION_INDEX.md](EVALUATION_INDEX.md); this page does not repeat those tables.
+This page is for the teammates taking over the next phase. Part A explains what already exists (code, data, results, lessons), so you do not rebuild it. Part B is the implementation plan for the four new tasks. **All four tasks use the chest X-ray dataset we already have (Open-i × LaymanRRG)**; discharge and pathology reports are out of scope for this phase. For a link to every prompt, dataset and result file, see [EVALUATION_INDEX.md](EVALUATION_INDEX.md); this page does not repeat those tables.
 
 **Contents**
 
@@ -46,7 +46,7 @@ Only the parts you need for the next tasks. Bold = written or rewritten for phas
 | **[analysis/review_form.py](../analysis/review_form.py)** | Builds a single offline HTML review form for the doctor (blinded, shuffled), and imports the CSV of answers |
 | [analysis/results/openi/](../analysis/results/openi/) | Phase 2 outputs and scores (`results.json` / `.csv`), error analysis, review form and key |
 | [analysis/runner.py](../analysis/runner.py), [run_ner_pipeline.py](../run_ner_pipeline.py) | Phase 1 runner (team) |
-| [structured_extraction/](../structured_extraction/) | Team's LLM extraction of structured info (diagnoses, meds, red flags, follow-up) from discharge summaries; useful input for patient summaries |
+| [structured_extraction/](../structured_extraction/) | Team's LLM extraction of structured info (diagnoses, meds, red flags, follow-up) from discharge summaries (not used this phase) |
 | [backend/](../backend/), [frontend/](../frontend/), [btp_lite/](../btp_lite/) | The MedSimplify web app and Flutter app (see [README.md](../README.md)) |
 | [datasets/](../datasets/) | Raw datasets; [datasets/README.md](../datasets/README.md) has sources and download links |
 
@@ -154,7 +154,7 @@ Owners are suggestions; adjust as a team. Effort assumes one person working part
 
 | Task | Suggested owner | Depends on | Effort |
 |---|---|---|---|
-| B0 Shared groundwork | Everyone, together | none | 3–4 days |
+| B0 Shared groundwork | Everyone, together | none | 2–3 days |
 | B1 Summaries (task 1) | Bibek | B0 | 1.5 weeks |
 | B2 Dataset creation + doctor verification (task 2) | Raghav | B0, B1 prompts | 2–3 weeks (doctor time is the bottleneck) |
 | B3 GLiNER NER (task 3) | Arnav (built the current NER) | B0 | 1.5 weeks, in parallel |
@@ -162,11 +162,10 @@ Owners are suggestions; adjust as a team. Effort assumes one person working part
 
 ## B0. Shared groundwork (do first)
 
-1. **Apply for PhysioNet credentialed access now** (one or two people). It needs CITI "Data or Specimens Only Research" training plus a reference, and approval can take one to two weeks. It unlocks the only existing ground truth for discharge patient summaries (B1). Nothing else should wait for it.
-2. **Write the summary guideline with the doctor before generating anything** (one page; see B1 for a draft): what a "simplified summary" contains, what counts as "unnecessary for the patient", tone, length, how to state uncertainty. Every later step (prompts, verification, metrics) follows this page.
-3. **Clean the source data** into `datasets/gt_build/sources.csv`: remove exact duplicate sentences inside a report (Open-i 2072), drop reports whose text also appears in the train split from the test pool, mark `XXXX` gaps, and keep `findings` and `impression` separately.
-4. **Fix the splits**: test = the 134 Open-i validation reports (includes our 30); pool for few-shot examples and training = train split.
-5. **Use one record format for everything that is generated or verified** (JSONL, one line per item):
+1. **Write the summary guideline with the doctor before generating anything** (one page; see B1 for a draft): what a "simplified summary" contains, what counts as "unnecessary for the patient", tone, length, how to state uncertainty. Every later step (prompts, verification, metrics) follows this page.
+2. **Clean the source data** into `datasets/gt_build/sources.csv`: remove exact duplicate sentences inside a report (Open-i 2072), drop reports whose text also appears in the train split from the test pool, mark `XXXX` gaps, and keep `findings` and `impression` separately.
+3. **Fix the splits**: test = the 134 Open-i validation reports (includes our 30); pool for few-shot examples and training = the 2,243 train reports.
+4. **Use one record format for everything that is generated or verified** (JSONL, one line per item):
 
    ```json
    {"id": "2165.xml", "task": "patient_summary", "lang": "en", "source": "...", "draft": "...",
@@ -175,11 +174,11 @@ Owners are suggestions; adjust as a team. Effort assumes one person working part
     "error_types": ["invented", "omitted_key_finding"], "notes": "..."}
    ```
 
-6. **Make a generic runner** `analysis/run_task.py` by copying [run_openi.py](../analysis/run_openi.py): parameterise the pairs file, task name and prompt set, and keep resume, `--summary` and `--rescore`. Add prompts in new files (`analysis/prompts/summary_prompts.py`, `multilingual_prompts.py`); do not edit the chest X-ray prompts used in the evaluation.
+5. **Make a generic runner** `analysis/run_task.py` by copying [run_openi.py](../analysis/run_openi.py): parameterise the pairs file, task name and prompt set, and keep resume, `--summary` and `--rescore`. Add prompts in new files (`analysis/prompts/summary_prompts.py`, `multilingual_prompts.py`); do not edit the chest X-ray prompts used in the evaluation.
 
 ## B1. Task 1: simplified summary and patient summary
 
-**Goal**: for each report, produce two texts.
+**Goal**: for each Open-i chest X-ray report, produce two texts.
 
 | Output | Content | Length |
 |---|---|---|
@@ -191,20 +190,18 @@ Owners are suggestions; adjust as a team. Effort assumes one person working part
 | Candidate | Fits | Access | Verdict |
 |---|---|---|---|
 | **Open-i `impression` column** (all 2,377 reports) | The radiologist's own summary of the findings: shows what matters, but in clinical language | Have it | Use as a **reference for content selection** (what to keep), not as lay ground truth |
-| LaymanRRG | Full lay rewrites, not summaries | Have it | Not a summary ground truth; usable as input for summarising |
-| **MIMIC-IV-Note-Ext-DI / ann-pt-summ** (Hegselmann et al., CHIL 2024) | Doctor-written *Discharge Instructions* used as patient summaries of the hospital course (≈100k pairs) plus 100 + 100 summaries with expert span-level hallucination labels | PhysioNet credentialed | **Best existing ground truth for discharge patient summaries.** Get access (B0.1) |
-| **Discharge Me!** (BioNLP 2024 shared task) | 109k emergency-department visits; target sections Brief Hospital Course and Discharge Instructions (patient-facing) | PhysioNet credentialed | Same source family; larger, with a published baseline to compare against |
-| MeDiSumQA (2025) | 416 doctor-curated patient question–answer pairs from MIMIC discharge letters | PhysioNet credentialed | Good extra test of whether a patient summary answers patient questions |
-| Chest X-ray or pathology lay *summaries* | none found | none | **Create our own (B2)** |
+| **LaymanRRG** `layman_report` | Full lay rewrite of the whole report, not a summary | Have it | Not a summary ground truth, but a useful input: summarising the lay rewrite is one strategy to compare |
+| Chest X-ray lay *summaries* | none found | none | **Create our own (B2)** |
+| MIMIC-based patient summaries (Hegselmann et al. 2024; Discharge Me!, BioNLP 2024; MeDiSumQA) | Doctor-written patient summaries, but of *discharge* notes | PhysioNet credentialed | Out of scope (different report type, no access); cite as related work |
 
-**Conclusion**: for chest X-rays and pathology we must create ground truth (B2). For discharge, MIMIC gives doctor-written patient summaries once access is granted; until then, our 200 discharge summaries can be used in B2 the same way as the X-rays.
+**Conclusion**: no lay summary ground truth exists for chest X-rays, so we create it from Open-i (B2), using the `impression` to guide what to keep and the LaymanRRG rewrite as a second reference for wording.
 
 ### Step 2: prompts
 
 - One prompt per output type, few-shot (3 examples). The examples come from the first batch the doctor verifies (B2 pilot); until then, write 3 by hand with the guideline.
 - **Patient summary as two steps** (same idea as variant B, which worked): (1) the LLM lists the findings and labels each one *key / minor / omit* following the guideline, as JSON; (2) the LLM writes the summary from the *key* items only, few-shot. Saving step 1 gives an inspectable record of what was dropped and why, which also drives the omission metrics below.
 - Use the Open-i `impression` as an extra hint in step 1 ("the radiologist's impression highlights…"), and ablate it (with and without) to see if it helps.
-- For discharge summaries, feed the team's [structured_extraction](../structured_extraction/) JSON (diagnoses, medications, red flags, follow-up) into step 1.
+- Compare three inputs: the original report, the original report + impression, and the LaymanRRG lay rewrite (summarise an already simplified text). The third shows whether simplifying first and summarising second is easier for the model.
 
 ### Step 3: run
 
@@ -231,7 +228,7 @@ SARI is designed for sentence simplification, not summarisation; report it for (
 
 ## B2. Task 2: dataset creation with a bigger LLM and doctor verification
 
-**Goal**: a doctor-verified ground-truth set for the two summary types (and later the three languages, B4), built the way LaymanRRG was built (generate → self-check → human check), but with a doctor instead of crowd checks.
+**Goal**: a doctor-verified ground-truth set of Open-i chest X-ray summaries for the two summary types (and later the three languages, B4), built the way LaymanRRG was built (generate → self-check → human check), but with a doctor instead of crowd checks.
 
 ### Pipeline
 
@@ -247,6 +244,7 @@ sources.csv ─► big LLM drafts (prompt from B1, few-shot)
 
 ### Choices
 
+- **Inputs**: Open-i `radiology_report` (findings + impression) from [openi_lay_pairs.csv](../datasets/lay_reference_datasets/radiology/openi_lay_pairs.csv), after the cleaning in B0.
 - **Generator ("bigger LLM")**: the strongest model available on our keys. Options: GPT-OSS 120B or Qwen 3.8 27B (Cerebras/Groq, generous limits), or Gemini Pro on a paid key. Run a 20-report bake-off of two candidates through the automatic checks and pick one. **Use a different model as the checker than as the generator**, so it does not approve its own mistakes. Record the exact model ID and prompt version per item.
 - **Sizes**:
 
@@ -263,7 +261,7 @@ sources.csv ─► big LLM drafts (prompt from B1, few-shot)
 
 ## B3. Task 3: NER with GLiNER
 
-**Goal**: replace the LLM-based entity extraction (stage 1 of the team's NER pipeline, [ner_extraction_prompts.py](../analysis/prompts/ner_extraction_prompts.py)) with GLiNER: a small local model that tags entity types you name at inference time, returns exact character spans, is deterministic, and runs on a laptop CPU.
+**Goal**: on the Open-i chest X-ray reports, replace the LLM-based entity extraction (stage 1 of the team's NER pipeline, [ner_extraction_prompts.py](../analysis/prompts/ner_extraction_prompts.py)) with GLiNER: a small local model that tags entity types you name at inference time, returns exact character spans, is deterministic, and runs on a laptop CPU.
 
 ### Models to compare
 
@@ -275,10 +273,9 @@ sources.csv ─► big LLM drafts (prompt from B1, few-shot)
 
 `pip install gliner`, then `GLiNER.from_pretrained(name).predict_entities(text, labels, threshold=0.4)`.
 
-### Label sets (start here, tune on the dev set)
+### Label set (start here, tune on a dev set of train reports)
 
-- **Chest X-ray**: anatomical structure, abnormal finding, normal finding, absent finding, uncertain finding, medical device, measurement, change over time.
-- **Discharge**: disease, symptom, medication, dosage, frequency, procedure, lab test, lab value, follow-up instruction, warning sign.
+anatomical structure, abnormal finding, normal finding, absent finding, uncertain finding, medical device, measurement, change over time. These line up with RadGraph's anatomy and observation (present / uncertain / absent) types, which makes the silver labels below easy to map.
 
 GLiNER does not model negation reliably. Either test whether the label "absent finding" works, or tag findings and decide negation separately with a rule-based negation detector (medspaCy ConText or NegEx). Measure both.
 
@@ -286,7 +283,6 @@ GLiNER does not model negation reliably. Either test whether the label "absent f
 
 - **Chest X-ray, silver**: run the RadGraph model (already installed for our RadGraph F1 metric) on Open-i reports. It gives anatomy and observation entities with present / uncertain / absent labels. Map those to the GLiNER labels and use them as silver labels for a quick, large comparison.
 - **Chest X-ray, gold**: hand-annotate 30 reports (two teammates, with the doctor deciding disagreements), using [Label Studio](https://labelstud.io) or doccano. Report agreement.
-- **Discharge, gold**: hand-annotate 20 of our discharge summaries with the discharge labels. (Public clinical NER sets such as n2c2 2018 medications need a data-use agreement; apply only if time allows.)
 - **Metrics**: entity-level precision, recall and F1, strict (exact span) and partial (overlap), per label; plus speed (reports per second) and cost against the LLM extractor.
 
 ### Use downstream (the important part)
@@ -352,11 +348,11 @@ Optional: run the GLiNER multilingual model (B3) on the outputs to check that ke
 ## B5. Order of work and dependencies
 
 ```
-Week 1   B0: PhysioNet application · guideline with doctor · data cleaning · generic runner
+Week 1   B0: guideline with doctor · Open-i cleaning and splits · generic runner
          B3: GLiNER baseline on silver RadGraph labels (in parallel, no dependency)
 Week 2   B1: prompts + runs on 30 reports · B2: generator bake-off, pilot 20 → doctor
 Week 3   B2: test set (100) generation + verification sessions · B1: metrics on verified gold
-         B3: gold annotation (30 X-ray, 20 discharge) + downstream variant B with GLiNER
+         B3: gold annotation (30 reports) + downstream variant B with GLiNER
 Week 4   B4: route comparison on 30 reports per language → reviewers
 Week 5   B4: full multilingual test set · B2: silver train set · write-up
 ```
@@ -364,7 +360,6 @@ Week 5   B4: full multilingual test set · B2: silver train set · write-up
 Risks:
 - **Doctor availability** is the critical path. Book sessions in week 1 and keep each session to 25 items.
 - **Reviewers for Urdu and Telugu** may be hard to find; ask early.
-- **PhysioNet approval** may not arrive in time. Everything above works without it; MIMIC only adds discharge ground truth.
 - **Free-tier limits**: use Cerebras or Groq for bulk generation; cache every call.
 
 ## B6. Sources
