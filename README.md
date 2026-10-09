@@ -147,6 +147,6 @@ The backend supports processing summaries entirely locally for strict privacy.
 ## Research Context
 
 This project is part of a B.Tech / M.Tech research initiative on **simplification of medical discharge summaries**. Core experimental data and analysis scripts live alongside the codebase:
-- `medical_lay_english_pipeline.py` & `.ipynb` — Fine-tuning logic and Kaggle execution scripts
-- `pipeline_documentation.md` — Technical documentation of the training process
-- `_analyze.py` & `make_report.py` — Quality scoring and validation data (BLEU, ROUGE, length analysis)
+- `archive/seq2seq_pipeline/` — the earlier seq2seq fine-tuning pipeline (no longer used): `medical_lay_english_pipeline.py` & `.ipynb` (Kaggle scripts), `pipeline_documentation.md`, `_analyze.py` & `make_report.py` (quality scoring), and its outputs (`results_1/`, `results_2/`, `seq2seq_models/`)
+- `archive/reports/` — earlier versions of the project reports
+- `analysis/` and `docs/EVALUATION_INDEX.md` — the current LLM evaluation on chest X-ray reports (Open-i × LaymanRRG); next-phase plan in `docs/HANDOVER.md`
