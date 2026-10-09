@@ -6,7 +6,7 @@ Use this page during the evaluation to jump straight to any prompt, dataset, res
 
 | | |
 |---|---|
-| **Slides** | [BTP_Lay_Language_Conversion_Evaluation.pptx](BTP_Lay_Language_Conversion_Evaluation.pptx) (33 slides in the talk + 6 appendix slides after "Thank you"; speaker notes on each) |
+| **Slides** | [BTP_Lay_Language_Conversion_Evaluation.pptx](BTP_Lay_Language_Conversion_Evaluation.pptx) (34 slides in the talk + 6 appendix slides after "Thank you"; speaker notes on each) |
 | **All phase 2 outputs and scores** | [analysis/results/openi/results.csv](../analysis/results/openi/results.csv) (one row per output, all metrics) |
 | **Main script** | [analysis/run_openi.py](../analysis/run_openi.py) |
 
@@ -16,10 +16,10 @@ Use this page during the evaluation to jump straight to any prompt, dataset, res
 | Part | Speaker | Slides | Content |
 |---|---|---|---|
 | 1 | Arnav | 1–6 | Task, datasets, PLABA |
-| 2 | Sanyam | 7–22 | Radiology ground truth, methodology, prompt, metrics, E1, BioLaySumm-format results, E2, normal vs abnormal, readability |
-| 3 | Arnav | 23–28 | NER strategies, why NER underperforms, variants (E3), error analysis, example |
-| 4 | Sanyam | 29–33 | Clinician review, conclusions, future work (fine-tuning), limitations, thank you |
-| Q&A | either | 34–39 | Appendix: phase 1 and discharge summaries (34–35, Arnav answers), reference row, NER prompts, NER example, validation fixes |
+| 2 | Sanyam | 7–23 | Radiology ground truth, methodology, prompt, metrics, E1, BioLaySumm-format results, E2, normal vs abnormal (with one example of each), readability |
+| 3 | Arnav | 24–29 | NER strategies, why NER underperforms, variants (E3), error analysis, example |
+| 4 | Sanyam | 30–34 | Clinician review, conclusions, future work (fine-tuning), limitations, thank you |
+| Q&A | either | 35–40 | Appendix: phase 1 and discharge summaries (35–36, Arnav answers), reference row, NER prompts, NER example, validation fixes |
 
 Each slide's speaker notes start with the speaker's name; the three handover slides include a suggested transition line.
 
