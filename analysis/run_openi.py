@@ -50,7 +50,7 @@ OUT_JSON = OUT_DIR / "results.json"
 OUT_CSV = OUT_DIR / "results.csv"
 
 SUMMARY_METRICS = ["sari", "rougeL_f1", "bertscore_f1", "sim_reference", "alignscore", "radgraph_f1",
-                   "flesch_kincaid_grade_level", "dale_chall", "coleman_liau"]
+                   "flesch_reading_ease", "flesch_kincaid_grade_level", "dale_chall", "coleman_liau"]
 
 
 def load_results():

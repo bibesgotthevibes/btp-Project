@@ -107,14 +107,14 @@ Print the summary table with `.venv/bin/python -m analysis.run_openi --summary`.
 
 **Strategies** (averages over the 7 models with all 30 reports)
 
-| Strategy | SARI | ROUGE-L | BERTScore | AlignScore | FKGL |
-|---|---|---|---|---|---|
-| Zero-shot | 60.8 | 60.5 | 93.8 | 53.6 | 3.1 |
-| **Few-shot** | **64.4** | **64.2** | **94.6** | **57.9** | 3.7 |
-| Original NER-guided | 57.8 | 55.4 | 93.1 | 53.1 | 3.5 |
-| Gold reference | 94.2 | 100 | 100 | 61.3 | 4.4 |
+| Strategy | SARI | ROUGE-L | BERTScore | AlignScore | FKGL | FRE |
+|---|---|---|---|---|---|---|
+| Zero-shot | 60.8 | 60.5 | 93.8 | 53.6 | 3.1 | 89.3 |
+| **Few-shot** | **64.4** | **64.2** | **94.6** | **57.9** | 3.7 | 86.9 |
+| Original NER-guided | 57.8 | 55.4 | 93.1 | 53.1 | 3.5 | 86.5 |
+| Gold reference | 94.2 | 100 | 100 | 61.3 | 4.4 | 83.0 |
 
-Few-shot beats zero-shot significantly (SARI, paired Wilcoxon p < 0.05) for 7 of 7 models, and NER-guided is significantly below few-shot for 7 of 7. The source reports average FKGL 12.1.
+Few-shot beats zero-shot significantly (SARI, paired Wilcoxon p < 0.05) for 7 of 7 models, and NER-guided is significantly below few-shot for 7 of 7. The source reports average FKGL 12.1 and FRE 19.1 (Flesch Reading Ease, higher is easier; 80–90 = easy).
 
 **BioLaySumm 2025 format** (strategy averages, 7 models; BioLaySumm winner AEHRC in brackets, different test set): ROUGE 60.9 (67.1) · BERTScore 94.6 (95.3) · SIM 84.1 (89.0) · FKGL 3.7 (7.4) · DCRS 8.4 (9.3) · CLI 5.1 (8.1) · F1-CheXbert 70.8 (86.0) · RadGraph 56.5 (40.2), all for few-shot.
 
@@ -145,7 +145,7 @@ Few-shot beats zero-shot significantly (SARI, paired Wilcoxon p < 0.05) for 7 of
 | SIM (embedding similarity to the reference) | [metrics/meaning_preservation.py](../analysis/metrics/meaning_preservation.py) |
 | F1-CheXbert, RadGraph F1 (BioLaySumm clinical metrics) | [metrics/clinical.py](../analysis/metrics/clinical.py) |
 | AlignScore | [metrics/factuality.py:37](../analysis/metrics/factuality.py#L37) |
-| Readability: FKGL, DCRS, CLI (textstat) | [metrics/readability.py:23](../analysis/metrics/readability.py#L23) |
+| Readability: FKGL, FRE, DCRS, CLI (textstat) | [metrics/readability.py:23](../analysis/metrics/readability.py#L23) |
 | Doctor review form: build and import answers | [analysis/review_form.py](../analysis/review_form.py) |
 | Python dependencies | [analysis/requirements.txt](../analysis/requirements.txt) |
 
