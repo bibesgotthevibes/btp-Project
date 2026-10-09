@@ -9,6 +9,7 @@ Use this page during the evaluation to jump straight to any prompt, dataset, res
 | **Slides** | [BTP_Lay_Language_Conversion_Evaluation.pptx](BTP_Lay_Language_Conversion_Evaluation.pptx) (34 slides in the talk + 6 appendix slides after "Thank you"; speaker notes on each) |
 | **All phase 2 outputs and scores** | [analysis/results/openi/results.csv](../analysis/results/openi/results.csv) (one row per output, all metrics) |
 | **Main script** | [analysis/run_openi.py](../analysis/run_openi.py) |
+| **Handover and next-phase plan** | [HANDOVER.md](HANDOVER.md) (what is done, setup, pitfalls; plan for summaries, dataset creation, GLiNER, Hindi/Urdu/Telugu) |
 
 
 ### Presentation plan (two speakers)
