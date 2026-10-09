@@ -6,6 +6,7 @@ from .quality import compute_sari, compute_rouge_scores, compute_bertscore
 from .meaning_preservation import compute_sbert_cosine_similarity
 from .clinical_jargon import compute_clinical_jargon_metrics
 from .factuality import compute_alignscore
+from .clinical import compute_clinical_metrics, corpus_chexbert_f1
 
 __all__ = [
     "evaluate_generation",
@@ -17,4 +18,6 @@ __all__ = [
     "compute_sbert_cosine_similarity",
     "compute_clinical_jargon_metrics",
     "compute_alignscore",
+    "compute_clinical_metrics",
+    "corpus_chexbert_f1",
 ]

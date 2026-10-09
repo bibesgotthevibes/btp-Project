@@ -42,15 +42,15 @@ from analysis.prompts.radiology_prompts import (
     RADIOLOGY_CXR_REPAIR_SYSTEM_PROMPT,
 )
 from analysis.providers import ModelRouter, GenerationResult
-from analysis.metrics import evaluate_generation
+from analysis.metrics import evaluate_generation, corpus_chexbert_f1
 
 PAIRS_CSV = DATASETS_DIR / "lay_reference_datasets" / "radiology" / "openi_lay_pairs.csv"
 OUT_DIR = RESULTS_DIR / "openi"
 OUT_JSON = OUT_DIR / "results.json"
 OUT_CSV = OUT_DIR / "results.csv"
 
-SUMMARY_METRICS = ["sari", "bertscore_f1", "rougeL_f1", "alignscore", "flesch_kincaid_grade_level",
-                   "proportion_difficult_words"]
+SUMMARY_METRICS = ["sari", "rougeL_f1", "bertscore_f1", "sim_reference", "alignscore", "radgraph_f1",
+                   "flesch_kincaid_grade_level", "dale_chall", "coleman_liau"]
 
 
 def load_results():
@@ -156,6 +156,8 @@ def print_summary(records):
     groups = ["model", "strategy"]
     table = df.groupby(groups)[SUMMARY_METRICS].mean().round(3)
     table.insert(0, "n", df.groupby(groups).size())
+    if "chexbert_out" in df:  # corpus-level micro-F1 over the 14 CheXpert classes, as BioLaySumm reports it
+        table["chexbert_f1"] = df.groupby(groups).apply(lambda g: corpus_chexbert_f1(zip(g.chexbert_out, g.chexbert_ref)))
     print("\n" + table.to_string())
 
 

@@ -6,7 +6,8 @@ Standard readability metrics via textstat:
 - Flesch-Kincaid Grade Level (FKGL)
 - SMOG Index
 - Gunning Fog Index
-- Coleman-Liau Index
+- Coleman-Liau Index (CLI)
+- Dale-Chall Readability Score (DCRS)
 """
 
 import re
@@ -25,13 +26,14 @@ def compute_readability_metrics(text: str) -> Dict[str, float]:
     cleaned = text.strip()
     if not tokenize_words(cleaned):
         return {"flesch_reading_ease": 0.0, "flesch_kincaid_grade_level": 0.0, "smog_index": 0.0,
-                "gunning_fog": 0.0, "coleman_liau": 0.0, "num_words": 0, "num_sentences": 0, "num_syllables": 0}
+                "gunning_fog": 0.0, "coleman_liau": 0.0, "dale_chall": 0.0, "num_words": 0, "num_sentences": 0, "num_syllables": 0}
     return {
         "flesch_reading_ease": round(textstat.flesch_reading_ease(cleaned), 2),
         "flesch_kincaid_grade_level": round(textstat.flesch_kincaid_grade(cleaned), 2),
         "smog_index": round(textstat.smog_index(cleaned), 2),
         "gunning_fog": round(textstat.gunning_fog(cleaned), 2),
         "coleman_liau": round(textstat.coleman_liau_index(cleaned), 2),
+        "dale_chall": round(textstat.dale_chall_readability_score(cleaned), 2),
         "num_words": textstat.lexicon_count(cleaned),
         "num_sentences": textstat.sentence_count(cleaned),
         "num_syllables": textstat.syllable_count(cleaned),

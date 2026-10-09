@@ -6,7 +6,7 @@ Use this page during the evaluation to jump straight to any prompt, dataset, res
 
 | | |
 |---|---|
-| **Slides** | [BTP_Lay_Language_Conversion_Evaluation.pptx](BTP_Lay_Language_Conversion_Evaluation.pptx) (32 slides in the talk + 4 appendix slides after "Thank you"; speaker notes on each) |
+| **Slides** | [BTP_Lay_Language_Conversion_Evaluation.pptx](BTP_Lay_Language_Conversion_Evaluation.pptx) (35 slides in the talk + 4 appendix slides after "Thank you"; speaker notes on each) |
 | **All phase 2 outputs and scores** | [analysis/results/openi/results.csv](../analysis/results/openi/results.csv) (one row per output, all metrics) |
 | **Main script** | [analysis/run_openi.py](../analysis/run_openi.py) |
 
@@ -16,10 +16,10 @@ Use this page during the evaluation to jump straight to any prompt, dataset, res
 | Part | Speaker | Slides | Content |
 |---|---|---|---|
 | 1 | Arnav | 1–8 | Task, datasets, PLABA, phase 1, discharge summaries |
-| 2 | Sanyam | 9–22 | Radiology ground truth, methodology, prompt, metrics, E1, E2, normal vs abnormal, readability |
-| 3 | Arnav | 23–28 | NER strategies, why NER underperforms, variants (E3), error analysis, example |
-| 4 | Sanyam | 29–32 | Clinician review, conclusions, limitations, thank you |
-| Q&A | either | 33–36 | Appendix |
+| 2 | Sanyam | 9–24 | Radiology ground truth, methodology, prompt, metrics, E1, BioLaySumm-format results, E2, normal vs abnormal, readability |
+| 3 | Arnav | 25–30 | NER strategies, why NER underperforms, variants (E3), error analysis, example |
+| 4 | Sanyam | 31–35 | Clinician review, conclusions, future work (fine-tuning), limitations, thank you |
+| Q&A | either | 36–39 | Appendix |
 
 Each slide's speaker notes start with the speaker's name; the three handover slides include a suggested transition line.
 
@@ -115,6 +115,8 @@ Print the summary table with `.venv/bin/python -m analysis.run_openi --summary`.
 
 Few-shot beats zero-shot significantly (SARI, paired Wilcoxon p < 0.05) for 7 of 7 models, and NER-guided is significantly below few-shot for 7 of 7. The source reports average FKGL 12.1.
 
+**BioLaySumm 2025 format** (strategy averages, 7 models; BioLaySumm winner AEHRC in brackets, different test set): ROUGE 60.9 (67.1) · BERTScore 94.6 (95.3) · SIM 84.1 (89.0) · FKGL 3.7 (7.4) · DCRS 8.4 (9.3) · CLI 5.1 (8.1) · F1-CheXbert 70.8 (86.0) · RadGraph 56.5 (40.2), all for few-shot.
+
 **Models** (few-shot): MedGemma 4B 66.0 · Gemma 4 12B 65.9 · Gemini 3.8 Flash 65.5 (n = 15) · Qwen 3.8 27B 65.5 · Qwen3 8B 64.8 · MedGemma 27B 63.9 · Llama 3.1 8B 62.8 · GPT-OSS 120B 61.9 (SARI). Small local models match the cloud models.
 
 **NER variants** (SARI / AlignScore)
@@ -139,8 +141,10 @@ Few-shot beats zero-shot significantly (SARI, paired Wilcoxon p < 0.05) for 7 of
 | Providers (Gemini, Groq, Cerebras, Ollama) and key fallback | [analysis/providers/](../analysis/providers/), [router.py](../analysis/providers/router.py) |
 | All metrics in one call | [metrics/evaluator.py:22](../analysis/metrics/evaluator.py#L22) |
 | SARI (EASSE), ROUGE, BERTScore | [metrics/quality.py](../analysis/metrics/quality.py) |
+| SIM (embedding similarity to the reference) | [metrics/meaning_preservation.py](../analysis/metrics/meaning_preservation.py) |
+| F1-CheXbert, RadGraph F1 (BioLaySumm clinical metrics) | [metrics/clinical.py](../analysis/metrics/clinical.py) |
 | AlignScore | [metrics/factuality.py:37](../analysis/metrics/factuality.py#L37) |
-| Readability (textstat) | [metrics/readability.py:23](../analysis/metrics/readability.py#L23) |
+| Readability: FKGL, DCRS, CLI (textstat) | [metrics/readability.py:23](../analysis/metrics/readability.py#L23) |
 | Doctor review form: build and import answers | [analysis/review_form.py](../analysis/review_form.py) |
 | Python dependencies | [analysis/requirements.txt](../analysis/requirements.txt) |
 
