@@ -66,6 +66,7 @@ Overview, sources and download links: [datasets/README.md](../datasets/README.md
 | Open-i / NLMCXR reports | Original chest X-ray reports | [radiology_reports/NLMCXR_reports/](../datasets/radiology_reports/NLMCXR_reports/) |
 | MR-RATE brain MRI | Phase 1 experiments | [radiology_reports/MR-RATE/](../datasets/radiology_reports/MR-RATE/) |
 | Annotated discharge summaries | Phase 1 experiments | [discharge_summaries/anotated_dataset_v2.xlsx](../datasets/discharge_summaries/anotated_dataset_v2.xlsx) |
+| MIMIC-IV-Note-Ext-DI (≈100k discharge → patient-instruction pairs) | Would give discharge lay references; **needs PhysioNet credentialed access, not obtained** | [physionet.org/content/ann-pt-summ](https://physionet.org/content/ann-pt-summ/) |
 | TCGA-PRAD pathology | Phase 1 experiments | [pathology_reports/TCGA-242/](../datasets/pathology_reports/TCGA-242/) |
 | Phase 1 curated reports | Phase 1 inputs | [analysis/samples/curated_samples.py](../analysis/samples/curated_samples.py) |
 | PLABA + TREC 2024 PLABA (750 abstracts, 921 expert adaptations; term-level labels) | Examined; not used as benchmark (research abstracts, not clinical reports). Useful for metric checks and a jargon dictionary | [lay_reference_datasets/plaba/](../datasets/lay_reference_datasets/plaba/) |
