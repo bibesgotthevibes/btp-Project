@@ -21,13 +21,39 @@ ALIGNSCORE_CKPT = Path(os.getenv(
 ))
 
 
+def ensure_alignscore_checkpoint() -> bool:
+    if ALIGNSCORE_CKPT.exists() and ALIGNSCORE_CKPT.stat().st_size > 1_500_000_000:
+        return True
+    ALIGNSCORE_CKPT.parent.mkdir(parents=True, exist_ok=True)
+    url = "https://huggingface.co/yzha/AlignScore/resolve/main/AlignScore-base.ckpt"
+    print(f"\n[AlignScore] Checkpoint not found. Downloading (~1.8GB) to {ALIGNSCORE_CKPT}...", flush=True)
+    import subprocess
+    cmd = ["curl", "-L", "-C", "-", "-o", str(ALIGNSCORE_CKPT), url]
+    subprocess.run(cmd, check=True)
+    return ALIGNSCORE_CKPT.exists() and ALIGNSCORE_CKPT.stat().st_size > 1_500_000_000
+
+
 @lru_cache(maxsize=1)
 def _alignscore():
+    if not ALIGNSCORE_CKPT.exists() or ALIGNSCORE_CKPT.stat().st_size < 1_500_000_000:
+        ensure_alignscore_checkpoint()
     if not ALIGNSCORE_CKPT.exists():
         raise FileNotFoundError(f"AlignScore checkpoint not found at {ALIGNSCORE_CKPT} (see factuality.py docstring)")
     import torch
     import transformers
     transformers.AdamW = torch.optim.AdamW  # alignscore imports this (training-only); removed in new transformers
+    import alignscore.inference
+    import re
+
+    _orig_sent_tokenize = alignscore.inference.sent_tokenize
+    def _safe_sent_tokenize(text, **kwargs):
+        try:
+            return _orig_sent_tokenize(text, **kwargs)
+        except Exception:
+            sents = [s.strip() for s in re.split(r'(?<=[.!?])\s+', text) if s.strip()]
+            return sents if sents else [text]
+    alignscore.inference.sent_tokenize = _safe_sent_tokenize
+
     from alignscore import AlignScore
     device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
     return AlignScore(model="roberta-base", batch_size=8, device=device,
